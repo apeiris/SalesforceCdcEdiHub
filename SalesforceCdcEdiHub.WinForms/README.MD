@@ -13,7 +13,7 @@ Holds Salesforce-related credentials and connection settings.
 ```json
 {
   "Salesforce": {
-    "ClientId": "<YOUR_CONSUMER_KEY>",
+    "ClientId": "<YOUR_SALESFORCE_CONSUMER_KEY>",
     "pfxPath": "<PATH_TO_YOUR_PFX_CERTIFICATE>",
     "pfxPassword": "<CERT_PASSWORD>",
     "Username": "<SALESFORCE_USERNAME>",
@@ -22,6 +22,7 @@ Holds Salesforce-related credentials and connection settings.
     "GrpcUrl": "https://api.pubsub.salesforce.com:7443",
     "PubSubEndpoint": "https://api.pubsub.salesforce.com:7443",
     "RedirectUri": "https://localhost:500/callback",
+    "RdirectUriNote":"not required",
     "SFSchemaName": "sfo"
   },
   "Serilog": {
