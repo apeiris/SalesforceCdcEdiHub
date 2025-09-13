@@ -1,0 +1,9 @@
+bin/
+obj/
+Generated/
+*.user
+*.suo
+*.vs
+*.Backup.tmp
+*.Designer.cs.bak
+**/appsettings.json

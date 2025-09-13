@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="CustomGrpcCredentials.cs" />
+	  <Compile Include="PubSubService.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\SalesforceCdcEdiHub.GrpcProto\SalesforceCdcEdiHub.GrpcProto.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avro" Version="1.0.0" />
+		<PackageReference Include="Grpc.Core" Version="2.46.6" />
+		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.9" />
+		<PackageReference Include="System.Linq.Async" Version="6.0.3" />
+	</ItemGroup>
+
+</Project>

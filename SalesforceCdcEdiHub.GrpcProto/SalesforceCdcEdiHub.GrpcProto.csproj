@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- Folder for generated gRPC C# files -->
+		<Protobuf_OutputDir>Generated</Protobuf_OutputDir>
+
+		<!-- Prevent automatic inclusion of all .cs files to avoid duplicates -->
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<!-- Ensure Generated folder exists before Protobuf compilation -->
+	<Target Name="CreateGeneratedFolder" BeforeTargets="Protobuf">
+		<MakeDir Directories="$(Protobuf_OutputDir)" Condition="!Exists('$(Protobuf_OutputDir)')" />
+	</Target>
+
+	<ItemGroup>
+		<!-- gRPC / protobuf packages -->
+		<PackageReference Include="Google.Protobuf" Version="3.32.1" />
+		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.72.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<!-- Explicitly include your normal C# files -->
+	<ItemGroup>
+		<Compile Include="**\*.cs" Exclude="Generated\**\*.cs" />
+	</ItemGroup>
+
+	<!-- Generate Salesforce gRPC client into Generated folder -->
+	<ItemGroup>
+		<Protobuf Include="Proto\Salesforce.proto"
+				  GrpcServices="Client"
+				  OutputDir="Generated" />
+	</ItemGroup>
+
+	<!-- Include generated files in project, visible in VS -->
+	<ItemGroup>
+		<Compile Include="Generated\**\*.cs" AutoGen="True" DesignTime="True" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Proto\" />
+		<Folder Include="Generated\" />
+	</ItemGroup>
+
+</Project>
