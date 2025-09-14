@@ -1526,7 +1526,7 @@ partial class MainForm {
 		// 
 		splitContainer3.Panel2.Controls.Add(rtfLog);
 		splitContainer3.Size = new Size(1415, 678);
-		splitContainer3.SplitterDistance = 762;
+		splitContainer3.SplitterDistance = 1338;
 		splitContainer3.TabIndex = 0;
 		// 
 		// tableLayoutPanel6
@@ -1542,7 +1542,7 @@ partial class MainForm {
 		tableLayoutPanel6.RowCount = 2;
 		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 90.26549F));
 		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 9.734513F));
-		tableLayoutPanel6.Size = new Size(762, 678);
+		tableLayoutPanel6.Size = new Size(1338, 678);
 		tableLayoutPanel6.TabIndex = 0;
 		// 
 		// tableLayoutPanel7
@@ -1577,16 +1577,15 @@ partial class MainForm {
 		rtxLog.ForeColor = Color.Lime;
 		rtxLog.Location = new Point(3, 3);
 		rtxLog.Name = "rtxLog";
-		rtxLog.Size = new Size(756, 606);
+		rtxLog.Size = new Size(1332, 606);
 		rtxLog.TabIndex = 1;
 		rtxLog.Text = "";
 		// 
 		// rtfLog
 		// 
-		rtfLog.Dock = DockStyle.Fill;
-		rtfLog.Location = new Point(0, 0);
+		rtfLog.Location = new Point(289, 0);
 		rtfLog.Name = "rtfLog";
-		rtfLog.Size = new Size(649, 678);
+		rtfLog.Size = new Size(360, 678);
 		rtfLog.TabIndex = 0;
 		rtfLog.Text = "";
 		// 

@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="nlog-internal.log" />
 	  <None Remove="NLog.config" />
 	</ItemGroup>
 
