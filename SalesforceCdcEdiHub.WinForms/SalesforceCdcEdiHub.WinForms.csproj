@@ -9,6 +9,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="NLog.config" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="NLog.config">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
@@ -52,9 +62,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="nlog.config">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Properties\Settings.settings">

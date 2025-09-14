@@ -1571,11 +1571,10 @@ partial class MainForm {
 		// 
 		// rtxLog
 		// 
-		rtxLog.BackColor = Color.FromArgb(30, 30, 30);
-		rtxLog.BorderStyle = BorderStyle.None;
+		rtxLog.BackColor = Color.Black;
 		rtxLog.Dock = DockStyle.Fill;
-		rtxLog.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-		rtxLog.ForeColor = SystemColors.Info;
+		rtxLog.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+		rtxLog.ForeColor = Color.Lime;
 		rtxLog.Location = new Point(3, 3);
 		rtxLog.Name = "rtxLog";
 		rtxLog.Size = new Size(756, 606);

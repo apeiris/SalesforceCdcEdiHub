@@ -207,7 +207,7 @@ public partial class MainForm : Form {
 	private void PubSubService_LogEmit(object? sender, string e) {
 		try {
 			//BeginInvoke(() => rtxLog.Items.Add($"<%Info%> LogEmitted = {e}"));
-			BeginInvoke(()=> rtxLog.AppendText($"<%Info%> LogEmitted = {e}{Environment.NewLine}"));
+			BeginInvoke(()=> rtxLog.AppendText(e));
 			}
 		catch(Exception ex) {
 			MessageBox.Show(ex.Message);
