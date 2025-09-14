@@ -1,27 +1,22 @@
 ﻿
-using System.Data;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.Components.Web;
+using Common;
+using HttpMethod = System.Net.Http.HttpMethod;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using LogLevel=NLog.LogLevel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Bcpg.OpenPgp;
-using Salesforce;
-//using Salesforce.SDK.Net;
-using static System.Net.WebRequestMethods;
-using HttpMethod = System.Net.Http.HttpMethod;
-using System.IdentityModel.Tokens.Jwt;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using Microsoft.IdentityModel.Tokens;
-using Common;
+using NLog;
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Text;
+using System.Xml.Linq;
+using System.Xml;
 
-//namespace SalesforceCdcEdiHub.SalesforceService;
 namespace SalesforceCdcEdiHub;
 public class SalesforceService : ISalesforceService {
 	private readonly HttpClient _httpClient;
@@ -254,7 +249,7 @@ public class SalesforceService : ISalesforceService {
 			TenantId = tenantId,
 			Expiry = DateTime.UtcNow.AddMinutes(115) // 2 hour expiry with 5-minute buffer
 			};
-		RaiseAuthenticationAttempt(LogLevel.Information, $"Authenticated {responseContent}");
+		RaiseAuthenticationAttempt(LogLevel.Info, $"Authenticated {responseContent}");
 		return (_tokenCache.Token, _tokenCache.InstanceUrl, _tokenCache.TenantId);
 		}
 	private void RaiseAuthenticationAttempt(LogLevel ll, string message, string instanceUrl = null,

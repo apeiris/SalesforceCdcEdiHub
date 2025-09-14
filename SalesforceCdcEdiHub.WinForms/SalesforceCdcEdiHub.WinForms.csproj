@@ -17,6 +17,7 @@
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
 		<PackageReference Include="NLog" Version="6.0.4" />
 		<PackageReference Include="NLog.Extensions.Logging" Version="6.0.4" />
+		<PackageReference Include="NLog.Windows.Forms" Version="6.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

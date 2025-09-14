@@ -124,7 +124,7 @@ partial class MainForm {
 		tableLayoutPanel6 = new TableLayoutPanel();
 		tableLayoutPanel7 = new TableLayoutPanel();
 		btnClearLog = new Button();
-		lbxLog = new ListBox();
+		rtxLog = new RichTextBox();
 		rtfLog = new RichTextBox();
 		tbpCDCEvents = new TabPage();
 		tableLayoutPanel8 = new TableLayoutPanel();
@@ -1535,7 +1535,7 @@ partial class MainForm {
 		tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel6.Controls.Add(tableLayoutPanel7, 0, 1);
-		tableLayoutPanel6.Controls.Add(lbxLog, 0, 0);
+		tableLayoutPanel6.Controls.Add(rtxLog, 0, 0);
 		tableLayoutPanel6.Dock = DockStyle.Fill;
 		tableLayoutPanel6.Location = new Point(0, 0);
 		tableLayoutPanel6.Name = "tableLayoutPanel6";
@@ -1569,24 +1569,18 @@ partial class MainForm {
 		btnClearLog.UseVisualStyleBackColor = true;
 		btnClearLog.Click += btnClearLog_Click;
 		// 
-		// lbxLog
+		// rtxLog
 		// 
-		lbxLog.BackColor = Color.FromArgb(30, 30, 30);
-		lbxLog.BorderStyle = BorderStyle.None;
-		lbxLog.Dock = DockStyle.Fill;
-		lbxLog.DrawMode = DrawMode.OwnerDrawFixed;
-		lbxLog.ForeColor = Color.FromArgb(0, 255, 0);
-		lbxLog.FormattingEnabled = true;
-		lbxLog.HorizontalScrollbar = true;
-		lbxLog.IntegralHeight = false;
-		lbxLog.ItemHeight = 20;
-		lbxLog.Items.AddRange(new object[] { "Info", "Warning", "Error", "Debug" });
-		lbxLog.Location = new Point(3, 3);
-		lbxLog.Name = "lbxLog";
-		lbxLog.ScrollAlwaysVisible = true;
-		lbxLog.Size = new Size(756, 606);
-		lbxLog.TabIndex = 1;
-		lbxLog.SelectedIndexChanged += lbxLog_SelectedIndexChanged;
+		rtxLog.BackColor = Color.FromArgb(30, 30, 30);
+		rtxLog.BorderStyle = BorderStyle.None;
+		rtxLog.Dock = DockStyle.Fill;
+		rtxLog.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+		rtxLog.ForeColor = SystemColors.Info;
+		rtxLog.Location = new Point(3, 3);
+		rtxLog.Name = "rtxLog";
+		rtxLog.Size = new Size(756, 606);
+		rtxLog.TabIndex = 1;
+		rtxLog.Text = "";
 		// 
 		// rtfLog
 		// 
@@ -2101,6 +2095,6 @@ partial class MainForm {
 	private RadioButton radioButton3;
 	private RadioButton radioButton2;
 	private RadioButton radioButton1;
-	private ListBox lbxLog;
+	private RichTextBox rtxLog;
 	private SplitContainer splitContainer7;
 	}

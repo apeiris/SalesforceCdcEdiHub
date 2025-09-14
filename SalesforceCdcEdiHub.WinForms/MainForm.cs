@@ -1,33 +1,26 @@
 using System.Data;
-using System.Data.Common;
-using System.Diagnostics;
-using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Common;
-using DocumentFormat.OpenXml.Math;
-using DocumentFormat.OpenXml.Office2016.Drawing.Command;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NetUtils;
 using Newtonsoft.Json;
+
+using NLog;
+using NLog.Targets;
+using NLog.Windows.Forms;
+using LogLevel=NLog.LogLevel;
 using SalesforceCdcEdiHub;
-//using SalesforceCdcEdiHub.SqlServerLib;
-using static System.ComponentModel.Design.ObjectSelectorEditor;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
-//using enmRetrievedFrom = TesterFrm.MainForm.enmRetrieveFrom;
-//using enmRetrievedFrom =SalesforceCdcEdiHub.WinForms.MainForm.enmRetrieveFrom;
 using enmRetrievedFrom = WinForms.MainForm.enmRetrieveFrom;
 using ToolTip = System.Windows.Forms.ToolTip;
-using Properties=SalesforceCdcEdiHub.WinForms.Properties;
+using Properties = SalesforceCdcEdiHub.WinForms.Properties;
+
 
 namespace WinForms;
 public partial class MainForm : Form {
@@ -107,7 +100,7 @@ public partial class MainForm : Form {
 	private void SqlEventObjectExist(object? sender, SqlObjectQuery e) {
 		//	throw new NotImplementedException();
 
-		Log($"CDC {e.ObjectType} {e.ObjectName} exist={e.Exist}  id= {e.Id} ", LogLevel.Information);
+		Log($"CDC {e.ObjectType} {e.ObjectName} exist={e.Exist}  id= {e.Id} ", LogLevel.Info);
 
 		btnDeleteCDCRegistration.Visible = e.Exist;
 		toolStripStatusLabel1.ForeColor = Color.Yellow;
@@ -207,10 +200,18 @@ public partial class MainForm : Form {
 		_dtSoqlResults!.RowChanged += _dtSoqlResults_RowChanged;
 		_x12 = x12;
 		#endregion soql tab & controls
+
+		RichTextBoxTarget.ReInitializeAllTextboxes(this);
 		}
 
 	private void PubSubService_LogEmit(object? sender, string e) {
-		BeginInvoke(() => lbxLog.Items.Add($"<%Info%> LogEmitted = {e}"));
+		try {
+			//BeginInvoke(() => rtxLog.Items.Add($"<%Info%> LogEmitted = {e}"));
+			BeginInvoke(()=> rtxLog.AppendText($"<%Info%> LogEmitted = {e}{Environment.NewLine}"));
+			}
+		catch(Exception ex) {
+			MessageBox.Show(ex.Message);
+			}
 		}
 
 	private void _dtSoqlResults_RowChanged(object sender, DataRowChangeEventArgs e) {
@@ -416,7 +417,7 @@ public partial class MainForm : Form {
 		lblDestinationList.Text = $"{dgvRegisteredCDCCandidates.Rows.Count} candidate rows";
 		}
 	private void btnClearLog_Click(object sender, EventArgs e) {
-		lbxLog.Items.Clear();
+		rtxLog.Text = "";
 		}
 
 	private async Task<string> PopulateDbTableFromSfObject(string objectName) {
@@ -852,7 +853,7 @@ public partial class MainForm : Form {
 
 				break;
 			default:
-				Log($"sender gettype().name={sender.GetType().Name}", LogLevel.Information);
+				Log($"sender gettype().name={sender.GetType().Name}", LogLevel.Info);
 				break;
 			}
 
@@ -1000,16 +1001,11 @@ public partial class MainForm : Form {
 	#region lbxLog
 	private void Log(string msg, LogLevel l, [CallerMemberName] string callerMemberName = "", [CallerLineNumber] int callerLineNumber = 0, [CallerFilePath] string fp = "") {
 		msg = $"{msg}:{callerMemberName}:{callerLineNumber}:{fp.Split('\\').Last()}";
-		lbxLog.Invoke(new Action(() => lbxLog.Items.Add(new LogItem(msg, l))));
+		
+		BeginInvoke(() => rtxLog.AppendText($"<%Info%> LogEmitted = {msg}{Environment.NewLine}"));
 		}
 
-	private void lbxLog_SelectedIndexChanged(object sender, EventArgs e) {
 
-		if (lbxLog.SelectedItems.Count == 0) return;
-		Clipboard.SetText(lbxLog.SelectedItem.ToString());
-		statusStrip1.Text = $"Copied to clipboard: {Clipboard.GetText()}"; // optional logging
-
-		}
 	#endregion lbxLog
 	private void cmbSOQL_SelectedIndexChanged(object sender, EventArgs e) {
 		if (splitcSoql.Panel1Collapsed)

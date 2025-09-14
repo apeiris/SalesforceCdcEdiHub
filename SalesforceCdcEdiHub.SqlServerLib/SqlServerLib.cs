@@ -12,6 +12,9 @@ using Microsoft.Extensions.Logging;
 //using Newtonsoft.Json.Serialization;
 using Common;
 using Microsoft.Extensions.Configuration;
+using NLog;
+using LogLevel=NLog.LogLevel;
+
 namespace SalesforceCdcEdiHub;
 	public class SqlServerConfig { public string ConnectionString { get; set; } }
 	#region enums
@@ -50,13 +53,12 @@ namespace SalesforceCdcEdiHub;
 		public int Id { get; }
 		public string message { get; }
 		public SqlObjectQuery(string objectName, string objectType, int id, bool exist, string query, string msg) {
-
 			ObjectName = objectName;
 			ObjectType = objectType;
 			Exist = exist;
 			Query = query;
 			message = msg;
-			Loglevel = LogLevel.None;// this event is not for logging
+			Loglevel = LogLevel.Off;// this event is not for logging
 			Id = id;// row id when exist -1 otherwise
 			}
 		}
@@ -200,7 +202,7 @@ namespace SalesforceCdcEdiHub;
 		public void DeleteCDCObject(string objectName) {
 			try {
 				ExecuteNoneQuery($"DELETE FROM CDCObjects WHERE objectName ='{objectName}'");
-				RaisSqlEvent($"Deleted {objectName} from CDC", SqlEvents.Deleted, LogLevel.Information, hasErrors: false);
+				RaisSqlEvent($"Deleted {objectName} from CDC", SqlEvents.Deleted, LogLevel.Info, hasErrors: false);
 				} catch (SqlException ex) {
 				RaisSqlEvent($"SQL Error:{ex.Message}", SqlEvents.SqlException, LogLevel.Error, true);
 				} catch (Exception ex) {
@@ -266,7 +268,7 @@ namespace SalesforceCdcEdiHub;
 							if (reader.Read()) {
 								int rowsInserted = reader.GetInt32(0); // RowsInserted
 								string tableName = reader.GetString(1); // TableName
-								RaisSqlEvent($"{rowsInserted} rows insert to {tableName}", SqlEvents.Inserted, LogLevel.Information, false);
+								RaisSqlEvent($"{rowsInserted} rows insert to {tableName}", SqlEvents.Inserted, LogLevel.Info, false);
 								return (rowsInserted, tableName);
 								}
 							}
