@@ -7,3 +7,8 @@ Generated/
 *.Backup.tmp
 *.Designer.cs.bak
 **/appsettings.json
+/SalesforceCdcEdiHub.WinForms/NLog.config
+/SalesforceCdcEdiHub.WinForms/NLog.config
+/SalesforceCdcEdiHub.WinForms/nlog-internal.log
+/SalesforceCdcEdiHub.WinForms/NLog.config
+/SalesforceCdcEdiHub.WinForms/nlog-internal.log
