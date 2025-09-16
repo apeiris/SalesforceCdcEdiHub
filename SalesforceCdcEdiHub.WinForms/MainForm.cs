@@ -207,9 +207,8 @@ public partial class MainForm : Form {
 	private void PubSubService_LogEmit(object? sender, string e) {
 		try {
 			//BeginInvoke(() => rtxLog.Items.Add($"<%Info%> LogEmitted = {e}"));
-			BeginInvoke(()=> rtxLog.AppendText(e));
-			}
-		catch(Exception ex) {
+			BeginInvoke(() => rtxLog.AppendText(e));
+			} catch (Exception ex) {
 			MessageBox.Show(ex.Message);
 			}
 		}
@@ -228,7 +227,7 @@ public partial class MainForm : Form {
 		}
 
 	private void Form1_Load(object sender, EventArgs e) {
-		
+
 		string savedTab = string.IsNullOrEmpty(Properties.Settings.Default.SelectedTab) ? "tbpSfObjects" : Properties.Settings.Default.SelectedTab;
 		if (!string.IsNullOrEmpty(savedTab) && tabControl1.TabPages.ContainsKey(savedTab)) {
 			TabPage tbp = tabControl1.TabPages[savedTab]!;
@@ -438,7 +437,7 @@ public partial class MainForm : Form {
 			if (row.Cells["Initialize"].Value is true) {
 				listToCreate.Add(name);
 				row.Cells["Create"].Value = Properties.Resources.CacheOk; // Set warning icon for non-existing names
-			
+
 				}
 			}
 		if (listToCreate.Count > 0) {
@@ -1001,7 +1000,7 @@ public partial class MainForm : Form {
 	#region lbxLog
 	private void Log(string msg, LogLevel l, [CallerMemberName] string callerMemberName = "", [CallerLineNumber] int callerLineNumber = 0, [CallerFilePath] string fp = "") {
 		msg = $"{msg}:{callerMemberName}:{callerLineNumber}:{fp.Split('\\').Last()}";
-		
+
 		BeginInvoke(() => rtxLog.AppendText($"<%Info%> LogEmitted = {msg}{Environment.NewLine}"));
 		}
 
@@ -1188,8 +1187,9 @@ public partial class MainForm : Form {
 		var ISA = _x12.CreateISA(1, false, "s12312", "r123123");
 		}
 
-
-
+	private void btnLogTest_Click(object sender, EventArgs e) {
+		_l.LogError("This is an error message from the button click event.");
+		}
 	}
 
 

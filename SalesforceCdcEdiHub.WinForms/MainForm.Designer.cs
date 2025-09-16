@@ -147,6 +147,7 @@ partial class MainForm {
 		splitContainer7 = new SplitContainer();
 		splitContainer6 = new SplitContainer();
 		dgvCDCTables = new DataGridView();
+		btnLogTest = new Button();
 		statusStrip1.SuspendLayout();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
@@ -1550,6 +1551,7 @@ partial class MainForm {
 		tableLayoutPanel7.ColumnCount = 2;
 		tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+		tableLayoutPanel7.Controls.Add(btnLogTest, 1, 0);
 		tableLayoutPanel7.Controls.Add(btnClearLog, 0, 0);
 		tableLayoutPanel7.Location = new Point(3, 615);
 		tableLayoutPanel7.Name = "tableLayoutPanel7";
@@ -1850,6 +1852,16 @@ partial class MainForm {
 		dgvCDCTables.Size = new Size(496, 446);
 		dgvCDCTables.TabIndex = 0;
 		// 
+		// btnLogTest
+		// 
+		btnLogTest.Location = new Point(103, 3);
+		btnLogTest.Name = "btnLogTest";
+		btnLogTest.Size = new Size(93, 23);
+		btnLogTest.TabIndex = 1;
+		btnLogTest.Text = "Log Test";
+		btnLogTest.UseVisualStyleBackColor = true;
+		btnLogTest.Click += btnLogTest_Click;
+		// 
 		// MainForm
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -2095,4 +2107,5 @@ partial class MainForm {
 	private RadioButton radioButton1;
 	private RichTextBox rtxLog;
 	private SplitContainer splitContainer7;
+	private Button btnLogTest;
 	}
