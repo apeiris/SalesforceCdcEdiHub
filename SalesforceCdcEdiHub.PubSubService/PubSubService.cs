@@ -116,8 +116,9 @@ public class PubSubService : IDisposable {
 
 			string entityName = header.TryGetValue("entityName", out var en) ? en?.ToString() ?? "Unknown" : "Unknown";
 
-			LogEmit?.Invoke(this,
-				$"Event ChangeType={result.ChangeType}, ChangedFields={string.Join(",", result.ChangedFields)}, RecordIds={string.Join(",", result.RecordIds)}");
+			//LogEmit?.Invoke(this,
+			//	$"Event ChangeType={result.ChangeType}, ChangedFields={string.Join(",", result.ChangedFields)}, RecordIds={string.Join(",", result.RecordIds)}");
+			_logger.LogInformation($"Event ChangeType={result.ChangeType}, ChangedFields={string.Join(",", result.ChangedFields)}, RecordIds={string.Join(",", result.RecordIds)}");
 
 			// Handle DELETE differently (only need entity + ids)
 			if (result.ChangeType == "DELETE") {
