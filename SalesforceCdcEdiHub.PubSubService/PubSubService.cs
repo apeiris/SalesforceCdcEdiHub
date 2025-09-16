@@ -11,10 +11,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static SalesforceCdcEdiHub.PubSub;
-
 using SalesforceCdcEdiHub;
 
-//using static Salesforce.PubSub;
 namespace Common;
 public class ProgressUpdateEventArgs : EventArgs {
 	public string Message { get; }

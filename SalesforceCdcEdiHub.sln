@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.Salesfo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.X12", "SalesforceCdcEdiHub.X12\SalesforceCdcEdiHub.X12.csproj", "{890F071B-B011-C303-47C3-11B059105B8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.LoggerEmailExtensions", "SalesforceCdcEdiHub.LoggerEmailExtensions\SalesforceCdcEdiHub.LoggerEmailExtensions.csproj", "{F5CA2A45-DA46-4B17-93E7-A8E0A9457408}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{890F071B-B011-C303-47C3-11B059105B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{890F071B-B011-C303-47C3-11B059105B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{890F071B-B011-C303-47C3-11B059105B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5CA2A45-DA46-4B17-93E7-A8E0A9457408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5CA2A45-DA46-4B17-93E7-A8E0A9457408}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5CA2A45-DA46-4B17-93E7-A8E0A9457408}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5CA2A45-DA46-4B17-93E7-A8E0A9457408}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -34,6 +34,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\SalesforceCdcEdiHub.LoggerEmailExtensions\SalesforceCdcEdiHub.LoggerEmailExtensions.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.SqlServerLib\SalesforceCdcEdihub.SqlServerLib.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.X12\SalesforceCdcEdiHub.X12.csproj" />
 	</ItemGroup>
