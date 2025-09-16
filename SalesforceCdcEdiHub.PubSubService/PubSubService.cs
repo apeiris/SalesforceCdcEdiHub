@@ -10,9 +10,9 @@ using Grpc.Net.Client;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static NetUtils.PubSub;
+using static SalesforceCdcEdiHub.PubSub;
 
-using NetUtils;
+using SalesforceCdcEdiHub;
 
 //using static Salesforce.PubSub;
 namespace Common;

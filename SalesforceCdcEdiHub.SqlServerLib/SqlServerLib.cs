@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Data.SqlClient;
 //using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-//using NetUtils;
+//using SalesforceCdcEdiHub;
 //using Newtonsoft.Json.Serialization;
 using Common;
 using Microsoft.Extensions.Configuration;

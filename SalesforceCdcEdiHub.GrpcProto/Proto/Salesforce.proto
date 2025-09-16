@@ -5,7 +5,7 @@
 syntax = "proto3";
 package eventbus.v1;
 
-option csharp_namespace = "NetUtils";
+option csharp_namespace = "SalesforceCdcEdiHub";
 
 /*
  * Contains information about a topic and uniquely identifies it. TopicInfo is returned by the GetTopic RPC method.

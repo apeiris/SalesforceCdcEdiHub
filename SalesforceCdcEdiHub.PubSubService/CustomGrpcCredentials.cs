@@ -1,6 +1,6 @@
 ﻿using Grpc.Core;
 
-namespace NetUtils {
+namespace SalesforceCdcEdiHub {
 	public static class CustomGrpcCredentials {
 		public static CallCredentials Create(string token, string instanceUrl, string tenantId) {
 			if (string.IsNullOrEmpty(token)) throw new ArgumentNullException(nameof(token));
