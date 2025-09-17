@@ -80,15 +80,10 @@ public partial class MainForm : Form {
 			} else lbxCDCTopics.Items.Add(e.Message);
 		}
 	// do not handle _pubsubService.CDCEvent here, SqlServerLib will handle it
-
-
 	#endregion pubsubservice events
 	#region _sqlserver events
 	private void SqlEventObjectExist(object? sender, SqlObjectQuery e) {
-		//	throw new NotImplementedException();
-
-		Log($"CDC {e.ObjectType} {e.ObjectName} exist={e.Exist}  id= {e.Id} ", LogLevel.Info);
-
+		_logger.LogInformation($"CDC {{e.ObjectType}} {{e.ObjectName}} exist={{e.Exist}}  id= {{e.Id}} ");
 		btnDeleteCDCRegistration.Visible = e.Exist;
 		toolStripStatusLabel1.ForeColor = Color.Yellow;
 		if (e.Exist) {
@@ -105,32 +100,65 @@ public partial class MainForm : Form {
 			}
 		setControlColor(btnRegisterFields, e.Exist);
 		}
-
 	private void _sqlServerLib_SqlEvent(object? sender, SqlEventArg e) {
-		//throw new NotImplementedException();
-		Log(e.Message, LogLevel.Debug);
+		_logger.LogDebug(e.Message);
 		if (!e.HasErrors) {
 			switch (e.ReturningFrom) {
 				case "RegisterExludedCDCFields":
 					lbxObjects_SelectedIndexChanged(sender, e);// redo it to refresh UI
 					break;
 				case "DeleteCDCObject":
-					//LoadTopics(lbxCDCTopics, false);
 					lbxObjects_SelectedIndexChanged(sender, e);// redo it to refresh UI	
 					lbxObjects.Items.Remove(lbxObjects.SelectedItem);
-
 					lblPanel1.Text = $"{lbxObjects.Items.Count} Subscribed CDC Object";
 					break;
-
-
 				}
 			}
 		}
-
-
 	#endregion _sqlserver events
 	#endregion events	
 	#region form
+
+	private void SetupRichTextBoxContextMenu(RichTextBox rtb) {
+		var contextMenu = new ContextMenuStrip();
+
+		// Copy (Unicode)
+		contextMenu.Items.Add("Copy All", null, (s, ea) =>
+		{
+			if (!string.IsNullOrEmpty(rtb.Rtf)) {
+				Clipboard.SetText(rtb.Rtf, TextDataFormat.Rtf);
+				}
+		});
+
+
+		// Paste
+		contextMenu.Items.Add("Paste", null, (s, ea) =>
+		{
+			if (Clipboard.ContainsText(TextDataFormat.Rtf)) {
+				rtb.SelectedRtf = Clipboard.GetText(TextDataFormat.Rtf);
+				} else if (Clipboard.ContainsText()) {
+				rtb.Paste();
+				}
+		});
+
+		// Select All
+		contextMenu.Items.Add("Select All", null, (s, ea) =>
+		{
+			rtb.SelectAll();
+		});
+
+		contextMenu.Items.Add(new ToolStripSeparator());
+
+		// Clear
+		contextMenu.Items.Add("Clear", null, (s, ea) =>
+		{
+			rtb.Clear();
+		});
+
+		// Assign to RichTextBox
+		rtb.ContextMenuStrip = contextMenu;
+		}
+
 	public MainForm(IMemoryCache cache, ISalesforceService salesforceService, PubSubService pubSubService, IOptions<SalesforceConfig> config, SqlServerLib sqlServerLib, ILogger<MainForm> logger, X12 x12) {
 		InitializeComponent();
 		#region tt
@@ -174,8 +202,6 @@ public partial class MainForm : Form {
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		_logger.LogDebug("MainForm initialized.");
 		_logger.LogInformation("(logInformation)MainForm initialized.");
-		//tabControl1.DrawMode = TabDrawMode.OwnerDrawFixed;
-		//tabControl1.DrawItem += tabControl1_DrawItem!;
 		saveTabPageColors();
 		#region soql tab & controls
 		rtSoqlQuery.Text = "";
@@ -186,22 +212,15 @@ public partial class MainForm : Form {
 		_dtSoqlResults!.RowChanged += _dtSoqlResults_RowChanged;
 		_x12 = x12;
 		#endregion soql tab & controls
+		SetupRichTextBoxContextMenu(rtxLog);
 		RichTextBoxTarget.ReInitializeAllTextboxes(this);
-		}
-	private void _dtSoqlResults_RowChanged(object sender, DataRowChangeEventArgs e) {
-		throw new NotImplementedException();
-		}
-	private void dgvSOQLResult_RowsAdded(object? sender, DataGridViewRowsAddedEventArgs e) {
-		if (e.RowIndex >= 0 && dgvSOQLResult.Rows[e.RowIndex].IsNewRow == false) {
-			string colName = dgvSOQLResult.Columns[0].Name;
-			}
 		}
 	private void Form1_Load(object sender, EventArgs e) {
 		string savedTab = string.IsNullOrEmpty(Properties.Settings.Default.SelectedTab) ? "tbpSfObjects" : Properties.Settings.Default.SelectedTab;
 		if (!string.IsNullOrEmpty(savedTab) && tabControl1.TabPages.ContainsKey(savedTab)) {
 			//TabPage tbp = tabControl1.TabPages[savedTab]!;
 			//tabControl1_Selected(sender, new TabControlEventArgs(tbp, tabControl1.SelectedIndex, TabControlAction.Selected));
-		tabControl1.SelectedTab =tabControl1.TabPages[savedTab];
+			tabControl1.SelectedTab = tabControl1.TabPages[savedTab];
 			}
 		lblPanel1.Parent = splitContainer1.Panel1;
 		lblDestinationList.Text = "";
@@ -212,17 +231,6 @@ public partial class MainForm : Form {
 			var items = savedItems.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 			cmbObjects.Items.AddRange(items);
 			}
-		}
-	private void SalesforceService_AuthenticationAttempt(object sender, SalesforceService.AuthenticationEventArgs e) {
-		Invoke((Action)(() => {
-			Log($"Authenticating: {e.Message}", e.LogLevel);
-			btnAuthenticate.Enabled = false;
-			toolStripStatusLabel1.Text = "Authenticating...";
-		}));
-		}
-	protected override void OnFormClosed(FormClosedEventArgs e) {
-		base.OnFormClosed(e);
-		if (_host != null) _host.Dispose();
 		}
 	private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 		Properties.Settings.Default.SelectedTab = tabControl1.SelectedTab.Name;
@@ -615,6 +623,12 @@ public partial class MainForm : Form {
 		}
 	#endregion buttons
 	#region dgv
+	private void dgvSOQLResult_RowsAdded(object? sender, DataGridViewRowsAddedEventArgs e) {
+		if (e.RowIndex >= 0 && dgvSOQLResult.Rows[e.RowIndex].IsNewRow == false) {
+			string colName = dgvSOQLResult.Columns[0].Name;
+			}
+		}
+
 	private void SetupDataGridViewHeaders(string tn) {
 		dgvObject.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightBlue;
 		dgvObject.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Arial", 12, FontStyle.Bold);
@@ -726,6 +740,17 @@ public partial class MainForm : Form {
 			}
 		}
 	#endregion dgv
+	private void _dtSoqlResults_RowChanged(object sender, DataRowChangeEventArgs e) {
+		throw new NotImplementedException();
+		}
+
+	private void SalesforceService_AuthenticationAttempt(object sender, SalesforceService.AuthenticationEventArgs e) {
+		Invoke((Action)(() => {
+			Log($"Authenticating: {e.Message}", e.LogLevel);
+			btnAuthenticate.Enabled = false;
+			toolStripStatusLabel1.Text = "Authenticating...";
+		}));
+		}
 	#region helpers
 	private void saveTabPageColors() {
 		foreach (TabPage page in tabControl1.TabPages) _tabColors[page] = (page.BackColor, page.ForeColor);
@@ -902,6 +927,7 @@ public partial class MainForm : Form {
 			_sqlServerLib.AssertCDCObjectExist(selectedObject);// this will fire event to set series of changes 
 			switch (_retrieveFrom) {// set by AssertCDCObjectExists
 				case enmRetrieveFrom.SalesForce:
+				
 					DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(selectedObject);// async operations outside the lock
 					DataTable dtObject = ds.Tables[selectedObject];
 					toolStripStatusLabel1.Text = $" {ObjectNameFromEventDeclaration(selectedTopic)} has {dtObject.Rows.Count} fields.";
@@ -1056,8 +1082,8 @@ public partial class MainForm : Form {
 											.ToList();
 					}
 				break;
-			default:break;
-					
+			default: break;
+
 			}
 		if (_hasUnInitDbArtefacts) {
 			HashSet<string> x = _dtRegisteredCDCCandidates.AsEnumerable()

@@ -7,12 +7,10 @@ using Avro.Generic;
 using Avro.IO;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static SalesforceCdcEdiHub.PubSub;
 using SalesforceCdcEdiHub;
-
+using static SalesforceCdcEdiHub.PubSub;
 namespace Common;
 public class ProgressUpdateEventArgs : EventArgs {
 	public string Message { get; }
@@ -83,43 +81,28 @@ public class PubSubService : IDisposable {
 		}
 	private void DecodeChangeEvent(byte[] payload, RecordSchema schema, List<string> fieldsToFilter) {
 		var result = new CDCEventArgs();
-
 		if (DebugBreak) Debugger.Break();
-
 		try {
 			using var stream = new MemoryStream(payload);
 			var reader = new BinaryDecoder(stream);
 			var datumReader = new GenericDatumReader<GenericRecord>(schema, schema);
 			var record = datumReader.Read(null, reader);
-
-			// Setup filter set if provided
-			var filterSet = fieldsToFilter != null ? new HashSet<string>(fieldsToFilter) : new HashSet<string>();
-
-			// Extract ChangeEventHeader
-			if (!record.TryGetValue("ChangeEventHeader", out object headerObj) || headerObj is not GenericRecord header) {
+			var filterSet = fieldsToFilter != null ? new HashSet<string>(fieldsToFilter) : new HashSet<string>();// Setup filter set if provided
+			if (!record.TryGetValue("ChangeEventHeader", out object headerObj) || headerObj is not GenericRecord header) {// Extract ChangeEventHeader
 				result.Error = "No Header on ChangeEvent";
 				CDCEvent?.Invoke(this, result);
 				return;
 				}
-
-			// Populate result from header
-			result.ChangeType = getChangeType(header.ToString());
+			result.ChangeType = getChangeType(header.ToString());   // Populate result from header
 			result.RecordIds = header.TryGetValue("recordIds", out var rIds) && rIds is IList<object> idsList
-				? idsList.Select(id => id.ToString()).ToList()
-				: new List<string>();
+				? idsList.Select(id => id.ToString()).ToList()! : new List<string>();
 			result.ChangedFields = header.TryGetValue("changedFields", out var cf) && cf is IList<object> cfList
 				? cfList.Select(f => f.ToString()).ToList()
 				: new List<string>();
 			header.TryGetValue("ReplayId", out _); // ignored for now
-
 			string entityName = header.TryGetValue("entityName", out var en) ? en?.ToString() ?? "Unknown" : "Unknown";
-
-			//LogEmit?.Invoke(this,
-			//	$"Event ChangeType={result.ChangeType}, ChangedFields={string.Join(",", result.ChangedFields)}, RecordIds={string.Join(",", result.RecordIds)}");
 			_logger.LogInformation($"Event ChangeType={result.ChangeType}, ChangedFields={string.Join(",", result.ChangedFields)}, RecordIds={string.Join(",", result.RecordIds)}");
-
-			// Handle DELETE differently (only need entity + ids)
-			if (result.ChangeType == "DELETE") {
+			if (result.ChangeType == "DELETE") {    // Handle DELETE differently (only need entity + ids)
 				var deleteTable = new DataTable(entityName);
 				deleteTable.Columns.Add("Id", typeof(string));
 				foreach (var id in result.RecordIds) {
@@ -129,36 +112,25 @@ public class PubSubService : IDisposable {
 					}
 				deleteTable.PrimaryKey = new[] { deleteTable.Columns["Id"]! };
 				result.DeltaFields = deleteTable;
-
 				CDCEvent?.Invoke(this, result);
 				return;
 				}
-
-			// CREATE / UPDATE / other events
-			var table = new DataTable(entityName);
+			var table = new DataTable(entityName);// CREATE / UPDATE / other events
 			table.Columns.Add("FieldName", typeof(string));
 			table.Columns.Add("Value", typeof(string));
 			table.Columns.Add("DataType", typeof(string));
-
 			foreach (var field in schema.Fields) {
 				if (field.Name == "ChangeEventHeader") continue;
-
 				if (!record.TryGetValue(field.Name, out var value) || value == null) continue;
 				if (filterSet.Count > 0 && !filterSet.Contains(field.Name)) continue;
-
 				var row = table.NewRow();
 				row["FieldName"] = field.Name;
 				row["Value"] = value.ToString();
-
-				// Try to parse datatype from documentation string
-				string dataType = field.Documentation?.Split(':').LastOrDefault() ?? "Unknown";
+				string dataType = field.Documentation?.Split(':').LastOrDefault() ?? "Unknown"; // Try to parse datatype from documentation string
 				row["DataType"] = dataType;
-
 				table.Rows.Add(row);
 				}
-
-			// Add Id row explicitly
-			if (result.RecordIds.Count > 0) {
+			if (result.RecordIds.Count > 0) {// Add Id row explicitly
 				var idRow = table.NewRow();
 				idRow["FieldName"] = "Id";
 				idRow["Value"] = result.RecordIds[0];
@@ -167,7 +139,6 @@ public class PubSubService : IDisposable {
 
 				table.PrimaryKey = new[] { table.Columns["FieldName"]! };
 				}
-
 			result.DeltaFields = table;
 			CDCEvent?.Invoke(this, result);
 			} catch (Exception ex) {
@@ -175,54 +146,6 @@ public class PubSubService : IDisposable {
 			CDCEvent?.Invoke(this, result);
 			}
 		}
-	//private async Task SubscribeToTopicAsync(string topic, string token, string instanceUrl, string tenantId, List<string> fieldsToFilter) {
-	//	OnProgressUpdated($"Subscribing to {topic}...");
-	//	var fetchRequest = new FetchRequest {
-	//		TopicName = topic,
-	//		NumRequested = 10,
-	//		ReplayPreset = ReplayPreset.Latest,
-
-	//	};
-
-	//	var callOptions = new CallOptions(credentials: CustomGrpcCredentials.Create(token, instanceUrl, tenantId));
-	//	try {
-	//		var streamingCall = _client.Subscribe(callOptions);
-
-	//		await streamingCall.RequestStream.WriteAsync(fetchRequest);
-
-	//		var cts = new CancellationTokenSource();
-	//		_subscriptions.Add((streamingCall, cts));
-
-	//		_ = Task.Run(async () => {
-	//			try {
-	//				while (await streamingCall.ResponseStream.MoveNext(cts.Token)) {
-	//					var response = streamingCall.ResponseStream.Current;
-	//					string responseJson = response.ToString();
-	//					var jsonDoc = JsonDocument.Parse(responseJson);
-	//					if (jsonDoc.RootElement.TryGetProperty("events", out var eventsElement)) {
-	//						var eventsArray = eventsElement.EnumerateArray();
-	//						foreach (var evt in eventsArray) {
-	//							var eventObj = evt.GetProperty("event");
-	//							string schemaId = eventObj.GetProperty("schemaId").GetString()!;
-	//							string payloadBase64 = eventObj.GetProperty("payload").GetString()!;
-	//							byte[] payload = Convert.FromBase64String(payloadBase64)!;
-	//							RecordSchema schema = await GetSchemaAsync(schemaId, token, instanceUrl, tenantId);
-	//							DecodeChangeEvent(payload, schema, fieldsToFilter);
-	//						}
-	//						await streamingCall.RequestStream.WriteAsync(fetchRequest);
-	//					}
-	//				}
-	//			} catch (Exception ex) {
-	//				Debug.WriteLine($"Error listening to {topic}: {ex.Message}\r\n");
-	//			}
-	//		});
-	//	} catch (RpcException ex) {
-	//		Debug.WriteLine($"gRPC Error for {topic}: {ex.StatusCode}, Detail: {ex.Status.Detail}\r\n");
-	//	} catch (Exception ex) {
-	//		Debug.WriteLine($"Unexpected error for {topic}: {ex.Message}\r\n");
-	//	}
-	//}
-
 	private async Task SubscribeToTopicAsync(
 	string topic,
 	string token,
@@ -230,54 +153,41 @@ public class PubSubService : IDisposable {
 	string tenantId,
 	List<string> fieldsToFilter) {
 		OnProgressUpdated($"Subscribing to {topic}...");
-
 		var fetchRequest = new FetchRequest {
 			TopicName = topic,
 			NumRequested = 10,
 			ReplayPreset = ReplayPreset.Latest,
 			};
-
 		var callOptions = new CallOptions(
 			credentials: CustomGrpcCredentials.Create(token, instanceUrl, tenantId));
-
 		try {
 			var streamingCall = _client.Subscribe(callOptions);
 			var cts = new CancellationTokenSource();
 			_subscriptions.Add((streamingCall, cts));
-
-			// Send initial request
-			await streamingCall.RequestStream.WriteAsync(fetchRequest);
-
+			await streamingCall.RequestStream.WriteAsync(fetchRequest);// Send initial request
 			_ = Task.Run(async () => {
 				try {
 					while (await streamingCall.ResponseStream.MoveNext(cts.Token)) {
 						var response = streamingCall.ResponseStream.Current;
 						using var jsonDoc = JsonDocument.Parse(response.ToString());
-
 						if (!jsonDoc.RootElement.TryGetProperty("events", out var eventsElement))
 							continue;
-
 						foreach (var evt in eventsElement.EnumerateArray()) {
 							try {
 								var eventObj = evt.GetProperty("event");
-								string schemaId = eventObj.GetProperty("schemaId").GetString()
-									?? throw new InvalidOperationException("SchemaId missing");
-								string payloadBase64 = eventObj.GetProperty("payload").GetString()
-									?? throw new InvalidOperationException("Payload missing");
-
+								string schemaId = eventObj.GetProperty("schemaId").GetString()?? throw new InvalidOperationException("SchemaId missing");
+								string payloadBase64 = eventObj.GetProperty("payload").GetString()?? throw new InvalidOperationException("Payload missing");
 								byte[] payload = Convert.FromBase64String(payloadBase64);
 								RecordSchema schema = await GetSchemaAsync(schemaId, token, instanceUrl, tenantId);
 								DecodeChangeEvent(payload, schema, fieldsToFilter);
 								} catch (Exception innerEx) {
-								Debug.WriteLine($"Error decoding event for {topic}: {innerEx.Message}\r\n");
+								_logger.LogError($"Error decoding event for {topic}: {innerEx.Message}\r\n");
 								}
 							}
-
-						// Request next batch
-						await streamingCall.RequestStream.WriteAsync(fetchRequest);
+						await streamingCall.RequestStream.WriteAsync(fetchRequest); // Request next batch
 						}
 					} catch (Exception ex) {
-					Debug.WriteLine($"Error listening to {topic}: {ex.Message}\r\n");
+					_logger.LogError($"Error listening to {topic}: {ex.Message}");
 					}
 			}, cts.Token);
 			} catch (RpcException ex) {
@@ -286,7 +196,6 @@ public class PubSubService : IDisposable {
 			Debug.WriteLine($"Unexpected error for {topic}: {ex.Message}\r\n");
 			}
 		}
-
 	public async Task<RecordSchema> GetSchemaAsync(string schemaId, string token, string instanceUrl, string tenantId) {
 		if (_schemaCache.TryGetValue(schemaId, out RecordSchema cachedSchema)) {
 			return cachedSchema;
@@ -296,9 +205,11 @@ public class PubSubService : IDisposable {
 		try {
 			var schemaResponse = await _client.GetSchemaAsync(schemaRequest, callOptions);
 			var schema = Schema.Parse(schemaResponse.SchemaJson) as RecordSchema;
-			_schemaCache[schemaId] = schema;
-			return schema;
+			_schemaCache[schemaId] = schema!;
+			return schema!;
 			} catch (RpcException ex) {
+			_logger.LogError(ex.Message);
+			_logger.LogError(ex.InnerException!.Message);
 			throw;
 			}
 		}

@@ -123,6 +123,7 @@ partial class MainForm {
 		splitContainer3 = new SplitContainer();
 		tableLayoutPanel6 = new TableLayoutPanel();
 		tableLayoutPanel7 = new TableLayoutPanel();
+		btnLogTest = new Button();
 		btnClearLog = new Button();
 		rtxLog = new RichTextBox();
 		rtfLog = new RichTextBox();
@@ -147,7 +148,6 @@ partial class MainForm {
 		splitContainer7 = new SplitContainer();
 		splitContainer6 = new SplitContainer();
 		dgvCDCTables = new DataGridView();
-		btnLogTest = new Button();
 		statusStrip1.SuspendLayout();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
@@ -1561,6 +1561,16 @@ partial class MainForm {
 		tableLayoutPanel7.Size = new Size(200, 60);
 		tableLayoutPanel7.TabIndex = 0;
 		// 
+		// btnLogTest
+		// 
+		btnLogTest.Location = new Point(103, 3);
+		btnLogTest.Name = "btnLogTest";
+		btnLogTest.Size = new Size(93, 23);
+		btnLogTest.TabIndex = 1;
+		btnLogTest.Text = "Log Test";
+		btnLogTest.UseVisualStyleBackColor = true;
+		btnLogTest.Click += btnLogTest_Click;
+		// 
 		// btnClearLog
 		// 
 		btnClearLog.Location = new Point(3, 3);
@@ -1851,16 +1861,6 @@ partial class MainForm {
 		dgvCDCTables.Name = "dgvCDCTables";
 		dgvCDCTables.Size = new Size(496, 446);
 		dgvCDCTables.TabIndex = 0;
-		// 
-		// btnLogTest
-		// 
-		btnLogTest.Location = new Point(103, 3);
-		btnLogTest.Name = "btnLogTest";
-		btnLogTest.Size = new Size(93, 23);
-		btnLogTest.TabIndex = 1;
-		btnLogTest.Text = "Log Test";
-		btnLogTest.UseVisualStyleBackColor = true;
-		btnLogTest.Click += btnLogTest_Click;
 		// 
 		// MainForm
 		// 
