@@ -4,6 +4,8 @@ namespace Common;
 public interface ISalesforceService {
 	Task<(string token, string instanceUrl, string tenantId)> GetAccessTokenAsync();
 	Task<JsonElement> GetObjectSchemaAsync(string objectName, CancellationToken cancellationToken = default, bool useTooling = false);
+
+	Task<DataSet> GetEventSchema(string eventName);
 	Task<string> GetObjectSchemaSummaryAsync(string objectName);
 	Task<DataSet> GetObjectSchemaAsDataSetAsync(string objectName, bool useTooling = false);
 	Task<DataTable> GetAllObjects();
@@ -21,6 +23,11 @@ public interface ISalesforceService {
 	Task AddCDCChannelMember(string sObject);
 	Task DeleteSobject(string objectName, string recordId, bool useTooling = false);
 	Task<string> IdOfPlatformEventChannelMember(string objectName, CancellationToken cancellationToken = default);
-	Task<string> GetEventDefinitions();
+
+	public class PlatformEventInfo {
+		public string Name { get; set; }
+		public string Label { get; set; }
+		}
+	Task<DataTable> GetPlatformEventList();
 
 	}

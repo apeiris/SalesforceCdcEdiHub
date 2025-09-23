@@ -76,13 +76,13 @@ partial class MainForm {
 		dgvObject = new DataGridView();
 		lblSelectedTable = new Label();
 		tableLayoutPanel2 = new TableLayoutPanel();
-		btnListEvents = new Button();
+		btnDispatchEvent = new Button();
 		btnSubscribe = new Button();
 		button1 = new Button();
-		btnRegisterFields = new Button();
 		btnDeleteCDCRegistration = new Button();
+		btnListEvents = new Button();
 		tableLayoutPanel4 = new TableLayoutPanel();
-		dgvRelations = new DataGridView();
+		dgvObjectUrls = new DataGridView();
 		lblRelations = new Label();
 		grpFilterOptions = new GroupBox();
 		rbtFilterNone = new RadioButton();
@@ -171,7 +171,7 @@ partial class MainForm {
 		((System.ComponentModel.ISupportInitialize)dgvObject).BeginInit();
 		tableLayoutPanel2.SuspendLayout();
 		tableLayoutPanel4.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)dgvRelations).BeginInit();
+		((System.ComponentModel.ISupportInitialize)dgvObjectUrls).BeginInit();
 		grpFilterOptions.SuspendLayout();
 		tbpOAuth2.SuspendLayout();
 		tbpSOQL.SuspendLayout();
@@ -791,14 +791,10 @@ partial class MainForm {
 		// 
 		// btnCommitToDB
 		// 
-		btnCommitToDB.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-		btnCommitToDB.Location = new Point(0, 35);
+		btnCommitToDB.Location = new Point(0, 0);
 		btnCommitToDB.Name = "btnCommitToDB";
-		btnCommitToDB.Size = new Size(173, 32);
-		btnCommitToDB.TabIndex = 4;
-		btnCommitToDB.Text = "Register";
-		btnCommitToDB.UseVisualStyleBackColor = true;
-		btnCommitToDB.Click += btnRegisterCDCCandidate;
+		btnCommitToDB.Size = new Size(75, 23);
+		btnCommitToDB.TabIndex = 13;
 		// 
 		// btnClearDestination
 		// 
@@ -961,11 +957,11 @@ partial class MainForm {
 		tableLayoutPanel2.ColumnCount = 2;
 		tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45.58304F));
 		tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 54.41696F));
-		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 1);
+		tableLayoutPanel2.Controls.Add(btnDispatchEvent, 1, 0);
 		tableLayoutPanel2.Controls.Add(btnSubscribe, 0, 4);
 		tableLayoutPanel2.Controls.Add(button1, 1, 4);
-		tableLayoutPanel2.Controls.Add(btnRegisterFields, 1, 0);
-		tableLayoutPanel2.Controls.Add(btnDeleteCDCRegistration, 0, 0);
+		tableLayoutPanel2.Controls.Add(btnDeleteCDCRegistration, 0, 3);
+		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 0);
 		tableLayoutPanel2.Location = new Point(3, 391);
 		tableLayoutPanel2.Name = "tableLayoutPanel2";
 		tableLayoutPanel2.RowCount = 5;
@@ -978,17 +974,17 @@ partial class MainForm {
 		tableLayoutPanel2.Size = new Size(391, 269);
 		tableLayoutPanel2.TabIndex = 3;
 		// 
-		// btnListEvents
+		// btnDispatchEvent
 		// 
-		btnListEvents.BackColor = Color.Green;
-		btnListEvents.ForeColor = Color.Yellow;
-		btnListEvents.Location = new Point(3, 60);
-		btnListEvents.Name = "btnListEvents";
-		btnListEvents.Size = new Size(155, 44);
-		btnListEvents.TabIndex = 9;
-		btnListEvents.Text = "List Subscriptions";
-		btnListEvents.UseVisualStyleBackColor = false;
-		btnListEvents.Click += btnListEvents_Click;
+		btnDispatchEvent.BackColor = Color.Green;
+		btnDispatchEvent.ForeColor = Color.Yellow;
+		btnDispatchEvent.Location = new Point(181, 3);
+		btnDispatchEvent.Name = "btnDispatchEvent";
+		btnDispatchEvent.Size = new Size(155, 44);
+		btnDispatchEvent.TabIndex = 10;
+		btnDispatchEvent.Text = "Dispatch Event";
+		btnDispatchEvent.UseVisualStyleBackColor = false;
+		btnDispatchEvent.Click += btnDispatchEvent_Click;
 		// 
 		// btnSubscribe
 		// 
@@ -1009,23 +1005,11 @@ partial class MainForm {
 		button1.Text = "Clear";
 		button1.UseVisualStyleBackColor = true;
 		// 
-		// btnRegisterFields
-		// 
-		btnRegisterFields.BackColor = Color.Green;
-		btnRegisterFields.ForeColor = Color.Yellow;
-		btnRegisterFields.Location = new Point(181, 3);
-		btnRegisterFields.Name = "btnRegisterFields";
-		btnRegisterFields.Size = new Size(155, 44);
-		btnRegisterFields.TabIndex = 7;
-		btnRegisterFields.Text = "Subscribe";
-		btnRegisterFields.UseVisualStyleBackColor = false;
-		btnRegisterFields.Click += btnRegisterFields_Click;
-		// 
 		// btnDeleteCDCRegistration
 		// 
 		btnDeleteCDCRegistration.BackColor = Color.Green;
 		btnDeleteCDCRegistration.ForeColor = Color.Yellow;
-		btnDeleteCDCRegistration.Location = new Point(3, 3);
+		btnDeleteCDCRegistration.Location = new Point(3, 169);
 		btnDeleteCDCRegistration.Name = "btnDeleteCDCRegistration";
 		btnDeleteCDCRegistration.Size = new Size(155, 44);
 		btnDeleteCDCRegistration.TabIndex = 8;
@@ -1033,11 +1017,23 @@ partial class MainForm {
 		btnDeleteCDCRegistration.UseVisualStyleBackColor = false;
 		btnDeleteCDCRegistration.Click += btnDeleteCDCSubscription_Click;
 		// 
+		// btnListEvents
+		// 
+		btnListEvents.BackColor = Color.Green;
+		btnListEvents.ForeColor = Color.Yellow;
+		btnListEvents.Location = new Point(3, 3);
+		btnListEvents.Name = "btnListEvents";
+		btnListEvents.Size = new Size(155, 44);
+		btnListEvents.TabIndex = 9;
+		btnListEvents.Text = "List Platform Events";
+		btnListEvents.UseVisualStyleBackColor = false;
+		btnListEvents.Click += btnListEvents_Click;
+		// 
 		// tableLayoutPanel4
 		// 
 		tableLayoutPanel4.ColumnCount = 1;
 		tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel4.Controls.Add(dgvRelations, 0, 1);
+		tableLayoutPanel4.Controls.Add(dgvObjectUrls, 0, 1);
 		tableLayoutPanel4.Controls.Add(lblRelations, 0, 0);
 		tableLayoutPanel4.Dock = DockStyle.Fill;
 		tableLayoutPanel4.Location = new Point(400, 391);
@@ -1049,17 +1045,17 @@ partial class MainForm {
 		tableLayoutPanel4.Size = new Size(1006, 269);
 		tableLayoutPanel4.TabIndex = 7;
 		// 
-		// dgvRelations
+		// dgvObjectUrls
 		// 
-		dgvRelations.AllowUserToAddRows = false;
-		dgvRelations.AllowUserToDeleteRows = false;
-		dgvRelations.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
-		dgvRelations.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-		dgvRelations.Dock = DockStyle.Fill;
-		dgvRelations.Location = new Point(3, 34);
-		dgvRelations.Name = "dgvRelations";
-		dgvRelations.Size = new Size(1000, 232);
-		dgvRelations.TabIndex = 10;
+		dgvObjectUrls.AllowUserToAddRows = false;
+		dgvObjectUrls.AllowUserToDeleteRows = false;
+		dgvObjectUrls.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
+		dgvObjectUrls.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		dgvObjectUrls.Dock = DockStyle.Fill;
+		dgvObjectUrls.Location = new Point(3, 34);
+		dgvObjectUrls.Name = "dgvObjectUrls";
+		dgvObjectUrls.Size = new Size(1000, 232);
+		dgvObjectUrls.TabIndex = 10;
 		// 
 		// lblRelations
 		// 
@@ -1585,7 +1581,7 @@ partial class MainForm {
 		// 
 		rtxLog.BackColor = Color.Black;
 		rtxLog.Dock = DockStyle.Fill;
-		rtxLog.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+		rtxLog.Font = new Font("Consolas", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
 		rtxLog.ForeColor = Color.Lime;
 		rtxLog.Location = new Point(3, 3);
 		rtxLog.Name = "rtxLog";
@@ -1904,7 +1900,7 @@ partial class MainForm {
 		tableLayoutPanel2.ResumeLayout(false);
 		tableLayoutPanel4.ResumeLayout(false);
 		tableLayoutPanel4.PerformLayout();
-		((System.ComponentModel.ISupportInitialize)dgvRelations).EndInit();
+		((System.ComponentModel.ISupportInitialize)dgvObjectUrls).EndInit();
 		grpFilterOptions.ResumeLayout(false);
 		grpFilterOptions.PerformLayout();
 		tbpOAuth2.ResumeLayout(false);
@@ -2011,9 +2007,9 @@ partial class MainForm {
 	private SplitContainer splitContainer2;
 	private Label lblSelectedTable;
 	private TableLayoutPanel tableLayoutPanel4;
-	//	private DataGridView dgvRelations;
+	//	private DataGridView dgvObjectUrls;
 	private Label lblRelations;
-	private DataGridView dgvRelations;
+	private DataGridView dgvObjectUrls;
 	private TabPage tbpEventLog;
 	private SplitContainer splitContainer3;
 	private TableLayoutPanel tableLayoutPanel6;
@@ -2030,7 +2026,6 @@ partial class MainForm {
 	private Label lblCDCStatus;
 	private SplitContainer splitContainer5;
 	private DataGridView dgvFilteredFields;
-	private Button btnRegisterFields;
 	private Button button2;
 	private Button btnDeleteCDCRegistration;
 	private RichTextBox rtxFieldsJsonArray;
@@ -2108,4 +2103,5 @@ partial class MainForm {
 	private RichTextBox rtxLog;
 	private SplitContainer splitContainer7;
 	private Button btnLogTest;
+	private Button btnDispatchEvent;
 	}

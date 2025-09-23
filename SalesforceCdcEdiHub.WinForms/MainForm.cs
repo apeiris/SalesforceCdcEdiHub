@@ -13,7 +13,7 @@ using SalesforceCdcEdiHub;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
-using enmRetrievedFrom = WinForms.MainForm.enmRetrieveFrom;
+using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
@@ -21,9 +21,10 @@ using SalesforceCdcEdiHub;
 namespace WinForms;
 public partial class MainForm : Form {
 	#region enums
-	public enum enmRetrieveFrom {
+	public enum enmObjectSource {
 		SalesForce,
 		SqlServer,
+		sfPlatformEvents,
 		None
 		}
 	public enum tbp {
@@ -66,7 +67,7 @@ public partial class MainForm : Form {
 	private List<DataRow> _rowsToMove = new List<DataRow>(); // Temp storage for rows to move
 	private readonly SqlServerLib _sqlServerLib;
 	private readonly object _lock = new object();
-	private static enmRetrieveFrom _retrieveFrom = enmRetrieveFrom.SalesForce;
+	private static enmObjectSource _retrieveFrom = enmObjectSource.SalesForce;
 	private static enmRetrievedFrom _retrievedFrom = _retrieveFrom;
 	private System.Drawing.Color _dfBColor;
 	private Color _dfFColor;
@@ -89,16 +90,13 @@ public partial class MainForm : Form {
 		if (e.Exist) {
 			toolStripStatusLabel1.Text += $" object in the sql server with the Id {e.Id}";
 			toolStripStatusLabel1.BackColor = Color.Green;
-			_retrievedFrom = enmRetrieveFrom.SqlServer;
+			_retrievedFrom = enmObjectSource.SqlServer;
 			_retrieveFrom = _retrievedFrom;
-			btnRegisterFields.Text = "Update Fields";
 			} else {
-			_retrievedFrom = enmRetrieveFrom.SalesForce;// does not exist retrive from sf
+			_retrievedFrom = enmObjectSource.SalesForce;// does not exist retrive from sf
 			_retrieveFrom = _retrievedFrom;
 			toolStripStatusLabel1.BackColor = Color.Brown;
-			btnRegisterFields.Text = "Register Fields";
 			}
-		setControlColor(btnRegisterFields, e.Exist);
 		}
 	private void _sqlServerLib_SqlEvent(object? sender, SqlEventArg e) {
 		_logger.LogDebug(e.Message);
@@ -123,8 +121,7 @@ public partial class MainForm : Form {
 		var contextMenu = new ContextMenuStrip();
 
 		// Copy (Unicode)
-		contextMenu.Items.Add("Copy All", null, (s, ea) =>
-		{
+		contextMenu.Items.Add("Copy All", null, (s, ea) => {
 			if (!string.IsNullOrEmpty(rtb.Rtf)) {
 				Clipboard.SetText(rtb.Rtf, TextDataFormat.Rtf);
 				}
@@ -132,8 +129,7 @@ public partial class MainForm : Form {
 
 
 		// Paste
-		contextMenu.Items.Add("Paste", null, (s, ea) =>
-		{
+		contextMenu.Items.Add("Paste", null, (s, ea) => {
 			if (Clipboard.ContainsText(TextDataFormat.Rtf)) {
 				rtb.SelectedRtf = Clipboard.GetText(TextDataFormat.Rtf);
 				} else if (Clipboard.ContainsText()) {
@@ -142,16 +138,14 @@ public partial class MainForm : Form {
 		});
 
 		// Select All
-		contextMenu.Items.Add("Select All", null, (s, ea) =>
-		{
+		contextMenu.Items.Add("Select All", null, (s, ea) => {
 			rtb.SelectAll();
 		});
 
 		contextMenu.Items.Add(new ToolStripSeparator());
 
 		// Clear
-		contextMenu.Items.Add("Clear", null, (s, ea) =>
-		{
+		contextMenu.Items.Add("Clear", null, (s, ea) => {
 			rtb.Clear();
 		});
 
@@ -225,6 +219,7 @@ public partial class MainForm : Form {
 		lblPanel1.Parent = splitContainer1.Panel1;
 		lblDestinationList.Text = "";
 		SetupDataGridViewHeaders("");
+		btnDispatchEvent.Visible = false;
 		btnSubscribe_Click(null, null);
 		string savedItems = Properties.Settings.Default.cmbObjects;
 		if (!string.IsNullOrWhiteSpace(savedItems)) {
@@ -428,24 +423,8 @@ public partial class MainForm : Form {
 			Console.WriteLine($"name to create:{name}");
 			}
 		}
-	private void btnRegisterFields_Click(object sender, EventArgs e) {
-		throw new NotImplementedException("btnRegisterFields_Click is not implemented. Please implement the method to register fields for CDC.");
-		var b = (Button)sender;
-		if (b.Text.Contains("Update")) {
-			updateFields();
-			return;
-			}
-		DataTable? Fields = dgvObject.DataSource as DataTable;
-		Fields.TableName = ObjectNameFromEventDeclaration(lbxObjects.Text);
-		Fields.Columns["Exclude"].DefaultValue = false;
-		Fields.AsEnumerable()
-			  .Where(row => row.IsNull("Exclude") || string.IsNullOrEmpty(row["Exclude"].ToString()))
-			  .ToList()
-			  .ForEach(row => row["Exclude"] = false);
-		string sxml = Fields.GetXml("Name,Exclude");
-		var (rowsInserted, tableName) = _sqlServerLib.RegisterExludedCDCFields(sxml);
-		Log($"{rowsInserted} rows inserted into {tableName}", LogLevel.Debug);
-		}
+	
+		
 	private void updateFields() {
 		DataTable Fields = dgvObject.DataSource as DataTable;
 		_sqlServerLib.UpdateServerTable(Fields, "SELECT [Id],[IsExcluded]  FROM [dbo].[CDCObjectFields] ");
@@ -615,9 +594,14 @@ public partial class MainForm : Form {
 		rtSoqlQuery.Text = $"SELECT {string.Join(",", je.GetProperty("fields").EnumerateArray().Select(f => f.GetProperty("name")))} FROM {oN}";
 		}
 	private async void btnListEvents_Click(object sender, EventArgs e) {
-		await _salesforceService.GetEventDefinitions();
+		_retrieveFrom = enmRetrievedFrom.sfPlatformEvents;
+		var x = await _salesforceService.GetPlatformEventList();
+		lbxObjects.DataSource = null;
+		lbxObjects.Items.Clear();
+		lbxObjects.DataSource = x;
+		lbxObjects.DisplayMember = "name";
+		lblPanel1.Text = $"{lbxObjects.Items.Count} Platform Events";
 		}
-
 	private void button27_Click(object sender, EventArgs e) {
 
 		}
@@ -628,7 +612,6 @@ public partial class MainForm : Form {
 			string colName = dgvSOQLResult.Columns[0].Name;
 			}
 		}
-
 	private void SetupDataGridViewHeaders(string tn) {
 		dgvObject.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightBlue;
 		dgvObject.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Arial", 12, FontStyle.Bold);
@@ -637,24 +620,18 @@ public partial class MainForm : Form {
 		dgvObject.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
 		dgvObject.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
 		dgvObject.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
 		dgvCDCEnabledObjects.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightBlue;
 		dgvCDCEnabledObjects.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
 		dgvCDCEnabledObjects.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
 		dgvCDCEnabledObjects.ColumnHeadersHeight = 50;
-
 		dgvCDCEnabledObjects.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Arial", 12, FontStyle.Bold);
 		dgvCDCEnabledObjects.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.DarkBlue;
-
 		dgvCDCEnabledObjects.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
 		dgvCDCEnabledObjects.RowTemplate.Height = 30; // Set the height of the row template
 		dgvCDCEnabledObjects.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
 		dgvCDCEnabledObjects.AutoGenerateColumns = true;
 		dgvCDCEnabledObjects.DataSource = null;
 		dgvCDCEnabledObjects.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-		//============================dgvRegisteredCDCCandidates=====================
 		dgvRegisteredCDCCandidates.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightBlue;
 		dgvRegisteredCDCCandidates.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
 		dgvRegisteredCDCCandidates.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
@@ -665,15 +642,12 @@ public partial class MainForm : Form {
 		dgvRegisteredCDCCandidates.RowTemplate.Height = 30; // Set the height of the row template
 		dgvRegisteredCDCCandidates.DataSource = null;
 		dgvRegisteredCDCCandidates.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-		//==================================================================
-		dgvRelations.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightBlue;
-		dgvRelations.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.DarkBlue;
-		dgvRelations.TopLeftHeaderCell.Value = "Subscribe";
-		dgvRelations.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
-		dgvRelations.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-		dgvRelations.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-
+		dgvObjectUrls.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightBlue;
+		dgvObjectUrls.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.DarkBlue;
+		dgvObjectUrls.TopLeftHeaderCell.Value = "Subscribe";
+		dgvObjectUrls.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
+		dgvObjectUrls.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+		dgvObjectUrls.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 		}
 	private void SetContainedControlsEnabled(Control control, bool enabled) {
 		foreach (Control child in control.Controls) {
@@ -682,7 +656,6 @@ public partial class MainForm : Form {
 			}
 		}
 	private void dgvRowCountChanged(object sender, EventArgs e) {
-
 		switch (sender) {
 			case DataGridView s when s == dgvCDCEnabledObjects:
 				lblSourceList.Text = $"{dgvCDCEnabledObjects.Rows.Count} Salesforce objects";
@@ -690,13 +663,11 @@ public partial class MainForm : Form {
 				btnCommitToDB.Enabled = dgvRegisteredCDCCandidates.Rows.Count > 0;
 				SetContainedControlsEnabled(grpPrimaryKey, btnCommitToDB.Enabled);
 				break;
-
 			case DataGridView s when s == dgvRegisteredCDCCandidates:
 				lblDestinationList.Text = $"{dgvRegisteredCDCCandidates.Rows.Count} candidate Object";
 				btnCommitToDB.Enabled = dgvRegisteredCDCCandidates.Rows.Count > 0;
 				SetContainedControlsEnabled(grpPrimaryKey, btnCommitToDB.Enabled);
 				break;
-
 			}
 		}
 	private void dgvObject_CellContentClick_1(object sender, DataGridViewCellEventArgs e) {
@@ -756,6 +727,7 @@ public partial class MainForm : Form {
 		foreach (TabPage page in tabControl1.TabPages) _tabColors[page] = (page.BackColor, page.ForeColor);
 		}
 	private void LoadTopics(ListBox listBox, bool filtered) {
+		if (listBox.DataSource != null) return;
 		listBox.Items.Clear();
 		DataTable dataTable = filtered ? _sqlServerLib.Select("select * from dbo.ftcdcObjects()") : _sqlServerLib.GetAll_sfoTables();
 		listBox.Items.AddRange(_sqlServerLib.GetChangeEventUrls(dataTable).ToArray());
@@ -783,28 +755,6 @@ public partial class MainForm : Form {
 			dataTable.Rows.Remove(row);
 			}
 		return dataTable;
-		}
-	private void CopySourceScheama(DataGridView source, DataGridView destination) {
-		destination.Columns.Clear();
-		if (destination.Rows.Count > 0) destination.Rows.Clear();
-		destination.ColumnHeadersDefaultCellStyle = source.ColumnHeadersDefaultCellStyle.Clone();
-		destination.ColumnHeadersHeight = source.ColumnHeadersHeight;
-		destination.ColumnHeadersHeightSizeMode = source.ColumnHeadersHeightSizeMode;
-		destination.EnableHeadersVisualStyles = source.EnableHeadersVisualStyles;
-		destination.RowHeadersWidth = source.RowHeadersWidth;
-		foreach (DataGridViewColumn col in source.Columns) { // copy columns
-			DataGridViewColumn ncol = (DataGridViewColumn)col.Clone();
-			ncol.Width = col.Width;                    // Set the exact width
-			ncol.MinimumWidth = col.MinimumWidth;      // Set minimum width
-			ncol.FillWeight = col.FillWeight;          // Set fill weight for proportional sizing
-			ncol.Resizable = col.Resizable;            // Copy resizable property
-			ncol.AutoSizeMode = col.AutoSizeMode;             // DataGridViewAutoSizeColumnMode.None;// Disable auto-sizing to preserve the exact width
-			destination.Columns.Add(ncol);// Add the column to destination
-			}
-		destination.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-		if (dgvRegisteredCDCCandidates.Columns.Count > 0)
-			dgvRegisteredCDCCandidates.Columns[0].HeaderText = "CDC Candidates";
-
 		}
 	private async Task CommitObjectsAsDbArtefactsAsync(object sender, EventArgs e) {
 		try {
@@ -916,78 +866,62 @@ public partial class MainForm : Form {
 		}
 	#region list and combo boxes
 	private async void lbxObjects_SelectedIndexChanged(object sender, EventArgs e) {
-		if (lbxObjects.SelectedItem == null) return;
+		if (lbxObjects.Text == "System.Data.DataRowView") return;
+		if (lbxObjects.SelectedItem == null) {
+			btnDispatchEvent.Visible = false;
+			return;
+			}
 		this.UseWaitCursor = true;
+		btnDispatchEvent.Visible = true;
 		await _semaphore.WaitAsync();
 		try {
-			string selectedTopic = lbxObjects.SelectedItem.ToString();
+			string selectedTopic = lbxObjects.Text;
 			string selectedObject = ObjectNameFromEventDeclaration(selectedTopic);
+
 			dgvObject.DataSource = null;
-			dgvRelations.DataSource = null;
+			dgvObjectUrls.DataSource = null;
 			_sqlServerLib.AssertCDCObjectExist(selectedObject);// this will fire event to set series of changes 
 			switch (_retrieveFrom) {// set by AssertCDCObjectExists
-				case enmRetrieveFrom.SalesForce:
-				
-					DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(selectedObject);// async operations outside the lock
-					DataTable dtObject = ds.Tables[selectedObject];
-					toolStripStatusLabel1.Text = $" {ObjectNameFromEventDeclaration(selectedTopic)} has {dtObject.Rows.Count} fields.";
-					if (rbtFilterSubscribed.Checked) {
-						dtObject = await RemoveRowsNotInColumnList(dtObject, _config.Topics.GetFieldsToFilterByName(selectedTopic));
-						}
-					lock (_dgvLock) {// Synchronize UI updates with lock
-						this.Invoke((Action)(() => {
-							dtObject.Columns["Name"]!.SetOrdinal(0);
-							dtObject.Columns["type"]!.SetOrdinal(1);
-							dtObject.Columns["length"]!.SetOrdinal(2);
-							DataColumn dc = dtObject.Columns.Add("Exclude", typeof(bool));
-							dc.DefaultValue = false;
-							dc.SetOrdinal(3);
-							dgvObject.DataSource = dtObject;
-							dgvObject.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-							dgvObject.Columns["Exclude"]!.Width = 80;
-							lblSelectedTable.Text = ObjectNameFromEventDeclaration(selectedTopic);
-							dgvRelations.DataSource = ds.Tables["relations"];
-							this.Invoke((Action)(() =>/* get only the field Names for the lbxFields*/  {
-								lblSelectedTable.Text = ObjectNameFromEventDeclaration(selectedTopic);
-								var r = tableColumnToJsonArray(dtObject, "Name", "Exclude");
-								lblSelectedTable.Text += " - filtered:" + r.count.ToString();
-								rtxFieldsJsonArray.Text = r.jsonString;
-								//rtxFieldsJsonArray.Text = tableColumnToJsonArray(dtObject,"Name","Exclude");
-								//	var r = tableColumnToJsonArray(ds.Tables["relations"], "Name", "Exclude");
-								//	rtxFieldsJsonArray.Text = r.jsonString;
-								//		lblSelectedTable.Text +=" - filtered:"+ r.count.ToString();
-							}));
-						}));
+				case enmObjectSource.SalesForce:
+					//DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(selectedObject);// async operations outside the lock
+					string path = $"{selectedObject}";
+					DataSet ds = await _salesforceService.GetEventSchema(path);
+					dgvObject.DataSource = ds.Tables["ObjectDescribe"].Transpose();
+					dgvObjectUrls.DataSource = ds.Tables["urls"].Transpose();
+					lblSelectedTable.Text = $"Event {selectedObject} : {ds.Tables["objectDescribe"].Columns.Count} ";
+					lblRelations.Text = $"{selectedObject} Urls ";
+					rtxFieldsJsonArray.Text = _sqlServerLib.ExecuteScalar<string>("Select sJson from sfo.eventTests where eventName='" + selectedObject + "'");
+					toolStripStatusLabel1.Text = $" {ObjectNameFromEventDeclaration(selectedTopic)} has {ds.Tables[0].Rows.Count} fields.";
+					lock (_dgvLock) {
 						}
 					break;
 				case enmRetrievedFrom.SqlServer:
 					this.Invoke((Action)(() => {
-						//string sqlSelect = $"select * from cdcObjectFields c join CDCObject p on c.CdcObject_Id=p.Id where p.ObjectName='{selectedObject}'";
+						//string sqlSelect = $"select * from ftcdcObjectFields('{selectedObject}',1)";
+						//dtObject = _sqlServerLib.Select(sqlSelect);
+						//dtObject.Columns["FieldName"]!.SetOrdinal(0);
+						//dgvObject.DataSource = dtObject;
+						//lblSelectedTable.Text = ObjectNameFromEventDeclaration(selectedTopic);
+						//toolStripStatusLabel1.Text = $"Object {selectedObject} already exists in the SQL Server.";
+						//btnDeleteCDCRegistration.Visible = true;
 
-						string sqlSelect = $"select * from ftcdcObjectFields('{selectedObject}',1)";
-						dtObject = _sqlServerLib.Select(sqlSelect);
-						dtObject.Columns["FieldName"]!.SetOrdinal(0);
-						dgvObject.DataSource = dtObject;
-						lblSelectedTable.Text = ObjectNameFromEventDeclaration(selectedTopic);
-						toolStripStatusLabel1.Text = $"Object {selectedObject} already exists in the SQL Server.";
-						btnDeleteCDCRegistration.Visible = true;
-						btnRegisterFields.Text = "Update Fields";
-						var r = tableColumnToJsonArray(dtObject, "FieldName", "IsExcluded");
-						rtxFieldsJsonArray.Text = r.jsonString;
-						lblSelectedTable.Text += " - filtered:" + r.count.ToString();
+						//var r = tableColumnToJsonArray(dtObject, "FieldName", "IsExcluded");
+						//rtxFieldsJsonArray.Text = r.jsonString;
+						//lblSelectedTable.Text += " - filtered:" + r.count.ToString();
 					}));
 					break;
+				case enmObjectSource.sfPlatformEvents:
+					ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(lbxObjects.Text);
+					dgvObject.DataSource = ds.Tables[0];
+					break;
 				}
-
 			} catch (Exception ex) {
 			this.Invoke((Action)(() => toolStripStatusLabel1.Text = $"Error: {ex.Message}"));
 			}
-
 		finally {
 			_semaphore.Release();
 			this.UseWaitCursor = false;
 			}
-
 		}
 	#region lbxLog
 	private void Log(string msg, LogLevel l, [CallerMemberName] string callerMemberName = "", [CallerLineNumber] int callerLineNumber = 0, [CallerFilePath] string fp = "") {
@@ -1064,7 +998,7 @@ public partial class MainForm : Form {
 				break;
 			case "tbppubsub":
 				LoadTopics(lbxObjects, rbtFilterSubscribed.Checked); // Load sfo Tables from sql server  topics into the listbox
-				lblPanel1.Text = $"{lbxObjects.Items.Count} registered CDC objects";
+				lblPanel1.Text = $"{lbxObjects.Items.Count} {lbxObjects.DisplayMember}";
 				break;
 
 			case "tbpcdcevents":
@@ -1168,5 +1102,8 @@ public partial class MainForm : Form {
 	private void btnLogTest_Click(object sender, EventArgs e) {
 		_logger.LogError("This is an error message from the button click event.");
 		_logger.LogEmail("This is an email log message from the button click event.");
+		}
+	private void btnDispatchEvent_Click(object sender, EventArgs e) {
+		_salesforceService.UpsertSobject(lbxObjects.Text, null, rtxFieldsJsonArray.Text, useTooling: false);
 		}
 	}

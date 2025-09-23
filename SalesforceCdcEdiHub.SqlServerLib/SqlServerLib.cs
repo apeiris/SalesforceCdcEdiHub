@@ -745,6 +745,30 @@ public static class SqlServerLibExtensions {
 			transposedTable.PrimaryKey = new[] { transposedTable.Columns[primaryKey]! };
 		return transposedTable;
 		}
+	public static DataTable Transpose(this DataTable dt) {
+		if (dt == null) return null ;
+		// Create a new DataTable for the transposed result
+		DataTable transposedTable = new DataTable();
+
+		// Add two columns: one for the original column names and one for the values
+		transposedTable.Columns.Add("ColumnName", typeof(string));
+		transposedTable.Columns.Add("Value", typeof(object));
+
+		// Ensure the input DataTable has exactly one row
+		if (dt.Rows.Count != 1) {
+			throw new ArgumentException("Input DataTable must contain exactly one row.");
+			}
+
+		// Get the single row
+		DataRow row = dt.Rows[0];
+
+		// Use LINQ to create DataRows and add them directly to the DataTable
+		dt.Columns.Cast<DataColumn>()
+			.Select(col => transposedTable.Rows.Add(col.ColumnName, row[col]))
+			.ToList();
+
+		return transposedTable;
+		}
 	private static string ConvertLongToDateTime(long longValue) {
 		try {
 

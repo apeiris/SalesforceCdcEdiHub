@@ -1,21 +1,25 @@
 ﻿
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 using Common;
-using HttpMethod = System.Net.Http.HttpMethod;
-using JsonSerializer = System.Text.Json.JsonSerializer;
-using LogLevel=NLog.LogLevel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using NLog;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Xml.Linq;
-using System.Xml;
+using static Common.ISalesforceService;
+using HttpMethod = System.Net.Http.HttpMethod;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using LogLevel = NLog.LogLevel;
 
 namespace SalesforceCdcEdiHub;
 public class SalesforceService : ISalesforceService {
@@ -128,7 +132,7 @@ public class SalesforceService : ISalesforceService {
 			JsonElement schema;
 			try {
 				schema = await JsonSerializer.DeserializeAsync<JsonElement>(stream, cancellationToken: cancellationToken);
-				} catch (JsonException jsonEx) {
+				} catch (Newtonsoft.Json.JsonException jsonEx) {
 				_logger.LogError("Failed to deserialize schema for {ObjectName}: {Message}", objectName, jsonEx.Message);
 				throw new Exception($"Invalid JSON response for {objectName}", jsonEx);
 				}
@@ -150,53 +154,8 @@ public class SalesforceService : ISalesforceService {
 			}
 		}
 	private AccessTokenCache _tokenCache;
-	/*
-	public async Task<(string token, string instanceUrl, string tenantId)> GetAccessTokenAsync() {
-		if (_tokenCache != null && _tokenCache.Expiry > DateTime.UtcNow.AddMinutes(5)) {// Check if cache exists and is not expired, with 5-minute buffer to account for call processing time
-			return (_tokenCache.Token, _tokenCache.InstanceUrl, _tokenCache.TenantId);
-		}
-			var request = new HttpRequestMessage(HttpMethod.Post, $"{_settings.LoginUrl}/services/oauth2/token") {
-				Content = new FormUrlEncodedContent(new Dictionary<string, string>
-			{
-						{ "grant_type", "password" }, // Use password grant type
-				//	{"grant_type", "authorization_code" }, 
-					{ "client_id", _settings.ClientId },
-				{ "client_secret", _settings.ClientSecret },
-				{ "username", _settings.Username },
-				{ "password", _settings.Password }
-			})
-		};
 
-		var response = await _httpClient.SendAsync(request);
-		var responseContent = await response.Content.ReadAsStringAsync();
 
-		if (!response.IsSuccessStatusCode) {
-			RaiseAuthenticationAttempt(LogLevel.Error, $"Authentication failed: {responseContent}");
-			return (null, null, null);
-		}
-
-		var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
-		var tenantId = data!["id"].Split('/')[^2];
-		_tokenCache = new AccessTokenCache {// Cache the token with 1 hour expiry, minus 5-minute buffer
-			Token = data["access_token"],
-			InstanceUrl = data["instance_url"],
-			TenantId = tenantId,
-			Expiry = DateTime.UtcNow.AddMinutes(115) // 2 hour expiry with 5-minute buffer
-		};
-		RaiseAuthenticationAttempt(LogLevel.Information, $"Authenticated {responseContent}");
-		return (_tokenCache.Token, _tokenCache.InstanceUrl, _tokenCache.TenantId);
-	}
-	*/
-	//private X509Certificate2 getCertifcate() {
-	//	try {
-	//		var cert = new X509Certificate2(_settings.pfxPath, _settings.pfxPassword, X509KeyStorageFlags.UserKeySet);
-	//		return cert;
-	//	} catch (Exception ex) {
-	//		_logger.Log(LogLevel.Error, ex.Message);
-
-	//		return null;
-	//	}
-	//}
 	private string GenerateJwt() {
 		var cert = new X509Certificate2(_settings.pfxPath, _settings.pfxPassword, X509KeyStorageFlags.UserKeySet);
 		var rsa = cert.GetRSAPrivateKey();
@@ -291,7 +250,7 @@ public class SalesforceService : ISalesforceService {
 				} else throw new Exception("No table created from XML.");
 			} catch (HttpRequestException ex) {
 			throw new Exception($"Failed to retrieve schema from {url}: {ex.Message}", ex);
-			} catch (JsonException ex) {
+			} catch (Newtonsoft.Json.JsonException ex) {
 			throw new Exception($"Failed to parse JSON response:\n{ex.Message}", ex);
 			} catch (Exception ex) {
 			throw new Exception($"Unexpected error: {ex.Message}", ex);
@@ -460,30 +419,56 @@ public class SalesforceService : ISalesforceService {
 			throw;
 			}
 		}
-	public async Task<string> GetEventDefinitions() {
 
+	public async Task<DataSet> GetEventSchema(string eventName) {
 		var (token, instanceUrl, _) = await GetAccessTokenAsync();
-		var request = new HttpRequestMessage(HttpMethod.Get, $"{instanceUrl}/services/data/v{_settings.ApiVersion}/event/eventSchema");
-		request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-		request.Headers.Add("Accept", "application/json");
-		var response = await _httpClient.SendAsync(request, cancellationToken: default);
-		response.EnsureSuccessStatusCode();
-		string x = await response.Content.ReadAsStringAsync();
-		return x;
+		string url = $"{instanceUrl}/services/data/v{_settings.ApiVersion}/sobjects/{eventName}";
+		var request = new HttpRequestMessage(HttpMethod.Get, url);
+		request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+		request.Headers.Add("Accept", "application/xml");
+		var response = await _httpClient.SendAsync(request);
+		if (!response.IsSuccessStatusCode) {
+			string errorContent = await response.Content.ReadAsStringAsync();
+			_logger.LogError($"HTTP {response.StatusCode}: {errorContent}");
+			}
+		string xmlresponse = await response.Content.ReadAsStringAsync();
+		XDocument xdoc = XDocument.Parse(xmlresponse);
+
+		DataSet ds = new DataSet();
+		ds.ReadXml(xdoc.CreateReader());
+		return ds;
+
 		}
-	//public class SalesforcePubSub {
-	//	private static readonly HttpClient client = new HttpClient();
 
-	//	public async Task<string> GetEventDefinitions(string accessToken, string instanceUrl, string apiVersion) {
-	//		var request = new HttpRequestMessage(HttpMethod.Get, $"{instanceUrl}/services/data/v{apiVersion}/event/eventSchema");
-	//		request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+	public async Task<DataTable> GetPlatformEventList() {
+		try {
+			var (token, instanceUrl, _) = await GetAccessTokenAsync();
+			string url = $"{instanceUrl}/services/data/v{_settings.ApiVersion}/sobjects";
+			var request = new HttpRequestMessage(HttpMethod.Get, url);
+			request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+			request.Headers.Add("Accept", "application/xml");
+			var response = await _httpClient.SendAsync(request);
+			if (!response.IsSuccessStatusCode) {
+				string errorContent = await response.Content.ReadAsStringAsync();
+				_logger.LogError($"HTTP {response.StatusCode}: {errorContent}");
+				}
+			string xmlresponse = await response.Content.ReadAsStringAsync();
+			XDocument xdoc = XDocument.Parse(xmlresponse);
+			XDocument filteredDoc = new XDocument(new XElement("PlatformEvents", xdoc.Descendants("sobjects")
+																.Where(s => (string?)s.Element("name") != null && s.Element("name")!.Value.EndsWith("__e") && (bool?)s.Element("triggerable") == true)
+															   )
+												 );
+			DataSet ds = new DataSet();
+			ds.ReadXml(filteredDoc.CreateReader());
+			_logger.LogInformation("Retrieved {Count} platform event definitions", filteredDoc.ToString());
+			_logger.LogDebug("Platform Event Definitions: {Definitions}", "aaa");
+			return ds.Tables["sobjects"];
+			} catch (HttpRequestException ex) {
+			_logger.LogError(ex, "Failed to retrieve platform event definitions.");
+			throw;
+			}
+		}
 
-	//		var response = await client.SendAsync(request);
-	//		response.EnsureSuccessStatusCode();
-
-	//		return await response.Content.ReadAsStringAsync();
-	//	}
-	//}
 	public async Task<JsonElement> DescribeToolingObject(string objectName) {
 		var (token, instanceUrl, _) = await GetAccessTokenAsync();
 		string url = $"{instanceUrl}/services/data/v{_settings.ApiVersion}/tooling/sobjects/{Uri.EscapeDataString(objectName)}/describe/";
@@ -597,8 +582,8 @@ public class SalesforceService : ISalesforceService {
 			throw new ArgumentNullException(nameof(selectedEntity));
 		var regex = new Regex(@"^(.*?)(?:__)?ChangeEvent$", RegexOptions.Compiled);         // Regex pattern: Match optional trailing __ before ChangeEvent
 		var match = regex.Match(selectedEntity);// Group 1 captures the base name (e.g., Account, Order, Product_Family)
-		if (!match.Success) throw new ArgumentException("Invalid ChangeEvent format.", nameof(selectedEntity));
-		string baseName = match.Groups[1].Value;
+												//if (!match.Success) throw new ArgumentException("Invalid ChangeEvent format.", nameof(selectedEntity));
+		string baseName = match.Success ? match.Groups[1].Value : selectedEntity;
 		bool isCustom = selectedEntity.Contains("__ChangeEvent");
 		return isCustom ? $"{baseName}__c" : baseName;// Return baseName + __c for custom objects
 		}
@@ -804,6 +789,8 @@ public class SalesforceService : ISalesforceService {
 		public string TenantId { get; set; }
 		public DateTime Expiry { get; set; }
 		}
+
+
 	private DataTable JsonElementToDataTable(JsonElement rootElement, string tableName) {
 		DataTable dt = new DataTable(tableName);
 		try {
@@ -825,7 +812,6 @@ public class SalesforceService : ISalesforceService {
 					})
 				.ToList();
 			columns.ForEach(col => dt.Columns.Add(col.Name, col.Type));// Add columns, including baseObject
-
 			var rows = records.EnumerateArray()             // Project records into rows
 				.Select(record => {
 					var row = dt.NewRow();
@@ -842,7 +828,6 @@ public class SalesforceService : ISalesforceService {
 						if (prop.Name == "QualifiedApiName")
 							qualifiedApiName = prop.Value.GetString();
 						}
-					//row["name"] = qualifiedApiName?.Replace("ChangeEvent", "") ?? "";
 					return row;
 				}).ToList();
 			rows.ForEach(row => dt.Rows.Add(row));
@@ -880,4 +865,23 @@ public class SalesforceService : ISalesforceService {
 		request.Headers.Add("Accept", "application/json");
 		return request;
 		}
+	}// SalesforceService.cs ends here
+#region JsonExtensions
+public static class JsonExtensions {
+	public static string ToXml(this string json, string rootName = "Root") {
+		var xmlDoc = JsonConvert.DeserializeXmlNode(json, rootName);
+		return xmlDoc?.OuterXml ?? string.Empty;
+		}
+
+	public static DataSet ToDataSet(this string json, string rootName = "Root") {
+		var ds = new DataSet();
+		string xml = json.ToXml(rootName);
+
+		using var reader = new StringReader(xml);
+		ds.ReadXml(reader, XmlReadMode.Auto);
+
+		return ds;
+		}
+
 	}
+#endregion jsonExtensions
