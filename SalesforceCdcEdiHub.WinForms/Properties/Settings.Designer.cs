@@ -43,4 +43,6 @@ internal sealed partial class Settings : global::System.Configuration.Applicatio
 			this["cmbObjects"] = value;
 			}
 		}
+
+	public string cmbField { get; internal set; }
 	}

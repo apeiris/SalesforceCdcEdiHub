@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using static Common.ISalesforceService;
 using HttpMethod = System.Net.Http.HttpMethod;
@@ -364,6 +365,59 @@ public class SalesforceService : ISalesforceService {
 			return null;
 			}
 		return ds;
+		}
+	public async Task<DataTable> GetPicklistValuesAsync(string objectName, string fieldName) {
+
+	//	string url = $"{_instanceUrl}/services/data/v64.0/sobjects/{objectName}/describe";
+
+		var (token, instanceUrl, expiresAt) = await GetAccessTokenAsync();
+		string url = $"{instanceUrl}/services/data/v{_settings.ApiVersion}/sobjects/{objectName}/describe";
+		_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+		try {
+			// Make the API call
+			HttpResponseMessage response = await _httpClient.GetAsync(url);
+			response.EnsureSuccessStatusCode();
+			string json = await response.Content.ReadAsStringAsync();
+
+			// Parse JSON
+			JObject describe = JObject.Parse(json);
+
+			
+			JArray fields = (JArray)describe["fields"];
+			var field = fields.FirstOrDefault(f => f["name"].ToString() == fieldName);
+
+			if (field == null) {
+				_logger.LogError($"Field {fieldName} not found on {objectName}");
+				throw new Exception($"Field {fieldName} not found.");
+				}
+
+			if (field["type"].ToString() != "picklist") {
+				_logger.LogError($"Field {fieldName} is not a picklist.");
+				throw new Exception($"Field {fieldName} is not a picklist.");
+				}
+
+			// Extract picklist values
+			DataTable dt = new DataTable();
+			dt.Columns.Add("Label", typeof(string));
+			dt.Columns.Add("Value", typeof(string));
+			dt.Columns.Add("IsActive", typeof(bool));
+			foreach (var value in field["picklistValues"]) {
+				DataRow row = dt.NewRow();
+				row["Label"] = value["label"].ToString();
+				row["Value"] = value["value"].ToString();
+				row["IsActive"] = (bool)value["active"];
+				dt.Rows.Add(row);
+				}
+			string result = string.Join(", ", dt.Rows.Cast<DataRow>()// Log the result as comma-separated string
+				.Select(row => $"{row["Label"]}={row["Value"]}"));
+			_logger.LogInformation($"Picklist values for {objectName}.{fieldName}: {result}");
+
+			return dt;
+			} catch (Exception ex) {
+			_logger.LogError($"[EMAIL] Failed to retrieve picklist values for {objectName}.{fieldName}: {ex.Message}");
+			throw;
+			}
 		}
 	public async Task<DataTable> GetSalesforceRecord(string objectName, string recordId) {
 		try {

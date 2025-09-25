@@ -29,5 +29,6 @@ public interface ISalesforceService {
 		public string Label { get; set; }
 		}
 	Task<DataTable> GetPlatformEventList();
+	Task<DataTable> GetPicklistValuesAsync(string objectName, string fieldName);
 
 	}

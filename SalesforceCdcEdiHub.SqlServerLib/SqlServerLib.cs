@@ -62,6 +62,15 @@ public class SqlObjectQuery : EventArgs {
 		Id = id;// row id when exist -1 otherwise
 		}
 	}
+
+public class SqlTableEvent : EventArgs {
+	public DataTable table { get; }
+	public SqlEvents _event { get; }
+	public SqlTableEvent(DataTable dt, SqlEvents evt) {
+		table = dt;
+		_event = evt;
+		}
+	}
 #endregion event args
 public class ColumnMetadata {
 	public string ColumnName { get; set; }
@@ -79,6 +88,7 @@ public class SqlServerLib {
 	private readonly string _sqlSchemaName = "sfo";
 	public event EventHandler<SqlEventArg> SqlEvent;
 	public event EventHandler<SqlObjectQuery> SqlObjectExist;
+	public event EventHandler<SqlTableEvent> SqlTableEvent;
 	private void RaisSqlEvent(string message, SqlEvents enmSqlEvent, LogLevel ll, bool hasErrors, [CallerMemberName] string callerMemberName = "", [CallerLineNumber] int callerLineNumber = 0) {
 		message = $"{message}:{callerMemberName}:{callerLineNumber}";
 		SqlEvent?.Invoke(this, new SqlEventArg(message, enmSqlEvent, ll, callerMemberName, hasErrors));
@@ -86,6 +96,9 @@ public class SqlServerLib {
 	private void RaisSqlObjectExist(int objectId, string objectName, string objectType, bool exists, string query, [CallerMemberName] string mn = "", [CallerLineNumber] int ln = 0) {
 		string msg = $"{objectName}:{objectType}:{objectId}:{exists}:{mn}:{ln}";
 		SqlObjectExist?.Invoke(this, new SqlObjectQuery(objectName, objectType, objectId, exists, query, msg));
+		}
+	private void RaiseSqlTableEvent(DataTable dt, SqlEvents e) {
+		SqlTableEvent?.Invoke(this, new SqlTableEvent(dt, e));
 		}
 	#region SqlServerLib.ctor
 	public SqlServerLib(PubSubService pubSubService, ISalesforceService salesforceService, IConfiguration configuration, ILogger<SqlServerLib> logger) {
@@ -330,6 +343,40 @@ public class SqlServerLib {
 				}
 			}
 		}
+
+	public string ExecuteXmlQuery(string sql) {
+		_logger.LogDebug("Executing XML query: {sql}", sql);
+		try {
+			using (var connection = new SqlConnection(_connectionString)) {
+				connection.Open();
+				using (var command = new SqlCommand(sql, connection)) {
+					command.CommandType = CommandType.Text;
+					command.CommandTimeout = 60;
+					using (var reader = command.ExecuteReader()) {
+						if (reader.Read()) {
+							//string xml = reader.GetString(0);
+							using var tr = reader.GetTextReader(0);
+
+							string xml = tr.ReadToEnd();
+							
+							_logger.LogInformation("Retrieved XML length: {length} characters", xml.Length);
+							return xml;
+							}
+						_logger.LogWarning("No XML data returned from query.");
+						return string.Empty;
+						}
+					}
+				}
+			} catch (SqlException ex) {
+			_logger.LogError(ex, "SQL Exception in ExecuteXmlQuery: {message}", ex.Message);
+			throw;
+			} catch (Exception ex) {
+			_logger.LogError(ex, "Error executing XML query: {message}", ex.Message);
+			throw;
+			}
+		}
+
+
 	public int DeleteRecord(string tableName, string recordId) {
 		string stmt = $"DELETE FROM sfo.[{tableName}] WHERE Id = '{recordId}'";
 		return ExecuteNoneQuery(stmt);
@@ -376,6 +423,7 @@ public class SqlServerLib {
 				if (!AssertRecord(dataTable.TableName, dataTable.Rows[0]["Id"]?.ToString() ?? throw new InvalidOperationException("Record ID is null"), dBschemaName)) {
 					DataTable dt = await _salesforceService.GetSalesforceRecord(dataTable.TableName, recordId);
 					await InsertRecordAsync(dt, dBschemaName);
+					RaiseSqlTableEvent(dt, SqlEvents.Inserted);
 					return;
 					}
 				break;
