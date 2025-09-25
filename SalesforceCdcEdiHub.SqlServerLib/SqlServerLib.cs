@@ -3,18 +3,11 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-//using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.Data.SqlClient;
-//using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-//using SalesforceCdcEdiHub;
-//using Newtonsoft.Json.Serialization;
 using Common;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using NLog;
+using Microsoft.Extensions.Logging;
 using LogLevel = NLog.LogLevel;
-
 namespace SalesforceCdcEdiHub;
 public class SqlServerConfig { public string ConnectionString { get; set; } }
 #region enums
@@ -343,7 +336,6 @@ public class SqlServerLib {
 				}
 			}
 		}
-
 	public string ExecuteXmlQuery(string sql) {
 		_logger.LogDebug("Executing XML query: {sql}", sql);
 		try {
@@ -354,11 +346,8 @@ public class SqlServerLib {
 					command.CommandTimeout = 60;
 					using (var reader = command.ExecuteReader()) {
 						if (reader.Read()) {
-							//string xml = reader.GetString(0);
 							using var tr = reader.GetTextReader(0);
-
 							string xml = tr.ReadToEnd();
-							
 							_logger.LogInformation("Retrieved XML length: {length} characters", xml.Length);
 							return xml;
 							}
@@ -375,8 +364,6 @@ public class SqlServerLib {
 			throw;
 			}
 		}
-
-
 	public int DeleteRecord(string tableName, string recordId) {
 		string stmt = $"DELETE FROM sfo.[{tableName}] WHERE Id = '{recordId}'";
 		return ExecuteNoneQuery(stmt);
