@@ -11,7 +11,7 @@ using Common;
 namespace SalesforceCdcEdiHub.WinForms;
 static class Program {
 	[STAThread]
-	static void Main() it {
+	static void Main()  {
 		Directory.CreateDirectory("logs");
 		Console.SetOut(new DebugTextWriter());
 		Console.WriteLine("Creating logs directory");
