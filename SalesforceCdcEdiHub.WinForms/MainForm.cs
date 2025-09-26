@@ -2,6 +2,8 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Common;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog.Windows.Forms;
 using SalesforceCdcEdiHub;
+using SalesforceCdcEdiHub;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
@@ -17,8 +20,6 @@ using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
-using SalesforceCdcEdiHub;
-using System.Threading.Tasks;
 namespace WinForms;
 public partial class MainForm : Form {
 	#region enums
@@ -84,20 +85,23 @@ public partial class MainForm : Form {
 		}
 	// do not handle _pubsubService.CDCEvent here, SqlServerLib will handle it
 	#endregion pubsubservice events
+	private System.Windows.Forms.Timer _statusTimer;
+
+
+
 	#region _sqlserver events
 	private void SqlEventObjectExist(object? sender, SqlObjectQuery e) {
 		_logger.LogInformation($"CDC {{e.ObjectType}} {{e.ObjectName}} exist={{e.Exist}}  id= {{e.Id}} ");
 		btnDeleteCDCRegistration.Visible = e.Exist;
-		toolStripStatusLabel1.ForeColor = Color.Yellow;
+
 		if (e.Exist) {
-			toolStripStatusLabel1.Text += $" object in the sql server with the Id {e.Id}";
-			toolStripStatusLabel1.BackColor = Color.Green;
+
+			ShowStatus($"Object exists in SQL Server with Id {e.Id}", 5);
 			_retrievedFrom = enmObjectSource.SqlServer;
 			_retrieveFrom = _retrievedFrom;
 			} else {
 			_retrievedFrom = enmObjectSource.SalesForce;// does not exist retrive from sf
 			_retrieveFrom = _retrievedFrom;
-			toolStripStatusLabel1.BackColor = Color.Brown;
 			}
 		}
 	private void _sqlServerLib_SqlEvent(object? sender, SqlEventArg e) {
@@ -131,15 +135,19 @@ public partial class MainForm : Form {
 					switch (state) {
 						case "Submitted to Manufacturing":
 							_logger.LogDebug($"Handling chage state :[{state}] for order [{oname}]");
-							string xmlout= _sqlServerLib.ExecuteScalar<string>($"EXEC [dbo].[GetOrderXml] @OrderName= N'{oname}'");
-							_logger.LogDebug($"lenth of xmlout={xmlout.Length}");
-							_logger.LogDebug(xmlout);
+
+							string OrderXml = _sqlServerLib.ExecuteScalar<string>($"EXEC [dbo].[GetOrderXml] @OrderName= N'{oname}'");
+							_logger.LogDebug($"length of =*{nameof(OrderXml)}*={OrderXml.Length}\n{OrderXml}");
+
+							var t = new Thread(() => Clipboard.SetText(OrderXml));
+							t.SetApartmentState(ApartmentState.STA);
+							t.Start();
+							t.Join();
+							Task.Run(() => ShowStatus("Order Xml Copied to Clipboard !", 3));
 							break;
 						default:
 							break;
 						}
-
-
 					_logger.LogInformation($"Order__c Table changed{e.table.TableName} **** Status={state}");
 					break;
 				default:
@@ -147,20 +155,14 @@ public partial class MainForm : Form {
 					break;
 				}
 			_logger.LogInformation($"SqlTableEvent hahaha {result}:**************************");
-			}
-		catch(Exception ex) {
+			} catch (Exception ex) {
 
 			_logger.LogError(ex.Message);
 			}
-
-
 		}
-
-
 	#endregion _sqlserver events
 	#endregion events	
 	#region form
-
 	private void SetupRichTextBoxContextMenu(RichTextBox rtb) {
 		var contextMenu = new ContextMenuStrip();
 
@@ -196,7 +198,6 @@ public partial class MainForm : Form {
 		// Assign to RichTextBox
 		rtb.ContextMenuStrip = contextMenu;
 		}
-
 	public MainForm(IMemoryCache cache, ISalesforceService salesforceService, PubSubService pubSubService, IOptions<SalesforceConfig> config, SqlServerLib sqlServerLib, ILogger<MainForm> logger, X12 x12) {
 		InitializeComponent();
 		#region tt
@@ -254,9 +255,6 @@ public partial class MainForm : Form {
 		SetupRichTextBoxContextMenu(rtxLog);
 		RichTextBoxTarget.ReInitializeAllTextboxes(this);
 		}
-
-
-
 	private void Form1_Load(object sender, EventArgs e) {
 		string savedTab = string.IsNullOrEmpty(Properties.Settings.Default.SelectedTab) ? "tbpSfObjects" : Properties.Settings.Default.SelectedTab;
 		if (!string.IsNullOrEmpty(savedTab) && tabControl1.TabPages.ContainsKey(savedTab)) {
@@ -320,7 +318,7 @@ public partial class MainForm : Form {
 
 
 			await _pubSubService.StartSubscriptionsAsync(topics!);
-			toolStripStatusLabel1.Text = "Token copied to Clipboard.";
+			ShowStatus("Subscribed to selected topics.", 5);
 			} catch (Exception ex) {
 			MessageBox.Show($"Error: {ex.Message}");
 			}
@@ -339,7 +337,9 @@ public partial class MainForm : Form {
 				this.Invoke((Action)(() => {
 					dgvObject.DataSource = dt;
 					dgvObject.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-					toolStripStatusLabel1.Text = $"Schema for {dt.TableName} having {dt.Rows.Count} rows loaded successfully.";
+					//toolStripStatusLabel1.Text = $"Schema for {dt.TableName} having {dt.Rows.Count} rows loaded successfully.";
+					ShowStatus(oN + $" schema having {dt.Rows.Count} rows loaded successfully.", 5);
+
 				}));
 				}
 			} catch (Exception ex) {
@@ -431,9 +431,7 @@ public partial class MainForm : Form {
 	#endregion move right and left
 	private void btnClearDestination_Click(object sender, EventArgs e) {
 		dgvRegisteredCDCCandidates.SelectAll();
-		_destinationTable.Clear();
 		dgvRegisteredCDCCandidates.Refresh();
-
 		lblDestinationList.Text = $"{dgvRegisteredCDCCandidates.Rows.Count} candidate rows";
 		}
 	private void btnClearLog_Click(object sender, EventArgs e) {
@@ -772,11 +770,12 @@ public partial class MainForm : Form {
 		}
 
 	private void SalesforceService_AuthenticationAttempt(object sender, SalesforceService.AuthenticationEventArgs e) {
-		Invoke((Action)(() => {
-			Log($"Authenticating: {e.Message}", e.LogLevel);
-			btnAuthenticate.Enabled = false;
-			toolStripStatusLabel1.Text = "Authenticating...";
-		}));
+		//Invoke((Action)(() => {
+		//	Log($"Authenticating: {e.Message}", e.LogLevel);
+		//	btnAuthenticate.Enabled = false;
+		//	toolStripStatusLabel1.Text = "Authenticating...";
+		//}));
+		ShowStatus($"Authenticating: {e.Message}");
 		}
 	#region helpers
 	private void saveTabPageColors() {
@@ -815,7 +814,7 @@ public partial class MainForm : Form {
 	private async Task CommitObjectsAsDbArtefactsAsync(object sender, EventArgs e) {
 		try {
 			if (lbxObjects.SelectedItem == null) {// Validate selection
-				toolStripStatusLabel1.Text = "Please select an object first.";
+				ShowStatus(ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem) + " Please select an object from the list.", 10);
 				return;
 				}
 			List<string> selectedFields = _config.Topics.GetFieldsToFilterByName((string)lbxObjects.SelectedItem);// Get selected fields
@@ -837,27 +836,49 @@ public partial class MainForm : Form {
 					continue;
 					}
 				}
-			toolStripStatusLabel1.Text = $"Processed {_destinationTable.Rows.Count} tables. Select tables and fields in pub/sub tab.";
+
+			ShowStatus($"Processed {_destinationTable.Rows.Count} tables. Select tables and fields in pub/sub tab.", 10);
 			} catch (Exception ex) {
 			_logger.LogError($"Unexpected error during commit: {ex.Message}");
-			toolStripStatusLabel1.Text = "Error processing tables. Check logs for details.";
+
+			ShowStatus(ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem) + $" Error: {ex.Message}", 10);
 			MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
-	private void setControlColor(Object sender, bool c) {
 
-		switch (sender.GetType().Name.ToLower()) {
-			case "button":
-				var o = (Button)sender;
-				o.BackColor = c ? Color.Green : Color.Brown;
 
-				break;
-			default:
-				Log($"sender gettype().name={sender.GetType().Name}", LogLevel.Info);
-				break;
+
+	private void ShowStatus(string message, int seconds = 3) {
+		if (InvokeRequired) {
+			BeginInvoke(new Action(() => ShowStatus(message, seconds)));
+			return;
 			}
 
+
+
+
+
+		toolStripLabel1.Text = message;
+
+		// Always reset/recreate the timer so it's clean
+		if (_statusTimer != null) {
+			_statusTimer.Stop();
+			_statusTimer.Dispose();
+			_statusTimer = null;
+			}
+
+		_statusTimer = new System.Windows.Forms.Timer();
+		_statusTimer.Interval = seconds * 1000;
+		_statusTimer.Tick += (s, e) => {
+			toolStripLabel1.Text = string.Empty;
+			_statusTimer.Stop();
+			_statusTimer.Dispose();
+			_statusTimer = null;
+		};
+
+		_statusTimer.Start();
 		}
+
 	private (string jsonString, int count) tableColumnToJsonArray(DataTable dt, string sColumn, string fColumn) {
 
 		List<string?> fields = dt.AsEnumerable()
@@ -919,6 +940,18 @@ public partial class MainForm : Form {
 		cmbSOQL.DisplayMember = "qKey";
 		cmbSOQL.ValueMember = "q";
 		_soqlLoaded = true;
+		}
+	private async Task createCDCReplica(HashSet<string> list) {
+		string script = "";
+		foreach (string cdcEntry in list) {
+			Log($"Processing {cdcEntry}", LogLevel.Debug);
+			DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(cdcEntry);
+			if (ds != null) {
+				script = _sqlServerLib.GenerateCreateTableScript(ds.Tables[0], "sfo", cdcEntry);
+				_sqlServerLib.ExecuteNoneQuery(script);
+				rtfLog.Text = script;
+				} else Log($"Schema for the table {cdcEntry} could not be retrived..", LogLevel.Error);
+			}
 		}
 	#region Combo and list boxes
 	private void cmbObjects_Validated(object sender, EventArgs e) {
@@ -1026,7 +1059,7 @@ public partial class MainForm : Form {
 			lblSelectedTable.Text = $"Event {selectedObject} : {ds.Tables["objectDescribe"].Columns.Count} ";
 			lblRelations.Text = $"{selectedObject} Urls ";
 			} catch (Exception ex) {
-			this.Invoke((Action)(() => toolStripStatusLabel1.Text = $"Error: {ex.Message}"));
+			this.Invoke((Action)(() => ShowStatus(ex.Message)));
 			}
 
 
@@ -1084,21 +1117,11 @@ public partial class MainForm : Form {
 		}
 	#endregion radio buttons
 	#region tabs
-	private async Task createCDCReplica(HashSet<string> list) {
-		string script = "";
-		foreach (string cdcEntry in list) {
-			Log($"Processing {cdcEntry}", LogLevel.Debug);
-			DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(cdcEntry);
-			if (ds != null) {
-				script = _sqlServerLib.GenerateCreateTableScript(ds.Tables[0], "sfo", cdcEntry);
-				_sqlServerLib.ExecuteNoneQuery(script);
-				rtfLog.Text = script;
-				} else Log($"Schema for the table {cdcEntry} could not be retrived..", LogLevel.Error);
-			}
-		}
+
 	private async Task tabControl1_Selected(object sender, TabControlEventArgs e) {
 		_logger.LogDebug($"(logger) tabpage={e.TabPage.Name}");
 		dgvOrderList.Visible = false;
+		toolStrip1.Parent = e.TabPage;
 		switch (e.TabPage.Name.ToLower()) {
 			case "tbpsfobjects":
 				break;
@@ -1123,7 +1146,9 @@ public partial class MainForm : Form {
 											.ToList();
 					}
 				break;
-			default: break;
+			default:
+
+				break;
 
 			}
 		if (_hasUnInitDbArtefacts) {
@@ -1173,8 +1198,7 @@ public partial class MainForm : Form {
 	private async void button31_Click(object sender, EventArgs e) {
 		bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", "0v8DP0000004EsyYAE");
 		}
-	private void pictureBox2_Click(object sender, EventArgs e) {
-		}
+
 
 
 	private void btnDeleteCmbObjectSelected_Click(object sender, EventArgs e) {
@@ -1203,7 +1227,6 @@ public partial class MainForm : Form {
 		_logger.LogEmail("This is an email log message from the button click event.");
 		}
 	private void btnDispatchEvent_Click(object sender, EventArgs e) {
-		//	_salesforceService.UpsertSobject(lbxObjects.Text, null, rtxFieldsJsonArray.Text, useTooling: false);
 		RadioButton? selectedRadio = pnlOrderStates.Controls
 			.OfType<RadioButton>()
 			.FirstOrDefault(r => r.Checked);
@@ -1212,26 +1235,17 @@ public partial class MainForm : Form {
 			int rowId = dgvOrderList.SelectedCells[0].RowIndex;
 			string orderId = dgvOrderList.Rows[rowId].Cells["Id"].Value?.ToString() ?? null;
 			string status = selectedRadio?.Text;
-
-
 			json = $"{{\"status__c\":\"{status}\",\"Order_Id__c\":\"{orderId}\"}}";
 			_salesforceService.UpsertSobject(lbxObjects.Text, null, json, useTooling: false);
-
 			} catch (Exception ex) {
-			MessageBox.Show("Please select a Order and the Status");
-
+			ShowStatus("Please select a Order and the Status");
 			}
-
-
-		//MessageBox.Show(json);
-
 		}
-
 	private async void btnGetPickList_Click(object sender, EventArgs e) {
+		ShowStatus("btnGetPickList_Click...");
 		DataTable dt = await _salesforceService.GetPicklistValuesAsync("Order__c", "Status__c");
-
 		List<string?> plistValues = dt.AsEnumerable().Select(r => r.Field<string>("Value")).ToList();
-
+		dgvSchema.DataSource = dt;
 		_logger.LogInformation($"{dt.Rows.Count} : rows");
 		}
 	}

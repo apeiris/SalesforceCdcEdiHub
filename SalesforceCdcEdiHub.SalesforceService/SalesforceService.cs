@@ -368,7 +368,7 @@ public class SalesforceService : ISalesforceService {
 		}
 	public async Task<DataTable> GetPicklistValuesAsync(string objectName, string fieldName) {
 
-	//	string url = $"{_instanceUrl}/services/data/v64.0/sobjects/{objectName}/describe";
+		//	string url = $"{_instanceUrl}/services/data/v64.0/sobjects/{objectName}/describe";
 
 		var (token, instanceUrl, expiresAt) = await GetAccessTokenAsync();
 		string url = $"{instanceUrl}/services/data/v{_settings.ApiVersion}/sobjects/{objectName}/describe";
@@ -383,7 +383,7 @@ public class SalesforceService : ISalesforceService {
 			// Parse JSON
 			JObject describe = JObject.Parse(json);
 
-			
+
 			JArray fields = (JArray)describe["fields"];
 			var field = fields.FirstOrDefault(f => f["name"].ToString() == fieldName);
 
@@ -509,20 +509,16 @@ public class SalesforceService : ISalesforceService {
 			string xmlresponse = await response.Content.ReadAsStringAsync();
 			XDocument xdoc = XDocument.Parse(xmlresponse);
 			XDocument filteredDoc = new XDocument(new XElement("PlatformEvents", xdoc.Descendants("sobjects")
-																.Where(s => (string?)s.Element("name") != null && s.Element("name")!.Value.EndsWith("__e") && (bool?)s.Element("triggerable") == true)
-															   )
-												 );
+																.Where(s => (string?)s.Element("name") != null && s.Element("name")!.Value.EndsWith("__e") && (bool?)s.Element("triggerable") == true)));
 			DataSet ds = new DataSet();
 			ds.ReadXml(filteredDoc.CreateReader());
 			_logger.LogInformation("Retrieved {Count} platform event definitions", filteredDoc.ToString());
-			_logger.LogDebug("Platform Event Definitions: {Definitions}", "aaa");
 			return ds.Tables["sobjects"];
 			} catch (HttpRequestException ex) {
 			_logger.LogError(ex, "Failed to retrieve platform event definitions.");
 			throw;
 			}
 		}
-
 	public async Task<JsonElement> DescribeToolingObject(string objectName) {
 		var (token, instanceUrl, _) = await GetAccessTokenAsync();
 		string url = $"{instanceUrl}/services/data/v{_settings.ApiVersion}/tooling/sobjects/{Uri.EscapeDataString(objectName)}/describe/";
@@ -843,8 +839,6 @@ public class SalesforceService : ISalesforceService {
 		public string TenantId { get; set; }
 		public DateTime Expiry { get; set; }
 		}
-
-
 	private DataTable JsonElementToDataTable(JsonElement rootElement, string tableName) {
 		DataTable dt = new DataTable(tableName);
 		try {

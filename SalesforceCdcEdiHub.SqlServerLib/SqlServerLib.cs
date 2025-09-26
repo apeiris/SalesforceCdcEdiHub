@@ -1,5 +1,4 @@
-﻿
-using System.Data;
+﻿using System.Data;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -55,7 +54,6 @@ public class SqlObjectQuery : EventArgs {
 		Id = id;// row id when exist -1 otherwise
 		}
 	}
-
 public class SqlTableEvent : EventArgs {
 	public DataTable table { get; }
 	public SqlEvents _event { get; }
@@ -626,7 +624,6 @@ public class SqlServerLib {
 	#endregion helpers (private)
 	}
 #endregion	Public Methods
-
 #region Extensions
 public static class SqlServerLibExtensions {
 	public static void AddIdentityColumn(this DataTable table,

@@ -16,14 +16,26 @@ partial class MainForm {
 		}
 
 	private void InitializeComponent() {
+		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
-		statusStrip1 = new StatusStrip();
-		toolStripStatusLabel1 = new ToolStripStatusLabel();
 		tabControl1 = new TabControl();
 		tbpSfObjects = new TabPage();
+		toolStrip1 = new ToolStrip();
+		newToolStripButton = new ToolStripButton();
+		openToolStripButton = new ToolStripButton();
+		saveToolStripButton = new ToolStripButton();
+		printToolStripButton = new ToolStripButton();
+		toolStripSeparator = new ToolStripSeparator();
+		cutToolStripButton = new ToolStripButton();
+		copyToolStripButton = new ToolStripButton();
+		pasteToolStripButton = new ToolStripButton();
+		toolStripSeparator1 = new ToolStripSeparator();
+		helpToolStripButton = new ToolStripButton();
+		toolStripButton1 = new ToolStripButton();
+		toolStripLabel1 = new ToolStripLabel();
 		tableLayoutPanel3 = new TableLayoutPanel();
 		dgvCDCEnabledObjects = new DataGridView();
 		tableLayoutPanel10 = new TableLayoutPanel();
@@ -115,15 +127,15 @@ partial class MainForm {
 		cmbSOQL = new ComboBox();
 		tbpDescribeObject = new TabPage();
 		tableLayoutPanel5 = new TableLayoutPanel();
-		btnDeleteCmbObjectSelected = new Button();
 		label1 = new Label();
 		dgvSchema = new DataGridView();
-		btnDescribe = new Button();
 		cmbObjects = new ComboBox();
 		lblCDCName = new Label();
-		btnGetPickList = new Button();
 		label5 = new Label();
 		cmbField = new ComboBox();
+		btnDescribe = new Button();
+		btnDeleteCmbObjectSelected = new Button();
+		btnGetPickList = new Button();
 		tbpEventLog = new TabPage();
 		splitContainer3 = new SplitContainer();
 		tableLayoutPanel6 = new TableLayoutPanel();
@@ -153,9 +165,14 @@ partial class MainForm {
 		splitContainer7 = new SplitContainer();
 		splitContainer6 = new SplitContainer();
 		dgvCDCTables = new DataGridView();
-		statusStrip1.SuspendLayout();
+		toolStripContainer1 = new ToolStripContainer();
+		toolStripContainer2 = new ToolStripContainer();
+		toolStripContainer3 = new ToolStripContainer();
+		toolStripContainer4 = new ToolStripContainer();
+		toolStripContainer5 = new ToolStripContainer();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
+		toolStrip1.SuspendLayout();
 		tableLayoutPanel3.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)dgvCDCEnabledObjects).BeginInit();
 		tableLayoutPanel10.SuspendLayout();
@@ -226,6 +243,12 @@ partial class MainForm {
 		splitContainer6.Panel1.SuspendLayout();
 		splitContainer6.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)dgvCDCTables).BeginInit();
+		toolStripContainer1.SuspendLayout();
+		toolStripContainer2.ContentPanel.SuspendLayout();
+		toolStripContainer2.SuspendLayout();
+		toolStripContainer3.SuspendLayout();
+		toolStripContainer4.SuspendLayout();
+		toolStripContainer5.SuspendLayout();
 		SuspendLayout();
 		// 
 		// btnAuthenticate
@@ -259,21 +282,6 @@ partial class MainForm {
 		btnGetTokenAsync.UseVisualStyleBackColor = true;
 		btnGetTokenAsync.Click += btnGetTokenAsync_Click;
 		// 
-		// statusStrip1
-		// 
-		statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
-		statusStrip1.Location = new Point(0, 706);
-		statusStrip1.Name = "statusStrip1";
-		statusStrip1.Size = new Size(1423, 22);
-		statusStrip1.TabIndex = 3;
-		statusStrip1.Text = "statusStrip1";
-		// 
-		// toolStripStatusLabel1
-		// 
-		toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-		toolStripStatusLabel1.Size = new Size(118, 17);
-		toolStripStatusLabel1.Text = "toolStripStatusLabel1";
-		// 
 		// tabControl1
 		// 
 		tabControl1.Controls.Add(tbpSfObjects);
@@ -284,23 +292,129 @@ partial class MainForm {
 		tabControl1.Controls.Add(tbpEventLog);
 		tabControl1.Controls.Add(tbpCDCEvents);
 		tabControl1.Controls.Add(tbpX12);
-		tabControl1.Dock = DockStyle.Fill;
 		tabControl1.Location = new Point(0, 0);
 		tabControl1.Name = "tabControl1";
 		tabControl1.SelectedIndex = 0;
-		tabControl1.Size = new Size(1423, 706);
+		tabControl1.Size = new Size(1423, 712);
 		tabControl1.TabIndex = 4;
 		tabControl1.Selected += TabControl1_Selected1;
 		// 
 		// tbpSfObjects
 		// 
+		tbpSfObjects.Controls.Add(toolStrip1);
 		tbpSfObjects.Controls.Add(tableLayoutPanel3);
 		tbpSfObjects.Location = new Point(4, 24);
 		tbpSfObjects.Name = "tbpSfObjects";
-		tbpSfObjects.Size = new Size(1415, 678);
+		tbpSfObjects.Size = new Size(1415, 684);
 		tbpSfObjects.TabIndex = 2;
 		tbpSfObjects.Text = "Objects";
 		tbpSfObjects.UseVisualStyleBackColor = true;
+		// 
+		// toolStrip1
+		// 
+		toolStrip1.Items.AddRange(new ToolStripItem[] { newToolStripButton, openToolStripButton, saveToolStripButton, printToolStripButton, toolStripSeparator, cutToolStripButton, copyToolStripButton, pasteToolStripButton, toolStripSeparator1, helpToolStripButton, toolStripButton1, toolStripLabel1 });
+		toolStrip1.Location = new Point(0, 0);
+		toolStrip1.Name = "toolStrip1";
+		toolStrip1.Size = new Size(1415, 25);
+		toolStrip1.TabIndex = 1;
+		toolStrip1.Text = "toolStrip1";
+		// 
+		// newToolStripButton
+		// 
+		newToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		newToolStripButton.Image = (System.Drawing.Image)resources.GetObject("newToolStripButton.Image");
+		newToolStripButton.ImageTransparentColor = Color.Magenta;
+		newToolStripButton.Name = "newToolStripButton";
+		newToolStripButton.Size = new Size(23, 22);
+		newToolStripButton.Text = "&New";
+		// 
+		// openToolStripButton
+		// 
+		openToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		openToolStripButton.Image = (System.Drawing.Image)resources.GetObject("openToolStripButton.Image");
+		openToolStripButton.ImageTransparentColor = Color.Magenta;
+		openToolStripButton.Name = "openToolStripButton";
+		openToolStripButton.Size = new Size(23, 22);
+		openToolStripButton.Text = "&Open";
+		// 
+		// saveToolStripButton
+		// 
+		saveToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		saveToolStripButton.Image = (System.Drawing.Image)resources.GetObject("saveToolStripButton.Image");
+		saveToolStripButton.ImageTransparentColor = Color.Magenta;
+		saveToolStripButton.Name = "saveToolStripButton";
+		saveToolStripButton.Size = new Size(23, 22);
+		saveToolStripButton.Text = "&Save";
+		// 
+		// printToolStripButton
+		// 
+		printToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		printToolStripButton.Image = (System.Drawing.Image)resources.GetObject("printToolStripButton.Image");
+		printToolStripButton.ImageTransparentColor = Color.Magenta;
+		printToolStripButton.Name = "printToolStripButton";
+		printToolStripButton.Size = new Size(23, 22);
+		printToolStripButton.Text = "&Print";
+		// 
+		// toolStripSeparator
+		// 
+		toolStripSeparator.Name = "toolStripSeparator";
+		toolStripSeparator.Size = new Size(6, 25);
+		// 
+		// cutToolStripButton
+		// 
+		cutToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		cutToolStripButton.Image = (System.Drawing.Image)resources.GetObject("cutToolStripButton.Image");
+		cutToolStripButton.ImageTransparentColor = Color.Magenta;
+		cutToolStripButton.Name = "cutToolStripButton";
+		cutToolStripButton.Size = new Size(23, 22);
+		cutToolStripButton.Text = "C&ut";
+		// 
+		// copyToolStripButton
+		// 
+		copyToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		copyToolStripButton.Image = (System.Drawing.Image)resources.GetObject("copyToolStripButton.Image");
+		copyToolStripButton.ImageTransparentColor = Color.Magenta;
+		copyToolStripButton.Name = "copyToolStripButton";
+		copyToolStripButton.Size = new Size(23, 22);
+		copyToolStripButton.Text = "&Copy";
+		// 
+		// pasteToolStripButton
+		// 
+		pasteToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		pasteToolStripButton.Image = (System.Drawing.Image)resources.GetObject("pasteToolStripButton.Image");
+		pasteToolStripButton.ImageTransparentColor = Color.Magenta;
+		pasteToolStripButton.Name = "pasteToolStripButton";
+		pasteToolStripButton.Size = new Size(23, 22);
+		pasteToolStripButton.Text = "&Paste";
+		// 
+		// toolStripSeparator1
+		// 
+		toolStripSeparator1.Name = "toolStripSeparator1";
+		toolStripSeparator1.Size = new Size(6, 25);
+		// 
+		// helpToolStripButton
+		// 
+		helpToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		helpToolStripButton.Image = (System.Drawing.Image)resources.GetObject("helpToolStripButton.Image");
+		helpToolStripButton.ImageTransparentColor = Color.Magenta;
+		helpToolStripButton.Name = "helpToolStripButton";
+		helpToolStripButton.Size = new Size(23, 22);
+		helpToolStripButton.Text = "He&lp";
+		// 
+		// toolStripButton1
+		// 
+		toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		toolStripButton1.Image = (System.Drawing.Image)resources.GetObject("toolStripButton1.Image");
+		toolStripButton1.ImageTransparentColor = Color.Magenta;
+		toolStripButton1.Name = "toolStripButton1";
+		toolStripButton1.Size = new Size(23, 22);
+		toolStripButton1.Text = "toolStripButton1";
+		// 
+		// toolStripLabel1
+		// 
+		toolStripLabel1.Name = "toolStripLabel1";
+		toolStripLabel1.Size = new Size(86, 22);
+		toolStripLabel1.Text = "toolStripLabel1";
 		// 
 		// tableLayoutPanel3
 		// 
@@ -833,7 +947,6 @@ partial class MainForm {
 		pictureBox2.Size = new Size(100, 50);
 		pictureBox2.TabIndex = 12;
 		pictureBox2.TabStop = false;
-		pictureBox2.Click += pictureBox2_Click;
 		// 
 		// tbpPubSub
 		// 
@@ -841,7 +954,7 @@ partial class MainForm {
 		tbpPubSub.Location = new Point(4, 24);
 		tbpPubSub.Name = "tbpPubSub";
 		tbpPubSub.Padding = new Padding(3);
-		tbpPubSub.Size = new Size(1415, 678);
+		tbpPubSub.Size = new Size(1415, 684);
 		tbpPubSub.TabIndex = 1;
 		tbpPubSub.Text = "Pub/Sub";
 		tbpPubSub.UseVisualStyleBackColor = true;
@@ -863,7 +976,7 @@ partial class MainForm {
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 47.0779228F));
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 52.9220772F));
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
-		tableLayoutPanel1.Size = new Size(1409, 672);
+		tableLayoutPanel1.Size = new Size(1409, 678);
 		tableLayoutPanel1.TabIndex = 0;
 		// 
 		// splitContainer1
@@ -881,7 +994,7 @@ partial class MainForm {
 		// 
 		splitContainer1.Panel2.Controls.Add(dgvObject);
 		splitContainer1.Panel2.Controls.Add(lblSelectedTable);
-		splitContainer1.Size = new Size(1403, 284);
+		splitContainer1.Size = new Size(1403, 287);
 		splitContainer1.SplitterDistance = 392;
 		splitContainer1.TabIndex = 6;
 		// 
@@ -900,8 +1013,8 @@ partial class MainForm {
 		// splitContainer2.Panel2
 		// 
 		splitContainer2.Panel2.Controls.Add(dgvOrderList);
-		splitContainer2.Size = new Size(392, 284);
-		splitContainer2.SplitterDistance = 123;
+		splitContainer2.Size = new Size(392, 287);
+		splitContainer2.SplitterDistance = 124;
 		splitContainer2.TabIndex = 7;
 		// 
 		// lbxObjects
@@ -910,7 +1023,7 @@ partial class MainForm {
 		lbxObjects.FormattingEnabled = true;
 		lbxObjects.Location = new Point(0, 21);
 		lbxObjects.Name = "lbxObjects";
-		lbxObjects.Size = new Size(392, 102);
+		lbxObjects.Size = new Size(392, 103);
 		lbxObjects.TabIndex = 5;
 		lbxObjects.SelectedIndexChanged += lbxObjects_SelectedIndexChanged;
 		// 
@@ -943,7 +1056,7 @@ partial class MainForm {
 		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
 		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
 		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
-		dgvOrderList.Size = new Size(392, 157);
+		dgvOrderList.Size = new Size(392, 159);
 		dgvOrderList.TabIndex = 11;
 		// 
 		// dgvObject
@@ -955,7 +1068,7 @@ partial class MainForm {
 		dgvObject.Dock = DockStyle.Fill;
 		dgvObject.Location = new Point(0, 21);
 		dgvObject.Name = "dgvObject";
-		dgvObject.Size = new Size(1007, 263);
+		dgvObject.Size = new Size(1007, 266);
 		dgvObject.TabIndex = 4;
 		dgvObject.CellContentClick += dgvObject_CellContentClick_1;
 		// 
@@ -981,7 +1094,7 @@ partial class MainForm {
 		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 2);
 		tableLayoutPanel2.Controls.Add(btnDispatchEvent, 1, 2);
 		tableLayoutPanel2.Dock = DockStyle.Fill;
-		tableLayoutPanel2.Location = new Point(3, 340);
+		tableLayoutPanel2.Location = new Point(3, 343);
 		tableLayoutPanel2.Name = "tableLayoutPanel2";
 		tableLayoutPanel2.RowCount = 5;
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 91.70985F));
@@ -990,7 +1103,7 @@ partial class MainForm {
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel2.Size = new Size(391, 320);
+		tableLayoutPanel2.Size = new Size(391, 323);
 		tableLayoutPanel2.TabIndex = 3;
 		// 
 		// pnlOrderStates
@@ -1030,7 +1143,7 @@ partial class MainForm {
 		// 
 		btnDeleteCDCRegistration.BackColor = Color.Green;
 		btnDeleteCDCRegistration.ForeColor = Color.Yellow;
-		btnDeleteCDCRegistration.Location = new Point(3, 220);
+		btnDeleteCDCRegistration.Location = new Point(3, 223);
 		btnDeleteCDCRegistration.Name = "btnDeleteCDCRegistration";
 		btnDeleteCDCRegistration.Size = new Size(155, 44);
 		btnDeleteCDCRegistration.TabIndex = 8;
@@ -1042,7 +1155,7 @@ partial class MainForm {
 		// 
 		btnListEvents.BackColor = Color.Green;
 		btnListEvents.ForeColor = Color.Yellow;
-		btnListEvents.Location = new Point(3, 165);
+		btnListEvents.Location = new Point(3, 168);
 		btnListEvents.Name = "btnListEvents";
 		btnListEvents.Size = new Size(155, 44);
 		btnListEvents.TabIndex = 9;
@@ -1054,7 +1167,7 @@ partial class MainForm {
 		// 
 		btnDispatchEvent.BackColor = Color.Green;
 		btnDispatchEvent.ForeColor = Color.Yellow;
-		btnDispatchEvent.Location = new Point(196, 165);
+		btnDispatchEvent.Location = new Point(196, 168);
 		btnDispatchEvent.Name = "btnDispatchEvent";
 		btnDispatchEvent.Size = new Size(155, 44);
 		btnDispatchEvent.TabIndex = 10;
@@ -1069,13 +1182,13 @@ partial class MainForm {
 		tableLayoutPanel4.Controls.Add(dgvObjectUrls, 0, 1);
 		tableLayoutPanel4.Controls.Add(lblRelations, 0, 0);
 		tableLayoutPanel4.Dock = DockStyle.Fill;
-		tableLayoutPanel4.Location = new Point(400, 340);
+		tableLayoutPanel4.Location = new Point(400, 343);
 		tableLayoutPanel4.Name = "tableLayoutPanel4";
 		tableLayoutPanel4.RowCount = 2;
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 11.8942728F));
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 88.10573F));
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel4.Size = new Size(1006, 320);
+		tableLayoutPanel4.Size = new Size(1006, 323);
 		tableLayoutPanel4.TabIndex = 7;
 		// 
 		// dgvObjectUrls
@@ -1087,7 +1200,7 @@ partial class MainForm {
 		dgvObjectUrls.Dock = DockStyle.Fill;
 		dgvObjectUrls.Location = new Point(3, 41);
 		dgvObjectUrls.Name = "dgvObjectUrls";
-		dgvObjectUrls.Size = new Size(1000, 276);
+		dgvObjectUrls.Size = new Size(1000, 279);
 		dgvObjectUrls.TabIndex = 10;
 		// 
 		// lblRelations
@@ -1144,7 +1257,7 @@ partial class MainForm {
 		tbpOAuth2.Location = new Point(4, 24);
 		tbpOAuth2.Name = "tbpOAuth2";
 		tbpOAuth2.Padding = new Padding(3);
-		tbpOAuth2.Size = new Size(1415, 678);
+		tbpOAuth2.Size = new Size(1415, 684);
 		tbpOAuth2.TabIndex = 0;
 		tbpOAuth2.Text = "OAuth2";
 		tbpOAuth2.UseVisualStyleBackColor = true;
@@ -1154,7 +1267,7 @@ partial class MainForm {
 		tbpSOQL.Controls.Add(tableLayoutPanel11);
 		tbpSOQL.Location = new Point(4, 24);
 		tbpSOQL.Name = "tbpSOQL";
-		tbpSOQL.Size = new Size(1415, 678);
+		tbpSOQL.Size = new Size(1415, 684);
 		tbpSOQL.TabIndex = 6;
 		tbpSOQL.Text = "SOQL";
 		tbpSOQL.UseVisualStyleBackColor = true;
@@ -1174,7 +1287,7 @@ partial class MainForm {
 		tableLayoutPanel11.RowCount = 2;
 		tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 12.0943956F));
 		tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 87.9056F));
-		tableLayoutPanel11.Size = new Size(1415, 678);
+		tableLayoutPanel11.Size = new Size(1415, 684);
 		tableLayoutPanel11.TabIndex = 0;
 		// 
 		// splitcSoql
@@ -1440,7 +1553,7 @@ partial class MainForm {
 		tbpDescribeObject.Controls.Add(tableLayoutPanel5);
 		tbpDescribeObject.Location = new Point(4, 24);
 		tbpDescribeObject.Name = "tbpDescribeObject";
-		tbpDescribeObject.Size = new Size(1415, 678);
+		tbpDescribeObject.Size = new Size(1415, 684);
 		tbpDescribeObject.TabIndex = 3;
 		tbpDescribeObject.Text = "Describe Object";
 		tbpDescribeObject.UseVisualStyleBackColor = true;
@@ -1454,34 +1567,24 @@ partial class MainForm {
 		tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
 		tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 154F));
 		tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 290F));
-		tableLayoutPanel5.Controls.Add(btnDeleteCmbObjectSelected, 3, 0);
 		tableLayoutPanel5.Controls.Add(label1, 0, 0);
 		tableLayoutPanel5.Controls.Add(dgvSchema, 0, 2);
-		tableLayoutPanel5.Controls.Add(btnDescribe, 2, 0);
 		tableLayoutPanel5.Controls.Add(cmbObjects, 1, 0);
 		tableLayoutPanel5.Controls.Add(lblCDCName, 5, 1);
-		tableLayoutPanel5.Controls.Add(btnGetPickList, 2, 1);
 		tableLayoutPanel5.Controls.Add(label5, 0, 1);
 		tableLayoutPanel5.Controls.Add(cmbField, 1, 1);
+		tableLayoutPanel5.Controls.Add(btnDescribe, 2, 0);
+		tableLayoutPanel5.Controls.Add(btnDeleteCmbObjectSelected, 3, 0);
+		tableLayoutPanel5.Controls.Add(btnGetPickList, 2, 1);
 		tableLayoutPanel5.Dock = DockStyle.Fill;
 		tableLayoutPanel5.Location = new Point(0, 0);
 		tableLayoutPanel5.Name = "tableLayoutPanel5";
 		tableLayoutPanel5.RowCount = 3;
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 53.3333321F));
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 46.6666679F));
-		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 617F));
-		tableLayoutPanel5.Size = new Size(1415, 678);
+		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 573F));
+		tableLayoutPanel5.Size = new Size(1415, 684);
 		tableLayoutPanel5.TabIndex = 0;
-		// 
-		// btnDeleteCmbObjectSelected
-		// 
-		btnDeleteCmbObjectSelected.Location = new Point(844, 3);
-		btnDeleteCmbObjectSelected.Name = "btnDeleteCmbObjectSelected";
-		btnDeleteCmbObjectSelected.Size = new Size(113, 23);
-		btnDeleteCmbObjectSelected.TabIndex = 6;
-		btnDeleteCmbObjectSelected.Text = "Remove Object";
-		btnDeleteCmbObjectSelected.UseVisualStyleBackColor = true;
-		btnDeleteCmbObjectSelected.Click += btnDeleteCmbObjectSelected_Click;
 		// 
 		// label1
 		// 
@@ -1489,7 +1592,7 @@ partial class MainForm {
 		label1.Dock = DockStyle.Fill;
 		label1.Location = new Point(3, 0);
 		label1.Name = "label1";
-		label1.Size = new Size(79, 32);
+		label1.Size = new Size(79, 59);
 		label1.TabIndex = 0;
 		label1.Text = "Object Name";
 		label1.TextAlign = ContentAlignment.MiddleLeft;
@@ -1499,20 +1602,10 @@ partial class MainForm {
 		dgvSchema.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		tableLayoutPanel5.SetColumnSpan(dgvSchema, 5);
 		dgvSchema.Dock = DockStyle.Fill;
-		dgvSchema.Location = new Point(3, 63);
+		dgvSchema.Location = new Point(3, 113);
 		dgvSchema.Name = "dgvSchema";
-		dgvSchema.Size = new Size(1119, 612);
+		dgvSchema.Size = new Size(1119, 568);
 		dgvSchema.TabIndex = 3;
-		// 
-		// btnDescribe
-		// 
-		btnDescribe.Location = new Point(658, 3);
-		btnDescribe.Name = "btnDescribe";
-		btnDescribe.Size = new Size(148, 23);
-		btnDescribe.TabIndex = 2;
-		btnDescribe.Text = "Describe";
-		btnDescribe.UseVisualStyleBackColor = true;
-		btnDescribe.Click += btnDescribe_Click;
 		// 
 		// cmbObjects
 		// 
@@ -1529,27 +1622,17 @@ partial class MainForm {
 		lblCDCName.AutoSize = true;
 		lblCDCName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblCDCName.ForeColor = Color.IndianRed;
-		lblCDCName.Location = new Point(1125, 32);
+		lblCDCName.Location = new Point(1125, 59);
 		lblCDCName.Margin = new Padding(0);
 		lblCDCName.Name = "lblCDCName";
 		lblCDCName.Size = new Size(40, 15);
 		lblCDCName.TabIndex = 7;
 		lblCDCName.Text = "label4";
 		// 
-		// btnGetPickList
-		// 
-		btnGetPickList.Location = new Point(658, 35);
-		btnGetPickList.Name = "btnGetPickList";
-		btnGetPickList.Size = new Size(148, 22);
-		btnGetPickList.TabIndex = 9;
-		btnGetPickList.Text = "Get PickList";
-		btnGetPickList.UseVisualStyleBackColor = true;
-		btnGetPickList.Click += btnGetPickList_Click;
-		// 
 		// label5
 		// 
 		label5.AutoSize = true;
-		label5.Location = new Point(3, 32);
+		label5.Location = new Point(3, 59);
 		label5.Name = "label5";
 		label5.Size = new Size(67, 15);
 		label5.TabIndex = 10;
@@ -1559,18 +1642,48 @@ partial class MainForm {
 		// cmbField
 		// 
 		cmbField.FormattingEnabled = true;
-		cmbField.Location = new Point(88, 35);
+		cmbField.Location = new Point(88, 62);
 		cmbField.Name = "cmbField";
 		cmbField.Size = new Size(564, 23);
 		cmbField.TabIndex = 11;
 		cmbField.Validated += cmbField_Validated;
+		// 
+		// btnDescribe
+		// 
+		btnDescribe.Location = new Point(658, 3);
+		btnDescribe.Name = "btnDescribe";
+		btnDescribe.Size = new Size(148, 35);
+		btnDescribe.TabIndex = 2;
+		btnDescribe.Text = "Describe";
+		btnDescribe.UseVisualStyleBackColor = true;
+		btnDescribe.Click += btnDescribe_Click;
+		// 
+		// btnDeleteCmbObjectSelected
+		// 
+		btnDeleteCmbObjectSelected.Location = new Point(844, 3);
+		btnDeleteCmbObjectSelected.Name = "btnDeleteCmbObjectSelected";
+		btnDeleteCmbObjectSelected.Size = new Size(113, 35);
+		btnDeleteCmbObjectSelected.TabIndex = 6;
+		btnDeleteCmbObjectSelected.Text = "Remove Object";
+		btnDeleteCmbObjectSelected.UseVisualStyleBackColor = true;
+		btnDeleteCmbObjectSelected.Click += btnDeleteCmbObjectSelected_Click;
+		// 
+		// btnGetPickList
+		// 
+		btnGetPickList.Location = new Point(658, 62);
+		btnGetPickList.Name = "btnGetPickList";
+		btnGetPickList.Size = new Size(148, 35);
+		btnGetPickList.TabIndex = 9;
+		btnGetPickList.Text = "Get PickList";
+		btnGetPickList.UseVisualStyleBackColor = true;
+		btnGetPickList.Click += btnGetPickList_Click;
 		// 
 		// tbpEventLog
 		// 
 		tbpEventLog.Controls.Add(splitContainer3);
 		tbpEventLog.Location = new Point(4, 24);
 		tbpEventLog.Name = "tbpEventLog";
-		tbpEventLog.Size = new Size(1415, 678);
+		tbpEventLog.Size = new Size(1415, 684);
 		tbpEventLog.TabIndex = 4;
 		tbpEventLog.Text = "Event Log";
 		tbpEventLog.UseVisualStyleBackColor = true;
@@ -1588,7 +1701,7 @@ partial class MainForm {
 		// splitContainer3.Panel2
 		// 
 		splitContainer3.Panel2.Controls.Add(rtfLog);
-		splitContainer3.Size = new Size(1415, 678);
+		splitContainer3.Size = new Size(1415, 684);
 		splitContainer3.SplitterDistance = 1338;
 		splitContainer3.TabIndex = 0;
 		// 
@@ -1605,7 +1718,7 @@ partial class MainForm {
 		tableLayoutPanel6.RowCount = 2;
 		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 90.26549F));
 		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 9.734513F));
-		tableLayoutPanel6.Size = new Size(1338, 678);
+		tableLayoutPanel6.Size = new Size(1338, 684);
 		tableLayoutPanel6.TabIndex = 0;
 		// 
 		// tableLayoutPanel7
@@ -1615,7 +1728,7 @@ partial class MainForm {
 		tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel7.Controls.Add(btnLogTest, 1, 0);
 		tableLayoutPanel7.Controls.Add(btnClearLog, 0, 0);
-		tableLayoutPanel7.Location = new Point(3, 615);
+		tableLayoutPanel7.Location = new Point(3, 620);
 		tableLayoutPanel7.Name = "tableLayoutPanel7";
 		tableLayoutPanel7.RowCount = 2;
 		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -1651,7 +1764,7 @@ partial class MainForm {
 		rtxLog.ForeColor = Color.Lime;
 		rtxLog.Location = new Point(3, 3);
 		rtxLog.Name = "rtxLog";
-		rtxLog.Size = new Size(1332, 606);
+		rtxLog.Size = new Size(1332, 611);
 		rtxLog.TabIndex = 1;
 		rtxLog.Text = "";
 		// 
@@ -1668,7 +1781,7 @@ partial class MainForm {
 		tbpCDCEvents.Controls.Add(tableLayoutPanel8);
 		tbpCDCEvents.Location = new Point(4, 24);
 		tbpCDCEvents.Name = "tbpCDCEvents";
-		tbpCDCEvents.Size = new Size(1415, 678);
+		tbpCDCEvents.Size = new Size(1415, 684);
 		tbpCDCEvents.TabIndex = 5;
 		tbpCDCEvents.Text = "CDC Events";
 		tbpCDCEvents.UseVisualStyleBackColor = true;
@@ -1687,7 +1800,7 @@ partial class MainForm {
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 78.46608F));
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 21.5339241F));
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-		tableLayoutPanel8.Size = new Size(1415, 678);
+		tableLayoutPanel8.Size = new Size(1415, 684);
 		tableLayoutPanel8.TabIndex = 0;
 		// 
 		// splitContainer4
@@ -1703,7 +1816,7 @@ partial class MainForm {
 		// splitContainer4.Panel2
 		// 
 		splitContainer4.Panel2.Controls.Add(splitContainer5);
-		splitContainer4.Size = new Size(1409, 478);
+		splitContainer4.Size = new Size(1409, 483);
 		splitContainer4.SplitterDistance = 525;
 		splitContainer4.TabIndex = 0;
 		// 
@@ -1715,7 +1828,7 @@ partial class MainForm {
 		lbxCDCTopics.Location = new Point(0, 0);
 		lbxCDCTopics.Name = "lbxCDCTopics";
 		lbxCDCTopics.ScrollAlwaysVisible = true;
-		lbxCDCTopics.Size = new Size(525, 478);
+		lbxCDCTopics.Size = new Size(525, 483);
 		lbxCDCTopics.TabIndex = 1;
 		// 
 		// splitContainer5
@@ -1731,7 +1844,7 @@ partial class MainForm {
 		// splitContainer5.Panel2
 		// 
 		splitContainer5.Panel2.Controls.Add(dgvFilteredFields);
-		splitContainer5.Size = new Size(880, 478);
+		splitContainer5.Size = new Size(880, 483);
 		splitContainer5.SplitterDistance = 401;
 		splitContainer5.TabIndex = 0;
 		// 
@@ -1743,7 +1856,7 @@ partial class MainForm {
 		lbxCDCEvents.Location = new Point(0, 0);
 		lbxCDCEvents.Name = "lbxCDCEvents";
 		lbxCDCEvents.ScrollAlwaysVisible = true;
-		lbxCDCEvents.Size = new Size(401, 478);
+		lbxCDCEvents.Size = new Size(401, 483);
 		lbxCDCEvents.TabIndex = 0;
 		// 
 		// dgvFilteredFields
@@ -1752,7 +1865,7 @@ partial class MainForm {
 		dgvFilteredFields.Dock = DockStyle.Fill;
 		dgvFilteredFields.Location = new Point(0, 0);
 		dgvFilteredFields.Name = "dgvFilteredFields";
-		dgvFilteredFields.Size = new Size(475, 478);
+		dgvFilteredFields.Size = new Size(475, 483);
 		dgvFilteredFields.TabIndex = 0;
 		// 
 		// tableLayoutPanel9
@@ -1763,7 +1876,7 @@ partial class MainForm {
 		tableLayoutPanel9.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 235F));
 		tableLayoutPanel9.Controls.Add(btnGetCDCSubscriptions, 1, 0);
 		tableLayoutPanel9.Controls.Add(btnCDCStartSubscription, 0, 0);
-		tableLayoutPanel9.Location = new Point(3, 487);
+		tableLayoutPanel9.Location = new Point(3, 492);
 		tableLayoutPanel9.Name = "tableLayoutPanel9";
 		tableLayoutPanel9.RowCount = 1;
 		tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -1794,7 +1907,7 @@ partial class MainForm {
 		// 
 		lblCDCStatus.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
 		lblCDCStatus.AutoSize = true;
-		lblCDCStatus.Location = new Point(3, 617);
+		lblCDCStatus.Location = new Point(3, 623);
 		lblCDCStatus.Name = "lblCDCStatus";
 		lblCDCStatus.Size = new Size(66, 61);
 		lblCDCStatus.TabIndex = 2;
@@ -1807,7 +1920,7 @@ partial class MainForm {
 		tbpX12.Location = new Point(4, 24);
 		tbpX12.Name = "tbpX12";
 		tbpX12.Padding = new Padding(3);
-		tbpX12.Size = new Size(1415, 678);
+		tbpX12.Size = new Size(1415, 684);
 		tbpX12.TabIndex = 7;
 		tbpX12.Text = "X12";
 		tbpX12.UseVisualStyleBackColor = true;
@@ -1829,7 +1942,7 @@ partial class MainForm {
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 31F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 602F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-		tableLayoutPanel18.Size = new Size(1409, 672);
+		tableLayoutPanel18.Size = new Size(1409, 678);
 		tableLayoutPanel18.TabIndex = 0;
 		// 
 		// cmbCDCTables
@@ -1924,23 +2037,94 @@ partial class MainForm {
 		dgvCDCTables.Size = new Size(496, 446);
 		dgvCDCTables.TabIndex = 0;
 		// 
+		// toolStripContainer1
+		// 
+		// 
+		// toolStripContainer1.ContentPanel
+		// 
+		toolStripContainer1.ContentPanel.Size = new Size(1423, 711);
+		toolStripContainer1.Dock = DockStyle.Fill;
+		toolStripContainer1.Location = new Point(0, 0);
+		toolStripContainer1.Name = "toolStripContainer1";
+		toolStripContainer1.Size = new Size(1423, 736);
+		toolStripContainer1.TabIndex = 1;
+		toolStripContainer1.Text = "toolStripContainer1";
+		// 
+		// toolStripContainer2
+		// 
+		// 
+		// toolStripContainer2.ContentPanel
+		// 
+		toolStripContainer2.ContentPanel.AutoScroll = true;
+		toolStripContainer2.ContentPanel.Controls.Add(tabControl1);
+		toolStripContainer2.ContentPanel.Controls.Add(toolStripContainer1);
+		toolStripContainer2.ContentPanel.Size = new Size(1423, 736);
+		toolStripContainer2.Dock = DockStyle.Fill;
+		toolStripContainer2.Location = new Point(0, 0);
+		toolStripContainer2.Name = "toolStripContainer2";
+		toolStripContainer2.Size = new Size(1423, 761);
+		toolStripContainer2.TabIndex = 1;
+		toolStripContainer2.Text = "toolStripContainer2";
+		// 
+		// toolStripContainer3
+		// 
+		// 
+		// toolStripContainer3.ContentPanel
+		// 
+		toolStripContainer3.ContentPanel.Size = new Size(1423, 736);
+		toolStripContainer3.Dock = DockStyle.Fill;
+		toolStripContainer3.Location = new Point(0, 0);
+		toolStripContainer3.Name = "toolStripContainer3";
+		toolStripContainer3.Size = new Size(1423, 761);
+		toolStripContainer3.TabIndex = 12;
+		toolStripContainer3.Text = "toolStripContainer3";
+		// 
+		// toolStripContainer4
+		// 
+		// 
+		// toolStripContainer4.ContentPanel
+		// 
+		toolStripContainer4.ContentPanel.Size = new Size(1423, 736);
+		toolStripContainer4.Dock = DockStyle.Fill;
+		toolStripContainer4.Location = new Point(0, 0);
+		toolStripContainer4.Name = "toolStripContainer4";
+		toolStripContainer4.Size = new Size(1423, 761);
+		toolStripContainer4.TabIndex = 12;
+		toolStripContainer4.Text = "toolStripContainer4";
+		// 
+		// toolStripContainer5
+		// 
+		// 
+		// toolStripContainer5.ContentPanel
+		// 
+		toolStripContainer5.ContentPanel.Size = new Size(1423, 736);
+		toolStripContainer5.Dock = DockStyle.Fill;
+		toolStripContainer5.Location = new Point(0, 0);
+		toolStripContainer5.Name = "toolStripContainer5";
+		toolStripContainer5.Size = new Size(1423, 761);
+		toolStripContainer5.TabIndex = 13;
+		toolStripContainer5.Text = "toolStripContainer5";
+		// 
 		// MainForm
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
 		AutoScaleMode = AutoScaleMode.Font;
 		BackColor = Color.FromArgb(24, 26, 27);
-		ClientSize = new Size(1423, 728);
-		Controls.Add(tabControl1);
-		Controls.Add(statusStrip1);
+		ClientSize = new Size(1423, 761);
+		Controls.Add(toolStripContainer2);
+		Controls.Add(toolStripContainer3);
+		Controls.Add(toolStripContainer4);
+		Controls.Add(toolStripContainer5);
 		Margin = new Padding(4, 3, 4, 3);
 		Name = "MainForm";
 		Text = "Salesforce OAuth2 Authentication";
 		FormClosing += Form1_FormClosing;
 		Load += Form1_Load;
-		statusStrip1.ResumeLayout(false);
-		statusStrip1.PerformLayout();
 		tabControl1.ResumeLayout(false);
 		tbpSfObjects.ResumeLayout(false);
+		tbpSfObjects.PerformLayout();
+		toolStrip1.ResumeLayout(false);
+		toolStrip1.PerformLayout();
 		tableLayoutPanel3.ResumeLayout(false);
 		tableLayoutPanel3.PerformLayout();
 		((System.ComponentModel.ISupportInitialize)dgvCDCEnabledObjects).EndInit();
@@ -2025,8 +2209,18 @@ partial class MainForm {
 		((System.ComponentModel.ISupportInitialize)splitContainer6).EndInit();
 		splitContainer6.ResumeLayout(false);
 		((System.ComponentModel.ISupportInitialize)dgvCDCTables).EndInit();
+		toolStripContainer1.ResumeLayout(false);
+		toolStripContainer1.PerformLayout();
+		toolStripContainer2.ContentPanel.ResumeLayout(false);
+		toolStripContainer2.ResumeLayout(false);
+		toolStripContainer2.PerformLayout();
+		toolStripContainer3.ResumeLayout(false);
+		toolStripContainer3.PerformLayout();
+		toolStripContainer4.ResumeLayout(false);
+		toolStripContainer4.PerformLayout();
+		toolStripContainer5.ResumeLayout(false);
+		toolStripContainer5.PerformLayout();
 		ResumeLayout(false);
-		PerformLayout();
 		}
 
 	// Fix for CS0407: Ensure the event handler method 'button31_Click' has the correct return type 'void'  
@@ -2037,8 +2231,6 @@ partial class MainForm {
 	private System.Windows.Forms.Button btnAuthenticate;
 	private System.Windows.Forms.TextBox txtResult;
 	private Button btnGetTokenAsync;
-	private StatusStrip statusStrip1;
-	private ToolStripStatusLabel toolStripStatusLabel1;
 	private TabControl tabControl1;
 	private TabPage tbpOAuth2;
 	private TabPage tbpPubSub;
@@ -2177,4 +2369,22 @@ partial class MainForm {
 	private Label label5;
 	private Button btnGetPickList;
 	private ComboBox cmbField;
+	private ToolStrip toolStrip1;
+	private ToolStripButton newToolStripButton;
+	private ToolStripButton openToolStripButton;
+	private ToolStripButton saveToolStripButton;
+	private ToolStripButton printToolStripButton;
+	private ToolStripSeparator toolStripSeparator;
+	private ToolStripButton cutToolStripButton;
+	private ToolStripButton copyToolStripButton;
+	private ToolStripButton pasteToolStripButton;
+	private ToolStripSeparator toolStripSeparator1;
+	private ToolStripButton helpToolStripButton;
+	private ToolStripButton toolStripButton1;
+	private ToolStripLabel toolStripLabel1;
+	private ToolStripContainer toolStripContainer1;
+	private ToolStripContainer toolStripContainer2;
+	private ToolStripContainer toolStripContainer3;
+	private ToolStripContainer toolStripContainer4;
+	private ToolStripContainer toolStripContainer5;
 	}
