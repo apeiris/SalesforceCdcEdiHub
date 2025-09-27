@@ -1,4 +1,5 @@
 using System.Data;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -41,7 +42,7 @@ public partial class MainForm : Form {
 	#endregion enums
 	#region fields
 	private readonly IMemoryCache _cache;
-	private const string CacheKey = "SFoken";
+	private const string CacheKey = "SFToken";
 	private readonly IHost _host;
 	private readonly ISalesforceService _salesforceService;
 	private readonly PubSubService _pubSubService;
@@ -59,8 +60,6 @@ public partial class MainForm : Form {
 	static bool _hasUnInitDbArtefacts = false;
 	private List<string> _sfoTables = new List<string>(); // List of Salesforce objects from SQL Server
 	private List<string> _qTypeSelecter = new List<string>();
-	private readonly Dictionary<DataGridView, Dictionary<int, bool>> _rowHeaderCheckStatesMap
-		= new Dictionary<DataGridView, Dictionary<int, bool>>();
 	private DataTable _sourceTable; // Data source for dgvCDCEnabledObjects
 	private DataTable _destinationTable; // Data source for dgvRegisteredCDCCandidates
 	private DataTable _dtRegisteredCDCCandidates; // Data source for registered tables
@@ -86,9 +85,6 @@ public partial class MainForm : Form {
 	// do not handle _pubsubService.CDCEvent here, SqlServerLib will handle it
 	#endregion pubsubservice events
 	private System.Windows.Forms.Timer _statusTimer;
-
-
-
 	#region _sqlserver events
 	private void SqlEventObjectExist(object? sender, SqlObjectQuery e) {
 		_logger.LogInformation($"CDC {{e.ObjectType}} {{e.ObjectName}} exist={{e.Exist}}  id= {{e.Id}} ");
@@ -124,21 +120,16 @@ public partial class MainForm : Form {
 			DataRow r = e.table.Rows[0];
 			string result = string.Join(", ", e.table.Columns.Cast<DataColumn>()
 				.Select(col => $"{col.ColumnName}={r[col]}"));
-
-
 			_logger.LogDebug($"hello ***+++ here:{result}");
 			switch (e.table.TableName) {
 				case "Order__c":
-
 					string state = e.table.Rows[0]["Status__c"].ToString();
 					string oname = e.table.Rows[0]["name"].ToString();
 					switch (state) {
 						case "Submitted to Manufacturing":
 							_logger.LogDebug($"Handling chage state :[{state}] for order [{oname}]");
-
 							string OrderXml = _sqlServerLib.ExecuteScalar<string>($"EXEC [dbo].[GetOrderXml] @OrderName= N'{oname}'");
 							_logger.LogDebug($"length of =*{nameof(OrderXml)}*={OrderXml.Length}\n{OrderXml}");
-
 							var t = new Thread(() => Clipboard.SetText(OrderXml));
 							t.SetApartmentState(ApartmentState.STA);
 							t.Start();
@@ -156,7 +147,6 @@ public partial class MainForm : Form {
 				}
 			_logger.LogInformation($"SqlTableEvent hahaha {result}:**************************");
 			} catch (Exception ex) {
-
 			_logger.LogError(ex.Message);
 			}
 		}
@@ -437,7 +427,6 @@ public partial class MainForm : Form {
 	private void btnClearLog_Click(object sender, EventArgs e) {
 		rtxLog.Text = "";
 		}
-
 	private async Task<string> PopulateDbTableFromSfObject(string objectName) {
 		string schemaName = "sfo"; // Default schema name for Salesforce objects
 		JsonElement je = await _salesforceService.GetObjectSchemaAsync(objectName, default);
@@ -469,8 +458,48 @@ public partial class MainForm : Form {
 			Console.WriteLine($"name to create:{name}");
 			}
 		}
-
-
+	private void btnDispatchEvent_Click(object sender, EventArgs e) {
+		RadioButton? selectedRadio = pnlOrderStates.Controls
+			.OfType<RadioButton>()
+			.FirstOrDefault(r => r.Checked);
+		string json = string.Empty;
+		try {
+			int rowId = dgvOrderList.SelectedCells[0].RowIndex;
+			string orderId = dgvOrderList.Rows[rowId].Cells["Id"].Value?.ToString() ?? null;
+			string status = selectedRadio?.Text;
+			json = $"{{\"status__c\":\"{status}\",\"Order_Id__c\":\"{orderId}\"}}";
+			_salesforceService.UpsertSobject(lbxObjects.Text, null, json, useTooling: false);
+			ShowStatus($"Order {dgvOrderList.Rows[rowId].Cells["name"].Value?.ToString()} State is now set to {status} ", 10);
+			} catch (Exception ex) {
+			ShowStatus("Please select a Order and the Status");
+			}
+		}
+	private async void btnGetPickList_Click(object sender, EventArgs e) {
+		ShowStatus("btnGetPickList_Click...");
+		DataTable dt = await _salesforceService.GetPicklistValuesAsync("Order__c", "Status__c");
+		List<string?> plistValues = dt.AsEnumerable().Select(r => r.Field<string>("Value")).ToList();
+		dgvSchema.DataSource = dt;
+		_logger.LogInformation($"{dt.Rows.Count} : rows");
+		}
+	DataSet _dsOrder = new DataSet();
+	private async void btnRetrieveOrder_Click(object sender, EventArgs e) {
+		int ix = dgvOrderList.CurrentRow.Index;
+		string oname = dgvOrderList.Rows[ix].Cells["name"].Value.ToString();
+		string OrderXml = _sqlServerLib.ExecuteScalar<string>($"EXEC [dbo].[GetOrderXml] @OrderName= N'{oname}'");
+		_dsOrder.Clear();
+		_dsOrder.ReadXml(new System.IO.StringReader(OrderXml),XmlReadMode.InferSchema);
+		dgvOrder.DataSource = _dsOrder.Tables[0];
+		cmbOrderTables.DataSource = null;
+		cmbOrderTables.DataSource = _dsOrder.Tables.Cast<DataTable>().Select(t => t.TableName).ToList();
+		string x = WebUtility.HtmlEncode(OrderXml);
+		
+		if (webView21.CoreWebView2 == null) {
+			await webView21.EnsureCoreWebView2Async(null);
+			}
+		webView21.NavigateToString(x);
+		tabControl1.SelectedTab = tbpX12;
+		_logger.LogDebug($"length of =*{nameof(OrderXml)}*={OrderXml.Length}\n{OrderXml}");
+		}
 	private void updateFields() {
 		DataTable Fields = dgvObject.DataSource as DataTable;
 		_sqlServerLib.UpdateServerTable(Fields, "SELECT [Id],[IsExcluded]  FROM [dbo].[CDCObjectFields] ");
@@ -598,14 +627,6 @@ public partial class MainForm : Form {
 			}
 
 		}
-	private DataTable removeNullColumns(DataTable dt) {
-		foreach (DataColumn column in dt.Columns.Cast<DataColumn>().ToList()) {// Remove columns with all null values
-			if (dt.AsEnumerable().All(row => row.IsNull(column))) {
-				dt.Columns.Remove(column);
-				}
-			}
-		return dt;
-		}
 	private async void btnSoqlRDelete_Click(object sender, EventArgs e) {
 		if (dgvSOQLResult.SelectedRows.Count == 0) {
 			MessageBox.Show("Please select a row to delete.", "No Row Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -628,18 +649,32 @@ public partial class MainForm : Form {
 		_dtSoqlResults.AcceptChanges();
 		this.Invoke((Action)(() => dgvSOQLResult.Refresh()));
 		}
-	private string objectNameFromSoql(string soql) {
-		string pattern = @"FROM\s+([a-zA-Z0-9_]+)\b";
-		var match = Regex.Match(soql, @"FROM\s+([a-zA-Z0-9_]+)\b", RegexOptions.IgnoreCase);
-		return match.Groups[1].Value;
-		}
 	private async void btnBuildSelect_Click(object sender, EventArgs e) {
 
 		string oN = objectNameFromSoql(rtSoqlQuery.Text);
 		JsonElement je = chkUseTooling.Checked ? await _salesforceService.DescribeToolingObject(oN) : await _salesforceService.GetObjectSchemaAsync(oN, default);
 		rtSoqlQuery.Text = $"SELECT {string.Join(",", je.GetProperty("fields").EnumerateArray().Select(f => f.GetProperty("name")))} FROM {oN}";
 		}
+	private async void btnListEvents_Click(object sender, EventArgs e) {
+		showPlatformEvents();
+		}
+	private void button27_Click(object sender, EventArgs e) {
 
+		}
+	#endregion buttons
+	private string objectNameFromSoql(string soql) {
+		string pattern = @"FROM\s+([a-zA-Z0-9_]+)\b";
+		var match = Regex.Match(soql, @"FROM\s+([a-zA-Z0-9_]+)\b", RegexOptions.IgnoreCase);
+		return match.Groups[1].Value;
+		}
+	private DataTable removeNullColumns(DataTable dt) {
+		foreach (DataColumn column in dt.Columns.Cast<DataColumn>().ToList()) {// Remove columns with all null values
+			if (dt.AsEnumerable().All(row => row.IsNull(column))) {
+				dt.Columns.Remove(column);
+				}
+			}
+		return dt;
+		}
 	private async void showPlatformEvents(bool visible = true) {
 		dgvOrderList.Visible = visible;
 		if (!visible) return;
@@ -652,13 +687,6 @@ public partial class MainForm : Form {
 		lblPanel1.Text = $"{lbxObjects.Items.Count} Platform Events";
 
 		}
-	private async void btnListEvents_Click(object sender, EventArgs e) {
-		showPlatformEvents();
-		}
-	private void button27_Click(object sender, EventArgs e) {
-
-		}
-	#endregion buttons
 	#region dgv
 	private void dgvSOQLResult_RowsAdded(object? sender, DataGridViewRowsAddedEventArgs e) {
 		if (e.RowIndex >= 0 && dgvSOQLResult.Rows[e.RowIndex].IsNewRow == false) {
@@ -754,7 +782,6 @@ public partial class MainForm : Form {
 				}
 			}
 		}
-
 	private void dgvSOQLResult_CellContentClick(object sender, DataGridViewCellEventArgs e) {
 		DataTable dt = dgvSOQLResult.DataSource as DataTable;
 		if (dt == null) return;
@@ -768,7 +795,6 @@ public partial class MainForm : Form {
 	private void _dtSoqlResults_RowChanged(object sender, DataRowChangeEventArgs e) {
 		throw new NotImplementedException();
 		}
-
 	private void SalesforceService_AuthenticationAttempt(object sender, SalesforceService.AuthenticationEventArgs e) {
 		//Invoke((Action)(() => {
 		//	Log($"Authenticating: {e.Message}", e.LogLevel);
@@ -801,11 +827,9 @@ public partial class MainForm : Form {
 	public async Task<DataTable> RemoveRowsNotInColumnList(DataTable dataTable, List<string> allColumns) {
 		if (dataTable == null || !dataTable.Columns.Contains("Name") || allColumns == null)
 			return null;
-
 		var rowsToDelete = dataTable.AsEnumerable()
 			.Where(row => !allColumns.Contains(row.Field<string>("Name")))
 			.ToList();
-
 		foreach (var row in rowsToDelete) {
 			dataTable.Rows.Remove(row);
 			}
@@ -845,9 +869,6 @@ public partial class MainForm : Form {
 			MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
-
-
-
 	private void ShowStatus(string message, int seconds = 3) {
 		if (InvokeRequired) {
 			BeginInvoke(new Action(() => ShowStatus(message, seconds)));
@@ -878,9 +899,7 @@ public partial class MainForm : Form {
 
 		_statusTimer.Start();
 		}
-
 	private (string jsonString, int count) tableColumnToJsonArray(DataTable dt, string sColumn, string fColumn) {
-
 		List<string?> fields = dt.AsEnumerable()
 							.Where(r => !(r[fColumn] is bool b && b))
 								.Select(r => r[sColumn]?.ToString())
@@ -987,6 +1006,7 @@ public partial class MainForm : Form {
 			}
 		this.UseWaitCursor = true;
 		btnDispatchEvent.Visible = true;
+		btnRetrieveOrder.Visible = false;
 		await _semaphore.WaitAsync();
 		try {
 			string selectedTopic = lbxObjects.Text;
@@ -999,6 +1019,7 @@ public partial class MainForm : Form {
 				case enmObjectSource.SalesForce:
 					switch (selectedObject) {
 						case "Manufacturing_Event__e":
+							btnRetrieveOrder.Visible = true;
 							dgvOrderList.Visible = true;
 							splitContainer2.Visible = true;
 							//DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(selectedObject);// async operations outside the lock
@@ -1139,12 +1160,12 @@ public partial class MainForm : Form {
 				if (!_soqlLoaded) await LoadSOQL();
 				break;
 			case "tbpx12":
-				if (dgvRegisteredCDCCandidates.DataSource != null) {
-					DataTable dt = (DataTable)dgvRegisteredCDCCandidates.DataSource;
-					cmbCDCTables.DataSource = dt.AsEnumerable().Select(r => r.Field<string>("name"))
-											.Where(n => !string.IsNullOrEmpty(n))
-											.ToList();
-					}
+				//if (dgvRegisteredCDCCandidates.DataSource != null) {
+				//	DataTable dt = (DataTable)dgvRegisteredCDCCandidates.DataSource;
+				//	cmbOrderTables.DataSource = dt.AsEnumerable().Select(r => r.Field<string>("name"))
+				//							.Where(n => !string.IsNullOrEmpty(n))
+				//							.ToList();
+				//	}
 				break;
 			default:
 
@@ -1181,9 +1202,6 @@ public partial class MainForm : Form {
 			return Message;
 			}
 		}
-
-
-
 	#endregion utility classes
 	private async void button30_Click(object sender, EventArgs e) {
 		Size sw = new Size(tabControl1.ClientSize.Width, splitcSoql.Panel2.ClientSize.Height);
@@ -1198,9 +1216,6 @@ public partial class MainForm : Form {
 	private async void button31_Click(object sender, EventArgs e) {
 		bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", "0v8DP0000004EsyYAE");
 		}
-
-
-
 	private void btnDeleteCmbObjectSelected_Click(object sender, EventArgs e) {
 		var i = cmbObjects.SelectedItem;
 		if (i != null) {
@@ -1215,9 +1230,12 @@ public partial class MainForm : Form {
 		if (cmbObjects.SelectedItem == null) return;
 		lblCDCName.Text = SalesforceService.ObjectNameToChangeEvent(cmbObjects.SelectedItem.ToString());
 		}
-	private void cmbCDCTables_SelectedIndexChanged(object sender, EventArgs e) {
-		string x = cmbCDCTables.SelectedItem?.ToString() ?? string.Empty;
-		dgvCDCTables.DataSource = _sqlServerLib.Select($"select * from sfo.{x}");
+	private void cmbOrderTables_SelectedIndexChanged(object sender, EventArgs e) {
+		if (_dsOrder.Tables.Count < 1) return;
+		
+		string tableName = cmbOrderTables.SelectedItem?.ToString() ?? string.Empty;
+		dgvOrder.DataSource= _dsOrder.Tables[tableName];
+
 		}
 	private void grpDocChanged(object sender, EventArgs e) {
 		var ISA = _x12.CreateISA(1, false, "s12312", "r123123");
@@ -1225,27 +1243,5 @@ public partial class MainForm : Form {
 	private void btnLogTest_Click(object sender, EventArgs e) {
 		_logger.LogError("This is an error message from the button click event.");
 		_logger.LogEmail("This is an email log message from the button click event.");
-		}
-	private void btnDispatchEvent_Click(object sender, EventArgs e) {
-		RadioButton? selectedRadio = pnlOrderStates.Controls
-			.OfType<RadioButton>()
-			.FirstOrDefault(r => r.Checked);
-		string json = string.Empty;
-		try {
-			int rowId = dgvOrderList.SelectedCells[0].RowIndex;
-			string orderId = dgvOrderList.Rows[rowId].Cells["Id"].Value?.ToString() ?? null;
-			string status = selectedRadio?.Text;
-			json = $"{{\"status__c\":\"{status}\",\"Order_Id__c\":\"{orderId}\"}}";
-			_salesforceService.UpsertSobject(lbxObjects.Text, null, json, useTooling: false);
-			} catch (Exception ex) {
-			ShowStatus("Please select a Order and the Status");
-			}
-		}
-	private async void btnGetPickList_Click(object sender, EventArgs e) {
-		ShowStatus("btnGetPickList_Click...");
-		DataTable dt = await _salesforceService.GetPicklistValuesAsync("Order__c", "Status__c");
-		List<string?> plistValues = dt.AsEnumerable().Select(r => r.Field<string>("Value")).ToList();
-		dgvSchema.DataSource = dt;
-		_logger.LogInformation($"{dt.Rows.Count} : rows");
 		}
 	}

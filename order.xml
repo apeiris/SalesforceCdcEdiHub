@@ -1,7 +1,7 @@
 ﻿<Orders>
 	<Order Id="a07Ka00000FEYUsIAP" Name="O-00004">
 		<CreatedDate>2025-09-08T14:48:35</CreatedDate>
-		<Status__c>Submitted to Manufacturing</Status__c>
+		<Status__c>In Production</Status__c>
 		<Account Id="001Ka00004Q8UuSIAV">
 			<AccountNumber>EDI-0012</AccountNumber>
 			<AccountName>Trailblazers</AccountName>
@@ -22,89 +22,35 @@
 				<Title>EDI</Title>
 			</Contact>
 		</Account>
-		<OrderItem Id="a06Ka00000Qoz6bIAB-L">
+		<OrderItem Id="a06Ka00000Qoz6bIAB-S" SeqNo="1">
 			<Price>1500.0000</Price>
 			<Quantity>1</Quantity>
-			<Product Id="a09Ka00000Gg1PaIAJ">
-				<Product_Name>FUSE X1</Product_Name>
-			</Product>
+			<Product_Id>a09Ka00000Gg1PaIAJ</Product_Id>
+			<Product_Name>FUSE X1</Product_Name>
 		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6bIAB-M">
-			<Price>1500.0000</Price>
-			<Quantity>1</Quantity>
-			<Product Id="a09Ka00000Gg1PaIAJ">
-				<Product_Name>FUSE X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6bIAB-S">
-			<Price>1500.0000</Price>
-			<Quantity>1</Quantity>
-			<Product Id="a09Ka00000Gg1PaIAJ">
-				<Product_Name>FUSE X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6gIAB-L">
+		<OrderItem Id="a06Ka00000Qoz6gIAB-S" SeqNo="2">
 			<Price>720.0000</Price>
 			<Quantity>1</Quantity>
-			<Product Id="a09Ka00000Gg1PmIAJ">
-				<Product_Name>VOLT X1</Product_Name>
-			</Product>
+			<Product_Id>a09Ka00000Gg1PmIAJ</Product_Id>
+			<Product_Name>VOLT X1</Product_Name>
 		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6gIAB-M">
-			<Price>720.0000</Price>
+		<OrderItem Id="a06Ka00000Qoz6RIAR-S" SeqNo="3">
+			<Price>4200.0000</Price>
+			<Quantity>9</Quantity>
+			<Product_Id>a09Ka00000Gg1PeIAJ</Product_Id>
+			<Product_Name>DYNAMO X1</Product_Name>
+		</OrderItem>
+		<OrderItem Id="a06Ka00000Qoz6WIAR-M" SeqNo="4">
+			<Price>480.0000</Price>
+			<Quantity>2</Quantity>
+			<Product_Id>a09Ka00000Gg1PhIAJ</Product_Id>
+			<Product_Name>DYNAMO X4</Product_Name>
+		</OrderItem>
+		<OrderItem Id="a06Ka00000Qoz6WIAR-S" SeqNo="5">
+			<Price>480.0000</Price>
 			<Quantity>1</Quantity>
-			<Product Id="a09Ka00000Gg1PmIAJ">
-				<Product_Name>VOLT X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6gIAB-S">
-			<Price>720.0000</Price>
-			<Quantity>1</Quantity>
-			<Product Id="a09Ka00000Gg1PmIAJ">
-				<Product_Name>VOLT X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6RIAR-L">
-			<Price>4200.0000</Price>
-			<Quantity>9</Quantity>
-			<Product Id="a09Ka00000Gg1PeIAJ">
-				<Product_Name>DYNAMO X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6RIAR-M">
-			<Price>4200.0000</Price>
-			<Quantity>9</Quantity>
-			<Product Id="a09Ka00000Gg1PeIAJ">
-				<Product_Name>DYNAMO X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6RIAR-S">
-			<Price>4200.0000</Price>
-			<Quantity>9</Quantity>
-			<Product Id="a09Ka00000Gg1PeIAJ">
-				<Product_Name>DYNAMO X1</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6WIAR-L">
-			<Price>4680.0000</Price>
-			<Quantity>8</Quantity>
-			<Product Id="a09Ka00000Gg1PhIAJ">
-				<Product_Name>DYNAMO X4</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6WIAR-M">
-			<Price>4680.0000</Price>
-			<Quantity>8</Quantity>
-			<Product Id="a09Ka00000Gg1PhIAJ">
-				<Product_Name>DYNAMO X4</Product_Name>
-			</Product>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6WIAR-S">
-			<Price>4680.0000</Price>
-			<Quantity>8</Quantity>
-			<Product Id="a09Ka00000Gg1PhIAJ">
-				<Product_Name>DYNAMO X4</Product_Name>
-			</Product>
+			<Product_Id>a09Ka00000Gg1PhIAJ</Product_Id>
+			<Product_Name>DYNAMO X4</Product_Name>
 		</OrderItem>
 	</Order>
 </Orders>

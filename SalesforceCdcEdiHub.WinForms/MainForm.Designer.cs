@@ -92,9 +92,10 @@ partial class MainForm {
 		pnlOrderStates = new Panel();
 		label4 = new Label();
 		radioButton4 = new RadioButton();
+		btnDispatchEvent = new Button();
+		btnRetrieveOrder = new Button();
 		btnDeleteCDCRegistration = new Button();
 		btnListEvents = new Button();
-		btnDispatchEvent = new Button();
 		tableLayoutPanel4 = new TableLayoutPanel();
 		dgvObjectUrls = new DataGridView();
 		lblRelations = new Label();
@@ -157,19 +158,19 @@ partial class MainForm {
 		lblCDCStatus = new Label();
 		tbpX12 = new TabPage();
 		tableLayoutPanel18 = new TableLayoutPanel();
-		cmbCDCTables = new ComboBox();
+		cmbOrderTables = new ComboBox();
 		grpx = new GroupBox();
 		radioButton3 = new RadioButton();
 		radioButton2 = new RadioButton();
 		radioButton1 = new RadioButton();
-		splitContainer7 = new SplitContainer();
-		splitContainer6 = new SplitContainer();
-		dgvCDCTables = new DataGridView();
+		dgvOrder = new DataGridView();
+		webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
 		toolStripContainer1 = new ToolStripContainer();
 		toolStripContainer2 = new ToolStripContainer();
 		toolStripContainer3 = new ToolStripContainer();
 		toolStripContainer4 = new ToolStripContainer();
 		toolStripContainer5 = new ToolStripContainer();
+		toolStripContainer6 = new ToolStripContainer();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
 		toolStrip1.SuspendLayout();
@@ -236,19 +237,15 @@ partial class MainForm {
 		tbpX12.SuspendLayout();
 		tableLayoutPanel18.SuspendLayout();
 		grpx.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)splitContainer7).BeginInit();
-		splitContainer7.Panel1.SuspendLayout();
-		splitContainer7.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)splitContainer6).BeginInit();
-		splitContainer6.Panel1.SuspendLayout();
-		splitContainer6.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)dgvCDCTables).BeginInit();
+		((System.ComponentModel.ISupportInitialize)dgvOrder).BeginInit();
+		((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
 		toolStripContainer1.SuspendLayout();
 		toolStripContainer2.ContentPanel.SuspendLayout();
 		toolStripContainer2.SuspendLayout();
 		toolStripContainer3.SuspendLayout();
 		toolStripContainer4.SuspendLayout();
 		toolStripContainer5.SuspendLayout();
+		toolStripContainer6.SuspendLayout();
 		SuspendLayout();
 		// 
 		// btnAuthenticate
@@ -1090,9 +1087,10 @@ partial class MainForm {
 		tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 49.3606148F));
 		tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50.6393852F));
 		tableLayoutPanel2.Controls.Add(pnlOrderStates, 0, 0);
-		tableLayoutPanel2.Controls.Add(btnDeleteCDCRegistration, 0, 3);
-		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 2);
 		tableLayoutPanel2.Controls.Add(btnDispatchEvent, 1, 2);
+		tableLayoutPanel2.Controls.Add(btnRetrieveOrder, 0, 2);
+		tableLayoutPanel2.Controls.Add(btnDeleteCDCRegistration, 1, 4);
+		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 3);
 		tableLayoutPanel2.Dock = DockStyle.Fill;
 		tableLayoutPanel2.Location = new Point(3, 343);
 		tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -1139,30 +1137,6 @@ partial class MainForm {
 		radioButton4.Text = "Draft";
 		radioButton4.UseVisualStyleBackColor = true;
 		// 
-		// btnDeleteCDCRegistration
-		// 
-		btnDeleteCDCRegistration.BackColor = Color.Green;
-		btnDeleteCDCRegistration.ForeColor = Color.Yellow;
-		btnDeleteCDCRegistration.Location = new Point(3, 223);
-		btnDeleteCDCRegistration.Name = "btnDeleteCDCRegistration";
-		btnDeleteCDCRegistration.Size = new Size(155, 44);
-		btnDeleteCDCRegistration.TabIndex = 8;
-		btnDeleteCDCRegistration.Text = "Delete Subscription";
-		btnDeleteCDCRegistration.UseVisualStyleBackColor = false;
-		btnDeleteCDCRegistration.Click += btnDeleteCDCSubscription_Click;
-		// 
-		// btnListEvents
-		// 
-		btnListEvents.BackColor = Color.Green;
-		btnListEvents.ForeColor = Color.Yellow;
-		btnListEvents.Location = new Point(3, 168);
-		btnListEvents.Name = "btnListEvents";
-		btnListEvents.Size = new Size(155, 44);
-		btnListEvents.TabIndex = 9;
-		btnListEvents.Text = "List Platform Events";
-		btnListEvents.UseVisualStyleBackColor = false;
-		btnListEvents.Click += btnListEvents_Click;
-		// 
 		// btnDispatchEvent
 		// 
 		btnDispatchEvent.BackColor = Color.Green;
@@ -1174,6 +1148,42 @@ partial class MainForm {
 		btnDispatchEvent.Text = "Dispatch Event";
 		btnDispatchEvent.UseVisualStyleBackColor = false;
 		btnDispatchEvent.Click += btnDispatchEvent_Click;
+		// 
+		// btnRetrieveOrder
+		// 
+		btnRetrieveOrder.BackColor = Color.Green;
+		btnRetrieveOrder.ForeColor = Color.Yellow;
+		btnRetrieveOrder.Location = new Point(3, 168);
+		btnRetrieveOrder.Name = "btnRetrieveOrder";
+		btnRetrieveOrder.Size = new Size(155, 44);
+		btnRetrieveOrder.TabIndex = 13;
+		btnRetrieveOrder.Text = "Retrive Order ";
+		btnRetrieveOrder.UseVisualStyleBackColor = false;
+		btnRetrieveOrder.Click += btnRetrieveOrder_Click;
+		// 
+		// btnDeleteCDCRegistration
+		// 
+		btnDeleteCDCRegistration.BackColor = Color.Green;
+		btnDeleteCDCRegistration.ForeColor = Color.Yellow;
+		btnDeleteCDCRegistration.Location = new Point(196, 275);
+		btnDeleteCDCRegistration.Name = "btnDeleteCDCRegistration";
+		btnDeleteCDCRegistration.Size = new Size(155, 44);
+		btnDeleteCDCRegistration.TabIndex = 8;
+		btnDeleteCDCRegistration.Text = "Delete Subscription";
+		btnDeleteCDCRegistration.UseVisualStyleBackColor = false;
+		btnDeleteCDCRegistration.Click += btnDeleteCDCSubscription_Click;
+		// 
+		// btnListEvents
+		// 
+		btnListEvents.BackColor = Color.Green;
+		btnListEvents.ForeColor = Color.Yellow;
+		btnListEvents.Location = new Point(3, 223);
+		btnListEvents.Name = "btnListEvents";
+		btnListEvents.Size = new Size(155, 44);
+		btnListEvents.TabIndex = 9;
+		btnListEvents.Text = "List Platform Events";
+		btnListEvents.UseVisualStyleBackColor = false;
+		btnListEvents.Click += btnListEvents_Click;
 		// 
 		// tableLayoutPanel4
 		// 
@@ -1928,42 +1938,45 @@ partial class MainForm {
 		// tableLayoutPanel18
 		// 
 		tableLayoutPanel18.ColumnCount = 3;
-		tableLayoutPanel18.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 815F));
+		tableLayoutPanel18.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 581F));
 		tableLayoutPanel18.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-		tableLayoutPanel18.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel18.Controls.Add(cmbCDCTables, 0, 0);
+		tableLayoutPanel18.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 549F));
+		tableLayoutPanel18.Controls.Add(cmbOrderTables, 0, 0);
 		tableLayoutPanel18.Controls.Add(grpx, 1, 0);
-		tableLayoutPanel18.Controls.Add(splitContainer7, 0, 2);
+		tableLayoutPanel18.Controls.Add(dgvOrder, 0, 2);
+		tableLayoutPanel18.Controls.Add(webView21, 1, 2);
 		tableLayoutPanel18.Dock = DockStyle.Fill;
 		tableLayoutPanel18.Location = new Point(3, 3);
 		tableLayoutPanel18.Name = "tableLayoutPanel18";
-		tableLayoutPanel18.RowCount = 4;
+		tableLayoutPanel18.RowCount = 5;
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 31F));
-		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 602F));
+		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 271F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 288F));
+		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
 		tableLayoutPanel18.Size = new Size(1409, 678);
 		tableLayoutPanel18.TabIndex = 0;
 		// 
-		// cmbCDCTables
+		// cmbOrderTables
 		// 
-		cmbCDCTables.FormattingEnabled = true;
-		cmbCDCTables.Location = new Point(3, 3);
-		cmbCDCTables.Name = "cmbCDCTables";
-		cmbCDCTables.Size = new Size(400, 23);
-		cmbCDCTables.TabIndex = 1;
-		cmbCDCTables.SelectedIndexChanged += cmbCDCTables_SelectedIndexChanged;
+		cmbOrderTables.FormattingEnabled = true;
+		cmbOrderTables.Location = new Point(3, 3);
+		cmbOrderTables.Name = "cmbOrderTables";
+		cmbOrderTables.Size = new Size(400, 23);
+		cmbOrderTables.TabIndex = 1;
+		cmbOrderTables.SelectedIndexChanged += cmbOrderTables_SelectedIndexChanged;
 		// 
 		// grpx
 		// 
 		grpx.Controls.Add(radioButton3);
 		grpx.Controls.Add(radioButton2);
 		grpx.Controls.Add(radioButton1);
-		grpx.Location = new Point(815, 0);
+		grpx.Location = new Point(581, 0);
 		grpx.Margin = new Padding(0);
 		grpx.Name = "grpx";
 		grpx.Padding = new Padding(0);
-		grpx.Size = new Size(574, 30);
+		grpx.Size = new Size(279, 30);
 		grpx.TabIndex = 3;
 		grpx.TabStop = false;
 		// 
@@ -2002,40 +2015,28 @@ partial class MainForm {
 		radioButton1.UseVisualStyleBackColor = true;
 		radioButton1.CheckedChanged += grpDocChanged;
 		// 
-		// splitContainer7
+		// dgvOrder
 		// 
-		splitContainer7.Location = new Point(3, 64);
-		splitContainer7.Name = "splitContainer7";
-		splitContainer7.Orientation = Orientation.Horizontal;
+		dgvOrder.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+		dgvOrder.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		dgvOrder.Location = new Point(3, 64);
+		dgvOrder.Name = "dgvOrder";
+		dgvOrder.Size = new Size(575, 265);
+		dgvOrder.TabIndex = 0;
 		// 
-		// splitContainer7.Panel1
+		// webView21
 		// 
-		splitContainer7.Panel1.Controls.Add(splitContainer6);
-		splitContainer7.Size = new Size(809, 501);
-		splitContainer7.SplitterDistance = 446;
-		splitContainer7.TabIndex = 4;
-		// 
-		// splitContainer6
-		// 
-		splitContainer6.Dock = DockStyle.Fill;
-		splitContainer6.Location = new Point(0, 0);
-		splitContainer6.Name = "splitContainer6";
-		// 
-		// splitContainer6.Panel1
-		// 
-		splitContainer6.Panel1.Controls.Add(dgvCDCTables);
-		splitContainer6.Size = new Size(809, 446);
-		splitContainer6.SplitterDistance = 496;
-		splitContainer6.TabIndex = 0;
-		// 
-		// dgvCDCTables
-		// 
-		dgvCDCTables.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-		dgvCDCTables.Dock = DockStyle.Fill;
-		dgvCDCTables.Location = new Point(0, 0);
-		dgvCDCTables.Name = "dgvCDCTables";
-		dgvCDCTables.Size = new Size(496, 446);
-		dgvCDCTables.TabIndex = 0;
+		webView21.AllowExternalDrop = true;
+		tableLayoutPanel18.SetColumnSpan(webView21, 2);
+		webView21.CreationProperties = null;
+		webView21.DefaultBackgroundColor = Color.White;
+		webView21.Dock = DockStyle.Fill;
+		webView21.Location = new Point(584, 64);
+		webView21.Name = "webView21";
+		tableLayoutPanel18.SetRowSpan(webView21, 4);
+		webView21.Size = new Size(822, 611);
+		webView21.TabIndex = 4;
+		webView21.ZoomFactor = 1D;
 		// 
 		// toolStripContainer1
 		// 
@@ -2105,6 +2106,19 @@ partial class MainForm {
 		toolStripContainer5.TabIndex = 13;
 		toolStripContainer5.Text = "toolStripContainer5";
 		// 
+		// toolStripContainer6
+		// 
+		// 
+		// toolStripContainer6.ContentPanel
+		// 
+		toolStripContainer6.ContentPanel.Size = new Size(1423, 736);
+		toolStripContainer6.Dock = DockStyle.Fill;
+		toolStripContainer6.Location = new Point(0, 0);
+		toolStripContainer6.Name = "toolStripContainer6";
+		toolStripContainer6.Size = new Size(1423, 761);
+		toolStripContainer6.TabIndex = 4;
+		toolStripContainer6.Text = "toolStripContainer6";
+		// 
 		// MainForm
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -2115,6 +2129,7 @@ partial class MainForm {
 		Controls.Add(toolStripContainer3);
 		Controls.Add(toolStripContainer4);
 		Controls.Add(toolStripContainer5);
+		Controls.Add(toolStripContainer6);
 		Margin = new Padding(4, 3, 4, 3);
 		Name = "MainForm";
 		Text = "Salesforce OAuth2 Authentication";
@@ -2202,13 +2217,8 @@ partial class MainForm {
 		tableLayoutPanel18.ResumeLayout(false);
 		grpx.ResumeLayout(false);
 		grpx.PerformLayout();
-		splitContainer7.Panel1.ResumeLayout(false);
-		((System.ComponentModel.ISupportInitialize)splitContainer7).EndInit();
-		splitContainer7.ResumeLayout(false);
-		splitContainer6.Panel1.ResumeLayout(false);
-		((System.ComponentModel.ISupportInitialize)splitContainer6).EndInit();
-		splitContainer6.ResumeLayout(false);
-		((System.ComponentModel.ISupportInitialize)dgvCDCTables).EndInit();
+		((System.ComponentModel.ISupportInitialize)dgvOrder).EndInit();
+		((System.ComponentModel.ISupportInitialize)webView21).EndInit();
 		toolStripContainer1.ResumeLayout(false);
 		toolStripContainer1.PerformLayout();
 		toolStripContainer2.ContentPanel.ResumeLayout(false);
@@ -2220,6 +2230,8 @@ partial class MainForm {
 		toolStripContainer4.PerformLayout();
 		toolStripContainer5.ResumeLayout(false);
 		toolStripContainer5.PerformLayout();
+		toolStripContainer6.ResumeLayout(false);
+		toolStripContainer6.PerformLayout();
 		ResumeLayout(false);
 		}
 
@@ -2350,16 +2362,7 @@ partial class MainForm {
 	private Button btnListEvents;
 	private TabPage tabPage1;
 	private TabPage tbpX12;
-	private TableLayoutPanel tableLayoutPanel18;
-	private SplitContainer splitContainer6;
-	private DataGridView dgvCDCTables;
-	private ComboBox cmbCDCTables;
-	private GroupBox grpx;
-	private RadioButton radioButton3;
-	private RadioButton radioButton2;
-	private RadioButton radioButton1;
 	private RichTextBox rtxLog;
-	private SplitContainer splitContainer7;
 	private Button btnLogTest;
 	private Button btnDispatchEvent;
 	private DataGridView dgvOrderList;
@@ -2387,4 +2390,14 @@ partial class MainForm {
 	private ToolStripContainer toolStripContainer3;
 	private ToolStripContainer toolStripContainer4;
 	private ToolStripContainer toolStripContainer5;
+	private TableLayoutPanel tableLayoutPanel18;
+	private ComboBox cmbOrderTables;
+	private GroupBox grpx;
+	private RadioButton radioButton3;
+	private RadioButton radioButton2;
+	private RadioButton radioButton1;
+	private DataGridView dgvOrder;
+	private ToolStripContainer toolStripContainer6;
+	private Button btnRetrieveOrder;
+	private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
 	}
