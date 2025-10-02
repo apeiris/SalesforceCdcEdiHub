@@ -1,56 +1,56 @@
-﻿<Orders>
-	<Order Id="a07Ka00000FEYUsIAP" Name="O-00004">
-		<CreatedDate>2025-09-08T14:48:35</CreatedDate>
-		<Status__c>In Production</Status__c>
-		<Account Id="001Ka00004Q8UuSIAV">
-			<AccountNumber>EDI-0012</AccountNumber>
-			<AccountName>Trailblazers</AccountName>
-			<AccountType>Customer - Channel</AccountType>
-			<BillingStreet>1095 Avenue of the Americas</BillingStreet>
-			<BillingCity>New York</BillingCity>
-			<BillingState>NY</BillingState>
-			<BillingPostalCode>10036</BillingPostalCode>
-			<BillingCountry>USA</BillingCountry>
-			<ShippingStreet>2905 - hjk21,Iceboat Terrace</ShippingStreet>
-			<ShippingCity>Toronto</ShippingCity>
-			<ShippingState>ON</ShippingState>
-			<ShippingPostalCode>M5V 4A9</ShippingPostalCode>
-			<ShippingCountry>CA</ShippingCountry>
-			<Contact Id="003Ka00003wWUEJIA4">
-				<AccountId>001Ka00004Q8UuSIAV</AccountId>
-				<Email>mapeiris@hotmail.com</Email>
-				<Title>EDI</Title>
-			</Contact>
-		</Account>
-		<OrderItem Id="a06Ka00000Qoz6bIAB-S" SeqNo="1">
-			<Price>1500.0000</Price>
-			<Quantity>1</Quantity>
-			<Product_Id>a09Ka00000Gg1PaIAJ</Product_Id>
-			<Product_Name>FUSE X1</Product_Name>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6gIAB-S" SeqNo="2">
-			<Price>720.0000</Price>
-			<Quantity>1</Quantity>
-			<Product_Id>a09Ka00000Gg1PmIAJ</Product_Id>
-			<Product_Name>VOLT X1</Product_Name>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6RIAR-S" SeqNo="3">
-			<Price>4200.0000</Price>
-			<Quantity>9</Quantity>
-			<Product_Id>a09Ka00000Gg1PeIAJ</Product_Id>
-			<Product_Name>DYNAMO X1</Product_Name>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6WIAR-M" SeqNo="4">
-			<Price>480.0000</Price>
-			<Quantity>2</Quantity>
-			<Product_Id>a09Ka00000Gg1PhIAJ</Product_Id>
-			<Product_Name>DYNAMO X4</Product_Name>
-		</OrderItem>
-		<OrderItem Id="a06Ka00000Qoz6WIAR-S" SeqNo="5">
-			<Price>480.0000</Price>
-			<Quantity>1</Quantity>
-			<Product_Id>a09Ka00000Gg1PhIAJ</Product_Id>
-			<Product_Name>DYNAMO X4</Product_Name>
-		</OrderItem>
-	</Order>
-</Orders>
+﻿<Order Id="a07Ka00000FEYUsIAP" Name="O-00004">
+	<CreatedDate>2025-09-08T14:48:35</CreatedDate>
+	<Status__c>Completed</Status__c>
+	<EdiStatus>Pending</EdiStatus>
+	<EDI_Seed>1</EDI_Seed>
+	<Account Id="001Ka00004Q8UuSIAV">
+		<AccountNumber>EDI-0012</AccountNumber>
+		<AccountName>Trailblazers</AccountName>
+		<AccountType>Customer - Channel</AccountType>
+		<BillingStreet>1095 Avenue of the Americas</BillingStreet>
+		<BillingCity>New York</BillingCity>
+		<BillingState>NY</BillingState>
+		<BillingPostalCode>10036</BillingPostalCode>
+		<BillingCountry>USA</BillingCountry>
+		<ShippingStreet>2905 - hjk21,Iceboat Terrace</ShippingStreet>
+		<ShippingCity>Toronto</ShippingCity>
+		<ShippingState>ON</ShippingState>
+		<ShippingPostalCode>M5V 4A9</ShippingPostalCode>
+		<ShippingCountry>CA</ShippingCountry>
+		<Contact Id="003Ka00003wWUEJIA4">
+			<AccountId>001Ka00004Q8UuSIAV</AccountId>
+			<Email>mapeiris@hotmail.com</Email>
+			<Title>EDI</Title>
+		</Contact>
+	</Account>
+	<OrderItem Id="a06Ka00000Qoz6bIAB-S" SeqNo="1">
+		<Price>1500.0000</Price>
+		<Quantity>1</Quantity>
+		<Product_Id>a09Ka00000Gg1PaIAJ</Product_Id>
+		<Product_Name>FUSE X1</Product_Name>
+	</OrderItem>
+	<OrderItem Id="a06Ka00000Qoz6gIAB-S" SeqNo="2">
+		<Price>720.0000</Price>
+		<Quantity>1</Quantity>
+		<Product_Id>a09Ka00000Gg1PmIAJ</Product_Id>
+		<Product_Name>VOLT X1</Product_Name>
+	</OrderItem>
+	<OrderItem Id="a06Ka00000Qoz6RIAR-S" SeqNo="3">
+		<Price>4200.0000</Price>
+		<Quantity>9</Quantity>
+		<Product_Id>a09Ka00000Gg1PeIAJ</Product_Id>
+		<Product_Name>DYNAMO X1</Product_Name>
+	</OrderItem>
+	<OrderItem Id="a06Ka00000Qoz6WIAR-M" SeqNo="4">
+		<Price>480.0000</Price>
+		<Quantity>2</Quantity>
+		<Product_Id>a09Ka00000Gg1PhIAJ</Product_Id>
+		<Product_Name>DYNAMO X4</Product_Name>
+	</OrderItem>
+	<OrderItem Id="a06Ka00000Qoz6WIAR-S" SeqNo="5">
+		<Price>480.0000</Price>
+		<Quantity>1</Quantity>
+		<Product_Id>a09Ka00000Gg1PhIAJ</Product_Id>
+		<Product_Name>DYNAMO X4</Product_Name>
+	</OrderItem>
+</Order>

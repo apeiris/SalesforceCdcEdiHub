@@ -109,21 +109,74 @@ sequenceDiagram
 
     S->>S: Create Draft Order
     S->>AS2: Submit Order for Review
-    AS2->>M: Transmit Order (X12-850)
+    AS2->>M: Transmit Order (X12-850-PO)
     M->>M: Review Order
-    alt Review Required?
+    alt Revision Required?
         M->>AS2: Request Revision (Email with details)
-        note left of M: Email sent with required revision details 
+        note left of M: Email sent with required revision details
         loop Revisions Needed
-            S->>AS2: Submitted to Manufacturing
+            S->>AS2: Submit Revised Order
             AS2->>M: Transmit Revised Order
             M->>M: Review Revised Order
         end
     else No Revisions
         M->>M: Accept Order
-        M->>AS2: Confirm Acceptance (X12-855)
-        AS2->>S: In Production         
+        M->>AS2: Confirm Acceptance (X12-855-ACK)
+        AS2->>S: Update Status: In Production
     end
     M->>M: Start Production
-    M->>S: (Order) Completed (X12-856)
+    M->>M: Complete Production
+    M->>M: Prepare Shipment
+    M->>AS2: Send ShipNotice (X12-856-ASN)
+    AS2->>S: Update Status: Update Shipping Info
+    M->>AS2: Send Invoice (x12-810-INV)
+    AS2->>S: Update Status: Order Completed
+```
+
+---
+## Partnership defintions for EDI Integration
+The E-Bikes Sales(E-Bikes-S) and E-Bikes Manufacturing (E-Bikes-M) are seperate entities. They operate independently but collaborate closely on order processing and fulfillment. The E-Bikes Sales team focuses on customer interactions, order management, and sales strategies, while the E-Bikes Manufacturing team handles production, quality control, and logistics. Their partnership ensures a seamless experience for customers from order placement to delivery.<br>
+
+**E-Bikes-S**: Manages customer orders, sales processes, and order submissions to the manufacturer.
+
+**E-Bikes-M**: Responsible for producing the bikes, managing inventory, and fulfilling orders received from E-Bikes Sales.
+
+Based on the partnership, the E-Bikes Sales team submits orders to the E-Bikes Manufacturing team for production and fulfillment. The manufacturing team reviews, processes, and ships the orders back to the sales team for delivery to customers.
+as such, the E-Bikes-S needs to maintain agreed upon partnership details with E-Bikes-M for EDI transactions.
+susch as AS2 identifiers, certificates, and endpoint URLs. ensure these details are correctly configured in the application settings to facilitate smooth EDI communication.
+###
+Creating Partnership profile in the **E-Bikes-S** system:
+1. **AS2 Identifier**: Unique identifier for E-Bikes-S in AS2 communications (e.g., `EBIKES-S`). And the corresponding identifier for E-Bikes-M (e.g., `EBIKES-M`).
+
+```mermaid
+flowchart LR
+    A[OpenAS2 Partnership Details] -->|REST API| B[Middleware / Integration Service]
+    B -->|Salesforce REST API| C[Salesforce Custom Object: Trading_Partner__c]
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

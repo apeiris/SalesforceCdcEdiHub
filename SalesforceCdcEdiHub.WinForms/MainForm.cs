@@ -29,7 +29,7 @@ public partial class MainForm : Form {
 		SqlServer,
 		sfPlatformEvents,
 		None
-		}
+	}
 	public enum tbp {
 		objects,
 		pubsub,
@@ -37,7 +37,7 @@ public partial class MainForm : Form {
 		DescribeO,
 		EventLog,
 		CDCEvents
-		}
+	}
 
 	#endregion enums
 	#region fields
@@ -75,16 +75,15 @@ public partial class MainForm : Form {
 	private Dictionary<TabPage, (Color bcolor, Color fcolor)> _tabColors = new Dictionary<TabPage, (Color, Color)>();
 	private static readonly List<string> orderStates = new List<string> { "Revision Required", "In Production", "Completed" };
 	#endregion fields
-	#region events
+	#region events handlers and delegates
 	#region pubsubservice events
 	private void PubSubService_ProgressUpdated(object sender, ProgressUpdateEventArgs e) {
 		if (lbxCDCTopics.InvokeRequired) {
 			lbxCDCTopics.Invoke(new Action(() => lbxCDCTopics.Items.Add(e.Message)));
-			} else lbxCDCTopics.Items.Add(e.Message);
-		}
+		} else lbxCDCTopics.Items.Add(e.Message);
+	}
 	// do not handle _pubsubService.CDCEvent here, SqlServerLib will handle it
 	#endregion pubsubservice events
-	private System.Windows.Forms.Timer _statusTimer;
 	#region _sqlserver events
 	private void SqlEventObjectExist(object? sender, SqlObjectQuery e) {
 		_logger.LogInformation($"CDC {{e.ObjectType}} {{e.ObjectName}} exist={{e.Exist}}  id= {{e.Id}} ");
@@ -95,11 +94,11 @@ public partial class MainForm : Form {
 			ShowStatus($"Object exists in SQL Server with Id {e.Id}", 5);
 			_retrievedFrom = enmObjectSource.SqlServer;
 			_retrieveFrom = _retrievedFrom;
-			} else {
+		} else {
 			_retrievedFrom = enmObjectSource.SalesForce;// does not exist retrive from sf
 			_retrieveFrom = _retrievedFrom;
-			}
 		}
+	}
 	private void _sqlServerLib_SqlEvent(object? sender, SqlEventArg e) {
 		_logger.LogDebug(e.Message);
 		if (!e.HasErrors) {
@@ -112,9 +111,9 @@ public partial class MainForm : Form {
 					lbxObjects.Items.Remove(lbxObjects.SelectedItem);
 					lblPanel1.Text = $"{lbxObjects.Items.Count} Subscribed CDC Object";
 					break;
-				}
 			}
 		}
+	}
 	private void _sqlServerLib_SqlTableEvent(object? sender, SqlTableEvent e) {
 		try {
 			DataRow r = e.table.Rows[0];
@@ -138,56 +137,33 @@ public partial class MainForm : Form {
 							break;
 						default:
 							break;
-						}
+					}
 					_logger.LogInformation($"Order__c Table changed{e.table.TableName} **** Status={state}");
 					break;
 				default:
 					_logger.LogInformation($" Default*** tablename{e.table.TableName}");
 					break;
-				}
-			_logger.LogInformation($"SqlTableEvent hahaha {result}:**************************");
-			} catch (Exception ex) {
-			_logger.LogError(ex.Message);
 			}
+			_logger.LogInformation($"SqlTableEvent hahaha {result}:**************************");
+		} catch (Exception ex) {
+			_logger.LogError(ex.Message);
 		}
+	}
 	#endregion _sqlserver events
+	private void _dtSoqlResults_RowChanged(object sender, DataRowChangeEventArgs e) {
+		throw new NotImplementedException();
+	}
+	private void SalesforceService_AuthenticationAttempt(object sender, SalesforceService.AuthenticationEventArgs e) {
+		//Invoke((Action)(() => {
+		//	Log($"Authenticating: {e.Message}", e.LogLevel);
+		//	btnAuthenticate.Enabled = false;
+		//	toolStripStatusLabel1.Text = "Authenticating...";
+		//}));
+		ShowStatus($"Authenticating: {e.Message}");
+	}
 	#endregion events	
-	#region form
-	private void SetupRichTextBoxContextMenu(RichTextBox rtb) {
-		var contextMenu = new ContextMenuStrip();
-
-		// Copy (Unicode)
-		contextMenu.Items.Add("Copy All", null, (s, ea) => {
-			if (!string.IsNullOrEmpty(rtb.Rtf)) {
-				Clipboard.SetText(rtb.Rtf, TextDataFormat.Rtf);
-				}
-		});
-
-
-		// Paste
-		contextMenu.Items.Add("Paste", null, (s, ea) => {
-			if (Clipboard.ContainsText(TextDataFormat.Rtf)) {
-				rtb.SelectedRtf = Clipboard.GetText(TextDataFormat.Rtf);
-				} else if (Clipboard.ContainsText()) {
-				rtb.Paste();
-				}
-		});
-
-		// Select All
-		contextMenu.Items.Add("Select All", null, (s, ea) => {
-			rtb.SelectAll();
-		});
-
-		contextMenu.Items.Add(new ToolStripSeparator());
-
-		// Clear
-		contextMenu.Items.Add("Clear", null, (s, ea) => {
-			rtb.Clear();
-		});
-
-		// Assign to RichTextBox
-		rtb.ContextMenuStrip = contextMenu;
-		}
+	#region form	
+	private System.Windows.Forms.Timer _statusTimer;
 	public MainForm(IMemoryCache cache, ISalesforceService salesforceService, PubSubService pubSubService, IOptions<SalesforceConfig> config, SqlServerLib sqlServerLib, ILogger<MainForm> logger, X12 x12) {
 		InitializeComponent();
 		#region tt
@@ -221,7 +197,7 @@ public partial class MainForm : Form {
 		_pubSubService.ProgressUpdated += PubSubService_ProgressUpdated!;
 		if (_salesforceService is SalesforceService cs) {
 			cs.AuthenticationAttempt += SalesforceService_AuthenticationAttempt!;
-			}
+		}
 		_sqlServerLib.SqlEvent += (s, e) => {
 			Log(e.Message, e.LogLevel);
 		};
@@ -240,18 +216,17 @@ public partial class MainForm : Form {
 		dgvSOQLResult.AllowUserToAddRows = true;
 		dgvSOQLResult.RowsAdded += dgvSOQLResult_RowsAdded;
 		_dtSoqlResults!.RowChanged += _dtSoqlResults_RowChanged;
-		_x12 = x12;
 		#endregion soql tab & controls
 		SetupRichTextBoxContextMenu(rtxLog);
 		RichTextBoxTarget.ReInitializeAllTextboxes(this);
-		}
+	}
 	private void Form1_Load(object sender, EventArgs e) {
 		string savedTab = string.IsNullOrEmpty(Properties.Settings.Default.SelectedTab) ? "tbpSfObjects" : Properties.Settings.Default.SelectedTab;
 		if (!string.IsNullOrEmpty(savedTab) && tabControl1.TabPages.ContainsKey(savedTab)) {
 			//TabPage tbp = tabControl1.TabPages[savedTab]!;
 			//tabControl1_Selected(sender, new TabControlEventArgs(tbp, tabControl1.SelectedIndex, TabControlAction.Selected));
 			tabControl1.SelectedTab = tabControl1.TabPages[savedTab];
-			}
+		}
 		lblPanel1.Parent = splitContainer1.Panel1;
 		lblDestinationList.Text = "";
 		SetupDataGridViewHeaders("");
@@ -261,12 +236,12 @@ public partial class MainForm : Form {
 		if (!string.IsNullOrWhiteSpace(savedItems)) {
 			var items = savedItems.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 			cmbObjects.Items.AddRange(items);
-			}
 		}
+	}
 	private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 		Properties.Settings.Default.SelectedTab = tabControl1.SelectedTab.Name;
 		Properties.Settings.Default.Save();
-		}
+	}
 	#endregion	 form	
 	#region buttons
 	private async void btnAuthenticate_Click(object sender, EventArgs e) {
@@ -280,17 +255,17 @@ public partial class MainForm : Form {
 			this.Invoke((Action)(() => txtResult.Text = $"Token copied to clipboard: {token}..."));
 			Clipboard.SetText(token);
 
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			this.Invoke((Action)(() => txtResult.Text = $"Authentication failed: {ex.Message}"));
-			}
+		}
 		finally {
 			btnAuthenticate.Enabled = true;
 			_semaphore.Release();
-			}
 		}
+	}
 	private void btnGetTokenAsync_Click(object sender, EventArgs e) {
 		_ = GetAccessToken();
-		}
+	}
 	private async void btnSubscribe_Click(object sender, EventArgs e) {
 		try {
 			if (!_cdcObjectsLoaded) await loadCDCObjects();// get the SqlServer registered objects to _destinationTable 
@@ -309,17 +284,17 @@ public partial class MainForm : Form {
 
 			await _pubSubService.StartSubscriptionsAsync(topics!);
 			ShowStatus("Subscribed to selected topics.", 5);
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			MessageBox.Show($"Error: {ex.Message}");
-			}
 		}
+	}
 	private async void btnGetSchema_Click(object sender, EventArgs e) {
 		await _semaphore.WaitAsync();
 		try {
 			if (lbxObjects.SelectedItems.Count == 0) {
 				MessageBox.Show("Please select a topic from the list.");
 				return;
-				}
+			}
 			string oN = ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem!);
 			DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(oN);
 			DataTable dt = ds.Tables[oN];// Now synchronize access to the UI with lock
@@ -331,14 +306,14 @@ public partial class MainForm : Form {
 					ShowStatus(oN + $" schema having {dt.Rows.Count} rows loaded successfully.", 5);
 
 				}));
-				}
-			} catch (Exception ex) {
-			this.Invoke((Action)(() => txtResult.Text = $"Error: {ex.Message}"));
 			}
+		} catch (Exception ex) {
+			this.Invoke((Action)(() => txtResult.Text = $"Error: {ex.Message}"));
+		}
 		finally {
 			_semaphore.Release();
-			}
 		}
+	}
 	#region move right and left
 	private async void btnMoveRight_Click(object sender, EventArgs e) {
 		_logger.LogDebug($"Selected rowcount={dgvCDCEnabledObjects.SelectedRows.Count}");
@@ -347,9 +322,9 @@ public partial class MainForm : Form {
 		if (dgvRegisteredCDCCandidates.DataSource == null) {
 			_destinationTable = _sourceTable!.Clone(); // Clone structure only
 			dgvRegisteredCDCCandidates.DataSource = _destinationTable;
-			} else {
+		} else {
 			_destinationTable = (DataTable)dgvRegisteredCDCCandidates.DataSource;
-			}
+		}
 		List<DataRow> rowsToRemove = new List<DataRow>();// Create a list to store rows to remove (to avoid modifying collection during iteration)
 		foreach (DataGridViewRow row in dgvCDCEnabledObjects.SelectedRows) {// Move selected rows
 			DataRow sourceRow = ((DataRowView)row.DataBoundItem!).Row;
@@ -357,15 +332,15 @@ public partial class MainForm : Form {
 				await _salesforceService.AddCDCChannelMember(row.Cells["name"].Value!.ToString()!);
 				_destinationTable!.ImportRow(sourceRow); // Add to destination
 				rowsToRemove.Add(sourceRow);// Mark for removal from source
-				} catch (Exception ex) {
+			} catch (Exception ex) {
 				_logger.LogError($"Error adding CDC channel member: {ex.Message}");
 				MessageBox.Show($"Error adding CDC channel member: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Clipboard.SetText(ex.Message);
-				}
+			}
 			foreach (DataRow rx in rowsToRemove) { // Remove rows from source after iteration
 				_sourceTable!.Rows.Remove(rx);
-				}
 			}
+		}
 		btnSubscribe_Click(null, null);// Refresh the subscription list after moving rows
 		dgvCDCEnabledObjects.DataSource = null;// Refresh both DataGridViews
 		dgvCDCEnabledObjects.DataSource = _sourceTable;
@@ -377,7 +352,7 @@ public partial class MainForm : Form {
 		dgvRegisteredCDCCandidates.AutoResizeColumns();
 		lblSourceList.Text = $"{dgvCDCEnabledObjects.Rows.Count} Salesforce objects";
 		Log($"Source count = {_sourceTable.Rows.Count} Destination={_destinationTable.Rows.Count}", LogLevel.Debug);
-		}
+	}
 
 	private async void btnMoveLeft_Click(object sender, EventArgs e) {
 		if (dgvRegisteredCDCCandidates.SelectedRows.Count == 0) return;
@@ -386,7 +361,7 @@ public partial class MainForm : Form {
 		if (_sourceTable == null) {
 			_sourceTable = _destinationTable.Clone();
 			dgvCDCEnabledObjects.DataSource = _sourceTable;
-			}
+		}
 		List<DataRow> rowsToRemove = new List<DataRow>();
 		foreach (DataGridViewRow row in dgvRegisteredCDCCandidates.SelectedRows) {
 			DataRow deletedRow = ((DataRowView)row.DataBoundItem).Row;
@@ -396,7 +371,7 @@ public partial class MainForm : Form {
 			sourceRow["QualifiedApiName"] = SalesforceService.ObjectNameToChangeEvent(deletedRow["name"].ToString()!);
 			_sourceTable.Rows.Add(sourceRow);
 			rowsToRemove.Add(deletedRow);
-			}
+		}
 		foreach (DataRow row in rowsToRemove) {
 			string name = row["name"].ToString();
 			MessageBox.Show($"object name: {name}:{SalesforceService.ObjectNameToChangeEvent(name)} ");
@@ -405,7 +380,7 @@ public partial class MainForm : Form {
 			bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", recordId);
 			btnSubscribe_Click(null, null);
 			_destinationTable.Rows.Remove(row);
-			}
+		}
 		dgvCDCEnabledObjects.DataSource = null;
 		dgvCDCEnabledObjects.DataSource = _sourceTable;
 		dgvCDCEnabledObjects.Refresh();
@@ -417,16 +392,16 @@ public partial class MainForm : Form {
 		dgvRegisteredCDCCandidates.Columns[0].HeaderText = "CDC Candidates";
 		dgvCDCEnabledObjects.AutoResizeColumns();
 		dgvRegisteredCDCCandidates.AutoResizeColumns();
-		}
+	}
 	#endregion move right and left
 	private void btnClearDestination_Click(object sender, EventArgs e) {
 		dgvRegisteredCDCCandidates.SelectAll();
 		dgvRegisteredCDCCandidates.Refresh();
 		lblDestinationList.Text = $"{dgvRegisteredCDCCandidates.Rows.Count} candidate rows";
-		}
+	}
 	private void btnClearLog_Click(object sender, EventArgs e) {
 		rtxLog.Text = "";
-		}
+	}
 	private async Task<string> PopulateDbTableFromSfObject(string objectName) {
 		string schemaName = "sfo"; // Default schema name for Salesforce objects
 		JsonElement je = await _salesforceService.GetObjectSchemaAsync(objectName, default);
@@ -434,7 +409,7 @@ public partial class MainForm : Form {
 		DataTable dt = await _salesforceService.ExecSoqlToTable(s, false);
 		_sqlServerLib.UpdateServerTable(dt, s);
 		return null; // Return null or appropriate value if needed
-		}
+	}
 	private async void btnRegisterCDCCandidate(object sender, EventArgs e) {
 		DataTable dt = (DataTable)dgvRegisteredCDCCandidates.DataSource!;
 		DataTable dtSfoTables = _sqlServerLib.Select("select * from ftTablesOfSchema('sfo')");
@@ -446,18 +421,18 @@ public partial class MainForm : Form {
 				listToCreate.Add(name);
 				row.Cells["Create"].Value = Properties.Resources.CacheOk; // Set warning icon for non-existing names
 
-				}
-			}
-		if (listToCreate.Count > 0) {
-			await createCDCReplica(listToCreate);
-			}
-		foreach (string name in listToCreate) {
-			_ = await PopulateDbTableFromSfObject(name);
-			}
-		foreach (string name in listToCreate) {
-			Console.WriteLine($"name to create:{name}");
 			}
 		}
+		if (listToCreate.Count > 0) {
+			await createCDCReplica(listToCreate);
+		}
+		foreach (string name in listToCreate) {
+			_ = await PopulateDbTableFromSfObject(name);
+		}
+		foreach (string name in listToCreate) {
+			Console.WriteLine($"name to create:{name}");
+		}
+	}
 	private void btnDispatchEvent_Click(object sender, EventArgs e) {
 		RadioButton? selectedRadio = pnlOrderStates.Controls
 			.OfType<RadioButton>()
@@ -470,43 +445,54 @@ public partial class MainForm : Form {
 			json = $"{{\"status__c\":\"{status}\",\"Order_Id__c\":\"{orderId}\"}}";
 			_salesforceService.UpsertSobject(lbxObjects.Text, null, json, useTooling: false);
 			ShowStatus($"Order {dgvOrderList.Rows[rowId].Cells["name"].Value?.ToString()} State is now set to {status} ", 10);
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			ShowStatus("Please select a Order and the Status");
-			}
 		}
+	}
 	private async void btnGetPickList_Click(object sender, EventArgs e) {
 		ShowStatus("btnGetPickList_Click...");
-		DataTable dt = await _salesforceService.GetPicklistValuesAsync("Order__c", "Status__c");
+
+		string oname = cmbObjects.Text;
+		string pickList = cmbField.Text;
+
+		//	DataTable dt = await _salesforceService.GetPicklistValuesAsync("Order__c", "Status__c");
+		DataTable dt = await _salesforceService.GetPicklistValuesAsync(oname, pickList);
+
 		List<string?> plistValues = dt.AsEnumerable().Select(r => r.Field<string>("Value")).ToList();
 		dgvSchema.DataSource = dt;
 		_logger.LogInformation($"{dt.Rows.Count} : rows");
-		}
+	}
 	DataSet _dsOrder = new DataSet();
 	private async void btnRetrieveOrder_Click(object sender, EventArgs e) {
 		int ix = dgvOrderList.CurrentRow.Index;
 		string oname = dgvOrderList.Rows[ix].Cells["name"].Value.ToString();
 		string OrderXml = _sqlServerLib.ExecuteScalar<string>($"EXEC [dbo].[GetOrderXml] @OrderName= N'{oname}'");
 		_dsOrder.Clear();
-		_dsOrder.ReadXml(new System.IO.StringReader(OrderXml),XmlReadMode.InferSchema);
+		_dsOrder.ReadXml(new System.IO.StringReader(OrderXml), XmlReadMode.InferSchema);
 		dgvOrder.DataSource = _dsOrder.Tables[0];
 		cmbOrderTables.DataSource = null;
 		cmbOrderTables.DataSource = _dsOrder.Tables.Cast<DataTable>().Select(t => t.TableName).ToList();
 		string x = WebUtility.HtmlEncode(OrderXml);
-		
+
 		if (webView21.CoreWebView2 == null) {
 			await webView21.EnsureCoreWebView2Async(null);
-			}
+		}
 		webView21.NavigateToString(x);
+		#region test: there must  only  be one root element
+		//OrderXml = OrderXml.Replace("<Orders>", "");// simulate error condition
+		//OrderXml = "<Orders><Order Id=\"xxxxx\" Name=\"O-xxxx\"/>" + OrderXml;
+		#endregion test
+		_x12.PrepareDoc(OrderXml);
 		tabControl1.SelectedTab = tbpX12;
 		_logger.LogDebug($"length of =*{nameof(OrderXml)}*={OrderXml.Length}\n{OrderXml}");
-		}
+	}
 	private void updateFields() {
 		DataTable Fields = dgvObject.DataSource as DataTable;
 		_sqlServerLib.UpdateServerTable(Fields, "SELECT [Id],[IsExcluded]  FROM [dbo].[CDCObjectFields] ");
-		}
+	}
 	private void btnDeleteCDCSubscription_Click(object sender, EventArgs e) {
 		_sqlServerLib.DeleteCDCObject(ObjectNameFromEventDeclaration(lbxObjects.Text));
-		}
+	}
 	private void btnSort_Click(object sender, EventArgs e) {
 		Button b = (Button)sender;
 		char l = b.Text[0];
@@ -517,33 +503,33 @@ public partial class MainForm : Form {
 			if (l == tn[0]) {
 				ti = i;
 				break;
-				}
 			}
+		}
 		if (ti >= 0 && ti < _sourceTable.Rows.Count) {
 			dgvCDCEnabledObjects.FirstDisplayedScrollingRowIndex = ti;
 			dgvCDCEnabledObjects.ClearSelection();
 			dgvCDCEnabledObjects.Rows[ti].Selected = true;
-			}
 		}
+	}
 	private void btnCDCStartSubscription_Click(object sender, EventArgs e) {
-		}
+	}
 	private async void btnGetCDCSubscriptions_Click(object sender, EventArgs e) {
 		//	var x = _salesforceService.GetCDCSubscriptions();
 		//DataTable dt =await	_salesforceService.GetAllObjects();
-		}
+	}
 	private async void btnGetPlatformEventChannel_Click(object sender, EventArgs e) {
 		try {
 			JsonElement je = await _salesforceService.GetPlaformEventChannelMembers();
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			MessageBox.Show(ex.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-			}
 		}
+	}
 	private async void btnDescribe_Click(object sender, EventArgs e) {
 		try {
 			DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(cmbObjects.Text!.ToString());
 			dgvSchema.DataSource = ds.Tables[0];
 			Console.WriteLine(ds.GetXml());
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			dgvSchema.DataSource = null;
 			if (ex.Message.Contains(": Not Found")) {
 				DialogResult dr = MessageBox.Show($"The object {cmbObjects.Text} not found in the Standard objects, look inn tooling ?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
@@ -552,14 +538,14 @@ public partial class MainForm : Form {
 					try {
 						DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(cmbObjects.Text, useTooling: true);
 						dgvSchema.DataSource = ds.Tables[0];
-						} catch (Exception) {
+					} catch (Exception) {
 
 
-						}
 					}
 				}
 			}
 		}
+	}
 	private void btnSaveSoql_Click(object sender, EventArgs e) {
 
 		// Check if the query key already exists in the SoqlQueries table
@@ -567,21 +553,21 @@ public partial class MainForm : Form {
 			// Existing record, perform UPDATE
 			string sql = $"UPDATE SoqlQueries SET q = '{rtSoqlQuery.Text.Replace("'", "''")}', UseTooling = {(chkUseTooling.Checked ? 1 : 0)} WHERE qKey = '{cmbSOQL.Text.Replace("'", "''")}'";
 			int count = _sqlServerLib.ExecuteNoneQuery(sql);
-			} else {
+		} else {
 			// New record, perform INSERT
 			string sql = $"INSERT INTO SoqlQueries (q, qKey, UseTooling) VALUES ('{rtSoqlQuery.Text.Replace("'", "''")}', '{cmbSOQL.Text.Replace("'", "''")}', {(chkUseTooling.Checked ? 1 : 0)})";
 			int count = _sqlServerLib.ExecuteNoneQuery(sql);
-			}
+		}
 
 		_soqlLoaded = false;
 		tabControl1_Selected(this, new TabControlEventArgs(tbpSOQL, tabControl1.TabPages.IndexOf(tbpSOQL), TabControlAction.Selected)).GetAwaiter().GetResult();
-		}
+	}
 	private void btnDeleteSoql_Click(object sender, EventArgs e) {
 		string sql = "Delete from soqlQueries where qKey='" + cmbSOQL.Text + "'";
 		_sqlServerLib.ExecuteNoneQuery(sql);
 		_soqlLoaded = false;
 		tabControl1_Selected(this, new TabControlEventArgs(tbpSOQL, tabControl1.TabPages.IndexOf(tbpSOQL), TabControlAction.Selected)).GetAwaiter().GetResult();
-		}
+	}
 	private async void btnExecSoql_Click(object sender, EventArgs e) {
 		Size sw = new Size(tabControl1.ClientSize.Width, splitcSoql.Panel2.ClientSize.Height);
 		splitcSoql.Panel2.ClientSize = sw;
@@ -596,16 +582,16 @@ public partial class MainForm : Form {
 		dgvSOQLResult.DataSource = _dtSoqlResults;
 		lblSOQLRowCount.Text = $"Rows: {_dtSoqlResults.Rows.Count}";
 
-		}
+	}
 	private async void btnSObjectSave(object sender, EventArgs e) {// saves Edited Soql Object 	
 		dgvSOQLResult.EndEdit();
 		if (dgvSOQLResult.DataSource is BindingSource bindingSource) {
 			bindingSource.EndEdit();
 
-			} else {
+		} else {
 			BindingContext[dgvSOQLResult.DataSource].EndCurrentEdit();
 
-			}
+		}
 
 		DataTable dtChanged = _dtSoqlResults.GetChanges(DataRowState.Modified);
 		if (dtChanged != null) {
@@ -614,9 +600,9 @@ public partial class MainForm : Form {
 
 				string json = dr.ToJson(indented: true, excludedColumns: "Id");
 				DataTable dt = await _salesforceService.UpsertSobject(dtChanged.TableName, id, json);
-				}
-			_dtSoqlResults.AcceptChanges();
 			}
+			_dtSoqlResults.AcceptChanges();
+		}
 
 		DataTable dtAdded = _dtSoqlResults.GetChanges(DataRowState.Added);
 		if (dtAdded != null) {
@@ -624,14 +610,14 @@ public partial class MainForm : Form {
 			dtAdded = removeNullColumns(dtAdded);
 			DataTable dt = await _salesforceService.UpsertSobject(dtAdded.TableName, null, dtAdded.ToJson());
 			_dtSoqlResults.AcceptChanges();
-			}
-
 		}
+
+	}
 	private async void btnSoqlRDelete_Click(object sender, EventArgs e) {
 		if (dgvSOQLResult.SelectedRows.Count == 0) {
 			MessageBox.Show("Please select a row to delete.", "No Row Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 			return;
-			}
+		}
 		DataGridViewRow selectedRow = dgvSOQLResult.SelectedRows[0];
 		DataRowView rowView = selectedRow.DataBoundItem as DataRowView;
 
@@ -644,55 +630,57 @@ public partial class MainForm : Form {
 			default:
 				await _salesforceService.DeleteSobject(tableName, row["Id"].ToString()!);
 				break;
-			}
+		}
 		row.Delete();
 		_dtSoqlResults.AcceptChanges();
 		this.Invoke((Action)(() => dgvSOQLResult.Refresh()));
-		}
+	}
 	private async void btnBuildSelect_Click(object sender, EventArgs e) {
 
 		string oN = objectNameFromSoql(rtSoqlQuery.Text);
 		JsonElement je = chkUseTooling.Checked ? await _salesforceService.DescribeToolingObject(oN) : await _salesforceService.GetObjectSchemaAsync(oN, default);
 		rtSoqlQuery.Text = $"SELECT {string.Join(",", je.GetProperty("fields").EnumerateArray().Select(f => f.GetProperty("name")))} FROM {oN}";
-		}
+	}
 	private async void btnListEvents_Click(object sender, EventArgs e) {
 		showPlatformEvents();
-		}
+	}
 	private void button27_Click(object sender, EventArgs e) {
 
+	}
+	private void btnDeleteCmbObjectSelected_Click(object sender, EventArgs e) {
+		var i = cmbObjects.SelectedItem;
+		if (i != null) {
+			cmbObjects.Items.Remove(i);
+			var allItems = cmbObjects.Items.Cast<string>();
+			string joined = string.Join(",", allItems);
+			Properties.Settings.Default.cmbObjects = joined;
+			Properties.Settings.Default.Save();
 		}
+	}
+	private async void button30_Click(object sender, EventArgs e) {
+		Size sw = new Size(tabControl1.ClientSize.Width, splitcSoql.Panel2.ClientSize.Height);
+		splitcSoql.Panel2.ClientSize = sw;
+		splitcSoql.Panel1Collapsed = true;
+		tableLayoutPanel13.Width = sw.Width;
+		dgvSOQLResult.DataSource = null;
+		_dtSoqlResults = await _salesforceService.DescribeToolingObjectToDataTable("PlatformEventChannelMember");
+		if (_dtSoqlResults.Columns.Contains("Id")) _dtSoqlResults.Columns["Id"].ReadOnly = true;
+		dgvSOQLResult.DataSource = _dtSoqlResults;
+	}
+	private async void button31_Click(object sender, EventArgs e) {
+		bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", "0v8DP0000004EsyYAE");
+	}
+	private void btnLogTest_Click(object sender, EventArgs e) {
+		_logger.LogError("This is an error message from the button click event.");
+		_logger.LogEmail("This is an email log message from the button click event.");
+	}
 	#endregion buttons
-	private string objectNameFromSoql(string soql) {
-		string pattern = @"FROM\s+([a-zA-Z0-9_]+)\b";
-		var match = Regex.Match(soql, @"FROM\s+([a-zA-Z0-9_]+)\b", RegexOptions.IgnoreCase);
-		return match.Groups[1].Value;
-		}
-	private DataTable removeNullColumns(DataTable dt) {
-		foreach (DataColumn column in dt.Columns.Cast<DataColumn>().ToList()) {// Remove columns with all null values
-			if (dt.AsEnumerable().All(row => row.IsNull(column))) {
-				dt.Columns.Remove(column);
-				}
-			}
-		return dt;
-		}
-	private async void showPlatformEvents(bool visible = true) {
-		dgvOrderList.Visible = visible;
-		if (!visible) return;
-		_retrieveFrom = enmRetrievedFrom.sfPlatformEvents;
-		var x = await _salesforceService.GetPlatformEventList();
-		lbxObjects.DataSource = null;
-		lbxObjects.Items.Clear();
-		lbxObjects.DataSource = x;
-		lbxObjects.DisplayMember = "name";
-		lblPanel1.Text = $"{lbxObjects.Items.Count} Platform Events";
-
-		}
 	#region dgv
 	private void dgvSOQLResult_RowsAdded(object? sender, DataGridViewRowsAddedEventArgs e) {
 		if (e.RowIndex >= 0 && dgvSOQLResult.Rows[e.RowIndex].IsNewRow == false) {
 			string colName = dgvSOQLResult.Columns[0].Name;
-			}
 		}
+	}
 	private void SetupDataGridViewHeaders(string tn) {
 		dgvObject.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightSkyBlue;
 		dgvObject.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Arial", 12, FontStyle.Bold);
@@ -730,13 +718,13 @@ public partial class MainForm : Form {
 		dgvObjectUrls.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
 		dgvObjectUrls.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
 		dgvObjectUrls.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-		}
+	}
 	private void SetContainedControlsEnabled(Control control, bool enabled) {
 		foreach (Control child in control.Controls) {
 			child.Enabled = enabled;
 			//SetContainedControlsEnabled(child, enabled);
-			}
 		}
+	}
 	private void dgvRowCountChanged(object sender, EventArgs e) {
 		switch (sender) {
 			case DataGridView s when s == dgvCDCEnabledObjects:
@@ -750,8 +738,8 @@ public partial class MainForm : Form {
 				btnCommitToDB.Enabled = dgvRegisteredCDCCandidates.Rows.Count > 0;
 				SetContainedControlsEnabled(grpPrimaryKey, btnCommitToDB.Enabled);
 				break;
-			}
 		}
+	}
 	private void dgvObject_CellContentClick_1(object sender, DataGridViewCellEventArgs e) {
 		if (e.ColumnIndex < 0) return;
 		if (dgvObject.Columns[e.ColumnIndex] is DataGridViewCheckBoxColumn) {
@@ -769,7 +757,7 @@ public partial class MainForm : Form {
 					//	rtxFieldsJsonArray.Text = JsonConvert.SerializeObject(fields);
 					lblSelectedTable.Text = $"{dtObject.TableName} - filtered: {fields.Count}";
 				}));
-				} else {
+			} else {
 				this.Invoke((Action)(() =>/* get only the field Names for the lbxFields*/  {
 					List<string?> fields = dtObject.AsEnumerable()
 						.Where(r => !(r["Exclude"] is bool b && b)) // filter out rows where Exclude == true 
@@ -779,9 +767,9 @@ public partial class MainForm : Form {
 					//	rtxFieldsJsonArray.Text = JsonConvert.SerializeObject(fields);
 					lblSelectedTable.Text = $"{dtObject.TableName} - filtered: {fields.Count}";
 				}));
-				}
 			}
 		}
+	}
 	private void dgvSOQLResult_CellContentClick(object sender, DataGridViewCellEventArgs e) {
 		DataTable dt = dgvSOQLResult.DataSource as DataTable;
 		if (dt == null) return;
@@ -789,41 +777,32 @@ public partial class MainForm : Form {
 		if (dt.Columns.Contains("SelectedEntity")) {
 			string se = dt.Rows[e.RowIndex]["SelectedEntity"]?.ToString() ?? string.Empty;
 			MessageBox.Show($"Selected Entity: {se} : **  {SalesforceService.ChangeEventToObjectName(se)}  **");
-			}
 		}
+	}
 	#endregion dgv
-	private void _dtSoqlResults_RowChanged(object sender, DataRowChangeEventArgs e) {
-		throw new NotImplementedException();
-		}
-	private void SalesforceService_AuthenticationAttempt(object sender, SalesforceService.AuthenticationEventArgs e) {
-		//Invoke((Action)(() => {
-		//	Log($"Authenticating: {e.Message}", e.LogLevel);
-		//	btnAuthenticate.Enabled = false;
-		//	toolStripStatusLabel1.Text = "Authenticating...";
-		//}));
-		ShowStatus($"Authenticating: {e.Message}");
-		}
+
 	#region helpers
+
 	private void saveTabPageColors() {
 		foreach (TabPage page in tabControl1.TabPages) _tabColors[page] = (page.BackColor, page.ForeColor);
-		}
+	}
 	private void LoadTopics(ListBox listBox, bool filtered) {
 		if (listBox.DataSource != null) return;
 		listBox.Items.Clear();
 		DataTable dataTable = filtered ? _sqlServerLib.Select("select * from dbo.ftcdcObjects()") : _sqlServerLib.GetAll_sfoTables();
 		listBox.Items.AddRange(_sqlServerLib.GetChangeEventUrls(dataTable).ToArray());
-		}
+	}
 	public static string ObjectNameFromEventDeclaration(string eventDeclaration) {
 		string oN = SalesforceService.PlatformEventChannelMemeberToObjectName(eventDeclaration);
 		return oN;
-		}
+	}
 	private async Task GetAccessToken() {
 		if (!_cache.TryGetValue(CacheKey, out string token)) {
 			(token, _instanceUrl, _tenantId) = await _salesforceService.GetAccessTokenAsync();
 			_cache.Set(CacheKey, token, TimeSpan.FromMinutes(30));
-			}
-		this.Invoke((Action)(() => txtResult.Text = $"Token: {token}, Instance URL: {_instanceUrl}, Tenant ID: {_tenantId}"));
 		}
+		this.Invoke((Action)(() => txtResult.Text = $"Token: {token}, Instance URL: {_instanceUrl}, Tenant ID: {_tenantId}"));
+	}
 	public async Task<DataTable> RemoveRowsNotInColumnList(DataTable dataTable, List<string> allColumns) {
 		if (dataTable == null || !dataTable.Columns.Contains("Name") || allColumns == null)
 			return null;
@@ -832,15 +811,15 @@ public partial class MainForm : Form {
 			.ToList();
 		foreach (var row in rowsToDelete) {
 			dataTable.Rows.Remove(row);
-			}
-		return dataTable;
 		}
+		return dataTable;
+	}
 	private async Task CommitObjectsAsDbArtefactsAsync(object sender, EventArgs e) {
 		try {
 			if (lbxObjects.SelectedItem == null) {// Validate selection
 				ShowStatus(ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem) + " Please select an object from the list.", 10);
 				return;
-				}
+			}
 			List<string> selectedFields = _config.Topics.GetFieldsToFilterByName((string)lbxObjects.SelectedItem);// Get selected fields
 			_logger.LogDebug($"Selected fields: {string.Join(", ", selectedFields)}");
 			_destinationTable.TableName = "sfSObjects";// Configure destination table
@@ -850,30 +829,30 @@ public partial class MainForm : Form {
 				if (string.IsNullOrEmpty(tableName)) {
 					_logger.LogWarning("Encountered empty table name, skipping...");
 					continue;
-					}
+				}
 				try {
 					DataSet schema = await _salesforceService.GetObjectSchemaAsDataSetAsync(tableName);// Fetch schema and process
 
 					lbxObjects.Items.Add($"/data/{SalesforceService.ObjectNameToChangeEvent(tableName)}");
-					} catch (Exception ex) {
+				} catch (Exception ex) {
 					_logger.LogError($"Failed to process table {tableName}: {ex.Message}");
 					continue;
-					}
 				}
+			}
 
 			ShowStatus($"Processed {_destinationTable.Rows.Count} tables. Select tables and fields in pub/sub tab.", 10);
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError($"Unexpected error during commit: {ex.Message}");
 
 			ShowStatus(ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem) + $" Error: {ex.Message}", 10);
 			MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
 		}
+	}
 	private void ShowStatus(string message, int seconds = 3) {
 		if (InvokeRequired) {
 			BeginInvoke(new Action(() => ShowStatus(message, seconds)));
 			return;
-			}
+		}
 
 
 
@@ -886,7 +865,7 @@ public partial class MainForm : Form {
 			_statusTimer.Stop();
 			_statusTimer.Dispose();
 			_statusTimer = null;
-			}
+		}
 
 		_statusTimer = new System.Windows.Forms.Timer();
 		_statusTimer.Interval = seconds * 1000;
@@ -898,7 +877,7 @@ public partial class MainForm : Form {
 		};
 
 		_statusTimer.Start();
-		}
+	}
 	private (string jsonString, int count) tableColumnToJsonArray(DataTable dt, string sColumn, string fColumn) {
 		List<string?> fields = dt.AsEnumerable()
 							.Where(r => !(r[fColumn] is bool b && b))
@@ -906,8 +885,32 @@ public partial class MainForm : Form {
 								.Where(v => !string.IsNullOrEmpty(v))
 								.ToList();
 		return (JsonConvert.SerializeObject(fields), fields.Count);
+	}
+	private string objectNameFromSoql(string soql) {
+		string pattern = @"FROM\s+([a-zA-Z0-9_]+)\b";
+		var match = Regex.Match(soql, @"FROM\s+([a-zA-Z0-9_]+)\b", RegexOptions.IgnoreCase);
+		return match.Groups[1].Value;
+	}
+	private DataTable removeNullColumns(DataTable dt) {
+		foreach (DataColumn column in dt.Columns.Cast<DataColumn>().ToList()) {// Remove columns with all null values
+			if (dt.AsEnumerable().All(row => row.IsNull(column))) {
+				dt.Columns.Remove(column);
+			}
 		}
-	#endregion helpers
+		return dt;
+	}
+	private async void showPlatformEvents(bool visible = true) {
+		dgvOrderList.Visible = visible;
+		if (!visible) return;
+		_retrieveFrom = enmRetrievedFrom.sfPlatformEvents;
+		var x = await _salesforceService.GetPlatformEventList();
+		lbxObjects.DataSource = null;
+		lbxObjects.Items.Clear();
+		lbxObjects.DataSource = x;
+		lbxObjects.DisplayMember = "name";
+		lblPanel1.Text = $"{lbxObjects.Items.Count} Platform Events";
+
+	}
 	private static DataTable? removeCDCRegistered(DataTable dt, HashSet<string> exclude, string keyColumn = "Name") {
 		if (dt == null || !dt.Columns.Contains("name") || exclude is null || exclude.Count == 0) return null;
 		var rowsToDelete = dt.AsEnumerable()
@@ -915,7 +918,7 @@ public partial class MainForm : Form {
 			.ToList();
 		foreach (var row in rowsToDelete) dt.Rows.Remove(row);
 		return dt;
-		}
+	}
 	private async Task loadCDCObjects() {
 		if (_cdcObjectsLoaded) throw new Exception("Attempted loadCDCObjects() when _cdcObjectsLoded");
 		Log("loadCDCObjects()", LogLevel.Debug);
@@ -942,24 +945,24 @@ public partial class MainForm : Form {
 				if (!string.IsNullOrWhiteSpace(name) && replicatedNames.Contains(name)) {
 					r["Create"] = Properties.Resources.CacheOk;
 					r["Initialize"] = false;
-					} else {
+				} else {
 					r["Create"] = Properties.Resources.DocumentError;
 					r["Initialize"] = true;
 					_hasUnInitDbArtefacts = true;
-					}
+				}
 			});
 		dgvCDCEnabledObjects.DataSource = removeCDCRegistered(_sourceTable, remRows!, "name");
 		dgvRegisteredCDCCandidates.DataSource = null;
 		dgvRegisteredCDCCandidates.DataSource = _dtRegisteredCDCCandidates;
 		_cdcObjectsLoaded = true;
-		}
+	}
 	private async Task LoadSOQL() {
 		Log("LoadSOQL", LogLevel.Debug);
 		cmbSOQL.DataSource = _sqlServerLib.Select("select qkey,q,UseTooling from soqlqueries");
 		cmbSOQL.DisplayMember = "qKey";
 		cmbSOQL.ValueMember = "q";
 		_soqlLoaded = true;
-		}
+	}
 	private async Task createCDCReplica(HashSet<string> list) {
 		string script = "";
 		foreach (string cdcEntry in list) {
@@ -969,41 +972,89 @@ public partial class MainForm : Form {
 				script = _sqlServerLib.GenerateCreateTableScript(ds.Tables[0], "sfo", cdcEntry);
 				_sqlServerLib.ExecuteNoneQuery(script);
 				rtfLog.Text = script;
-				} else Log($"Schema for the table {cdcEntry} could not be retrived..", LogLevel.Error);
-			}
+			} else Log($"Schema for the table {cdcEntry} could not be retrived..", LogLevel.Error);
 		}
+	}
+	private void SetupRichTextBoxContextMenu(RichTextBox rtb) {
+		var contextMenu = new ContextMenuStrip();
+		// Copy (Unicode)
+		contextMenu.Items.Add("Copy All", null, (s, ea) => {
+			if (!string.IsNullOrEmpty(rtb.Rtf)) {
+				Clipboard.SetText(rtb.Rtf, TextDataFormat.Rtf);
+			}
+		});
+
+
+		// Paste
+		contextMenu.Items.Add("Paste", null, (s, ea) => {
+			if (Clipboard.ContainsText(TextDataFormat.Rtf)) {
+				rtb.SelectedRtf = Clipboard.GetText(TextDataFormat.Rtf);
+			} else if (Clipboard.ContainsText()) {
+				rtb.Paste();
+			}
+		});
+
+		// Select All
+		contextMenu.Items.Add("Select All", null, (s, ea) => {
+			rtb.SelectAll();
+		});
+
+		contextMenu.Items.Add(new ToolStripSeparator());
+
+		// Clear
+		contextMenu.Items.Add("Clear", null, (s, ea) => {
+			rtb.Clear();
+		});
+
+		// Assign to RichTextBox
+		rtb.ContextMenuStrip = contextMenu;
+	}
+
+
+	#endregion helpers
 	#region Combo and list boxes
 	private void cmbObjects_Validated(object sender, EventArgs e) {
 		string newItem = cmbObjects.Text.Trim();
 		if (!string.IsNullOrEmpty(newItem) && !cmbObjects.Items.Contains(newItem)) {
 			cmbObjects.Items.Add(newItem);
-			}
+		}
 		var allItems = cmbObjects.Items.Cast<string>(); // Save all items as a comma-separated string
 		string joined = string.Join(",", allItems);
 		Properties.Settings.Default.cmbObjects = joined;
 		Properties.Settings.Default.Save();
-		}
+	}
 	private void cmbField_Validated(object sender, EventArgs e) {
 		string newItem = cmbField.Text.Trim();
 		if (!string.IsNullOrEmpty(newItem) && !cmbField.Items.Contains(newItem)) {
 			cmbField.Items.Add(newItem);
-			}
+		}
 		var allItems = cmbField.Items.Cast<string>(); // Save all items as a comma-separated string
 		string joined = string.Join(",", allItems);
 		Properties.Settings.Default.cmbField = joined;
 		Properties.Settings.Default.Save();
-		}
+	}
+	private void cmbObjects_SelectedIndexChanged(object sender, EventArgs e) {
+		if (cmbObjects.SelectedItem == null) return;
+		lblCDCName.Text = SalesforceService.ObjectNameToChangeEvent(cmbObjects.SelectedItem.ToString());
+	}
+	private void cmbOrderTables_SelectedIndexChanged(object sender, EventArgs e) {
+		if (_dsOrder.Tables.Count < 1) return;
+
+		string tableName = cmbOrderTables.SelectedItem?.ToString() ?? string.Empty;
+		dgvOrder.DataSource = _dsOrder.Tables[tableName];
+
+	}
 	private async void lbxObjects_SelectedIndexChanged(object sender, EventArgs e) {
 		if (lbxObjects.Text == "System.Data.DataRowView") {
 
 			showPlatformEvents(visible: false);
 			return;
-			}
+		}
 
 		if (lbxObjects.SelectedItem == null) {
 			btnDispatchEvent.Visible = false;
 			return;
-			}
+		}
 		this.UseWaitCursor = true;
 		btnDispatchEvent.Visible = true;
 		btnRetrieveOrder.Visible = false;
@@ -1032,8 +1083,8 @@ public partial class MainForm : Form {
 								Text = option,
 								AutoSize = true,
 								Location = new Point(10, 20 + index * 25)
-								}).ToList().ForEach(rb =>
-									pnlOrderStates.Controls.Add(rb));
+							}).ToList().ForEach(rb =>
+								pnlOrderStates.Controls.Add(rb));
 
 
 
@@ -1048,10 +1099,10 @@ public partial class MainForm : Form {
 
 
 							break;
-						}
+					}
 
 					lock (_dgvLock) {
-						}
+					}
 					break;
 				case enmRetrievedFrom.SqlServer:
 					this.Invoke((Action)(() => {
@@ -1072,30 +1123,31 @@ public partial class MainForm : Form {
 					//ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(lbxObjects.Text);
 					//dgvObject.DataSource = ds.Tables[0];
 					break;
-				}
+			}
 
 			DataSet ds = await _salesforceService.GetEventSchema(selectedObject);
 			dgvObject.DataSource = ds.Tables["ObjectDescribe"].Transpose();
 			dgvObjectUrls.DataSource = ds.Tables["urls"].Transpose();
 			lblSelectedTable.Text = $"Event {selectedObject} : {ds.Tables["objectDescribe"].Columns.Count} ";
 			lblRelations.Text = $"{selectedObject} Urls ";
-			} catch (Exception ex) {
+		} catch (Exception ex) {
 			this.Invoke((Action)(() => ShowStatus(ex.Message)));
-			}
+		}
 
 
 
 		finally {
 			_semaphore.Release();
 			this.UseWaitCursor = false;
-			}
 		}
+	}
+
 	#region lbxLog
 	private void Log(string msg, LogLevel l, [CallerMemberName] string callerMemberName = "", [CallerLineNumber] int callerLineNumber = 0, [CallerFilePath] string fp = "") {
 		msg = $"{msg}:{callerMemberName}:{callerLineNumber}:{fp.Split('\\').Last()}";
 
 		BeginInvoke(() => rtxLog.AppendText($"<%Info%> LogEmitted = {msg}{Environment.NewLine}"));
-		}
+	}
 
 
 	#endregion lbxLog
@@ -1107,21 +1159,21 @@ public partial class MainForm : Form {
 		if (cmbSOQL.SelectedValue == null) {
 			rtSoqlQuery.Text = string.Empty;
 			return;
-			}
+		}
 		var selectedRow = cmbSOQL.SelectedItem as DataRowView;
 		if (selectedRow != null) {
 			rtSoqlQuery.Text = selectedRow["Q"].ToString();
 
-			} else {
+		} else {
 			rtSoqlQuery.Text = string.Empty;
-			}
+		}
 		lblSoqlText.Text = $"Selected SOQL: {rtSoqlQuery.Text}";
 		chkUseTooling.Checked = false;
 		chkUseTooling.Checked = selectedRow != null && selectedRow["UseTooling"] != DBNull.Value && Convert.ToBoolean(selectedRow["UseTooling"]);
 
 
 
-		}
+	}
 	#endregion  list and combo boxes
 	#region radio buttons
 	private void filterChanged(object sender, EventArgs e) {
@@ -1135,7 +1187,7 @@ public partial class MainForm : Form {
 		LoadTopics(lbxObjects, showOnlySubscribed);
 		lblPanel1.Text = $"{lbxObjects.Items.Count} {(showOnlySubscribed == true ? "Subscribed" : "Registered")} CDC objects";
 
-		}
+	}
 	#endregion radio buttons
 	#region tabs
 
@@ -1171,7 +1223,7 @@ public partial class MainForm : Form {
 
 				break;
 
-			}
+		}
 		if (_hasUnInitDbArtefacts) {
 			HashSet<string> x = _dtRegisteredCDCCandidates.AsEnumerable()
 					.Where(row => row.Field<bool>("Initialize"))
@@ -1179,14 +1231,15 @@ public partial class MainForm : Form {
 				 .ToHashSet()!;
 			if (x.Count > 0) {
 				createCDCReplica(x);
-				}
-			tabControl1.SelectedTab = e.TabPage;
 			}
+			tabControl1.SelectedTab = e.TabPage;
 		}
+	}
 	private async void TabControl1_Selected1(object sender, TabControlEventArgs e) {
 		await tabControl1_Selected(sender, e); // Call the async Task method
-		}
+	}
 	#endregion tabs
+
 	#region tooltip
 
 	#endregion tooltip
@@ -1197,51 +1250,28 @@ public partial class MainForm : Form {
 		public LogItem(string message, LogLevel level) {
 			Message = message;
 			Level = level;
-			}
+		}
 		public override string ToString() {
 			return Message;
-			}
-		}
-	#endregion utility classes
-	private async void button30_Click(object sender, EventArgs e) {
-		Size sw = new Size(tabControl1.ClientSize.Width, splitcSoql.Panel2.ClientSize.Height);
-		splitcSoql.Panel2.ClientSize = sw;
-		splitcSoql.Panel1Collapsed = true;
-		tableLayoutPanel13.Width = sw.Width;
-		dgvSOQLResult.DataSource = null;
-		_dtSoqlResults = await _salesforceService.DescribeToolingObjectToDataTable("PlatformEventChannelMember");
-		if (_dtSoqlResults.Columns.Contains("Id")) _dtSoqlResults.Columns["Id"].ReadOnly = true;
-		dgvSOQLResult.DataSource = _dtSoqlResults;
-		}
-	private async void button31_Click(object sender, EventArgs e) {
-		bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", "0v8DP0000004EsyYAE");
-		}
-	private void btnDeleteCmbObjectSelected_Click(object sender, EventArgs e) {
-		var i = cmbObjects.SelectedItem;
-		if (i != null) {
-			cmbObjects.Items.Remove(i);
-			var allItems = cmbObjects.Items.Cast<string>();
-			string joined = string.Join(",", allItems);
-			Properties.Settings.Default.cmbObjects = joined;
-			Properties.Settings.Default.Save();
-			}
-		}
-	private void cmbObjects_SelectedIndexChanged(object sender, EventArgs e) {
-		if (cmbObjects.SelectedItem == null) return;
-		lblCDCName.Text = SalesforceService.ObjectNameToChangeEvent(cmbObjects.SelectedItem.ToString());
-		}
-	private void cmbOrderTables_SelectedIndexChanged(object sender, EventArgs e) {
-		if (_dsOrder.Tables.Count < 1) return;
-		
-		string tableName = cmbOrderTables.SelectedItem?.ToString() ?? string.Empty;
-		dgvOrder.DataSource= _dsOrder.Tables[tableName];
-
-		}
-	private void grpDocChanged(object sender, EventArgs e) {
-		var ISA = _x12.CreateISA(1, false, "s12312", "r123123");
-		}
-	private void btnLogTest_Click(object sender, EventArgs e) {
-		_logger.LogError("This is an error message from the button click event.");
-		_logger.LogEmail("This is an email log message from the button click event.");
 		}
 	}
+	#endregion utility classes
+
+
+
+	private void grpDocChanged(object sender, EventArgs e) {
+		//var ISA = _x12.CreateISA(1, false, "s12312", "r123123");
+	}
+
+	private void dgvSchema_CellContentClick(object sender, DataGridViewCellEventArgs e) {
+		if(e.RowIndex < 0 || e.ColumnIndex < 0) return;
+		if(dgvSchema.Columns.Contains("Type")) {
+			if (dgvSchema.Rows[e.RowIndex].Cells["Type"].Value.ToString() == "picklist") {
+				btnGetPickList.Enabled = true;
+				cmbField.Text= dgvSchema.Rows[e.RowIndex].Cells["Name"].Value.ToString() ?? string.Empty;
+
+			}
+		}
+
+		}
+}

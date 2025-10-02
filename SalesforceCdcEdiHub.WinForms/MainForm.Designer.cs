@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -1045,14 +1045,14 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle1.BackColor = SystemColors.Control;
-		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
+		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle2.BackColor = SystemColors.Control;
+		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
 		dgvOrderList.Size = new Size(392, 159);
 		dgvOrderList.TabIndex = 11;
 		// 
@@ -1585,14 +1585,14 @@ partial class MainForm {
 		tableLayoutPanel5.Controls.Add(cmbField, 1, 1);
 		tableLayoutPanel5.Controls.Add(btnDescribe, 2, 0);
 		tableLayoutPanel5.Controls.Add(btnDeleteCmbObjectSelected, 3, 0);
-		tableLayoutPanel5.Controls.Add(btnGetPickList, 2, 1);
+		tableLayoutPanel5.Controls.Add(btnGetPickList, 5, 2);
 		tableLayoutPanel5.Dock = DockStyle.Fill;
 		tableLayoutPanel5.Location = new Point(0, 0);
 		tableLayoutPanel5.Name = "tableLayoutPanel5";
 		tableLayoutPanel5.RowCount = 3;
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 53.3333321F));
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 46.6666679F));
-		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 573F));
+		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 578F));
 		tableLayoutPanel5.Size = new Size(1415, 684);
 		tableLayoutPanel5.TabIndex = 0;
 		// 
@@ -1602,7 +1602,7 @@ partial class MainForm {
 		label1.Dock = DockStyle.Fill;
 		label1.Location = new Point(3, 0);
 		label1.Name = "label1";
-		label1.Size = new Size(79, 59);
+		label1.Size = new Size(79, 56);
 		label1.TabIndex = 0;
 		label1.Text = "Object Name";
 		label1.TextAlign = ContentAlignment.MiddleLeft;
@@ -1612,10 +1612,11 @@ partial class MainForm {
 		dgvSchema.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		tableLayoutPanel5.SetColumnSpan(dgvSchema, 5);
 		dgvSchema.Dock = DockStyle.Fill;
-		dgvSchema.Location = new Point(3, 113);
+		dgvSchema.Location = new Point(3, 108);
 		dgvSchema.Name = "dgvSchema";
-		dgvSchema.Size = new Size(1119, 568);
+		dgvSchema.Size = new Size(1119, 573);
 		dgvSchema.TabIndex = 3;
+		dgvSchema.CellContentClick += dgvSchema_CellContentClick;
 		// 
 		// cmbObjects
 		// 
@@ -1632,7 +1633,7 @@ partial class MainForm {
 		lblCDCName.AutoSize = true;
 		lblCDCName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblCDCName.ForeColor = Color.IndianRed;
-		lblCDCName.Location = new Point(1125, 59);
+		lblCDCName.Location = new Point(1125, 56);
 		lblCDCName.Margin = new Padding(0);
 		lblCDCName.Name = "lblCDCName";
 		lblCDCName.Size = new Size(40, 15);
@@ -1642,7 +1643,7 @@ partial class MainForm {
 		// label5
 		// 
 		label5.AutoSize = true;
-		label5.Location = new Point(3, 59);
+		label5.Location = new Point(3, 56);
 		label5.Name = "label5";
 		label5.Size = new Size(67, 15);
 		label5.TabIndex = 10;
@@ -1652,7 +1653,7 @@ partial class MainForm {
 		// cmbField
 		// 
 		cmbField.FormattingEnabled = true;
-		cmbField.Location = new Point(88, 62);
+		cmbField.Location = new Point(88, 59);
 		cmbField.Name = "cmbField";
 		cmbField.Size = new Size(564, 23);
 		cmbField.TabIndex = 11;
@@ -1680,7 +1681,8 @@ partial class MainForm {
 		// 
 		// btnGetPickList
 		// 
-		btnGetPickList.Location = new Point(658, 62);
+		btnGetPickList.Enabled = false;
+		btnGetPickList.Location = new Point(1128, 108);
 		btnGetPickList.Name = "btnGetPickList";
 		btnGetPickList.Size = new Size(148, 35);
 		btnGetPickList.TabIndex = 9;
@@ -2233,7 +2235,7 @@ partial class MainForm {
 		toolStripContainer6.ResumeLayout(false);
 		toolStripContainer6.PerformLayout();
 		ResumeLayout(false);
-		}
+	}
 
 	// Fix for CS0407: Ensure the event handler method 'button31_Click' has the correct return type 'void'  
 
