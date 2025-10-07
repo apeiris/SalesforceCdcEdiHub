@@ -528,7 +528,6 @@ public partial class MainForm : Form {
 		try {
 			DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(cmbObjects.Text!.ToString());
 			dgvSchema.DataSource = ds.Tables[0];
-			Console.WriteLine(ds.GetXml());
 		} catch (Exception ex) {
 			dgvSchema.DataSource = null;
 			if (ex.Message.Contains(": Not Found")) {
@@ -1218,6 +1217,9 @@ public partial class MainForm : Form {
 				//							.Where(n => !string.IsNullOrEmpty(n))
 				//							.ToList();
 				//	}
+				break;
+			case "tbpwebhook":
+				lblWebHookUrl.Text = Environment.GetEnvironmentVariable("VUE_APP_WEBHOOK_URL"); 
 				break;
 			default:
 

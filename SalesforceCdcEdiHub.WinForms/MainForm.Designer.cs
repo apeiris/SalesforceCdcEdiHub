@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -165,12 +165,18 @@ partial class MainForm {
 		radioButton1 = new RadioButton();
 		dgvOrder = new DataGridView();
 		webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
+		tbpWebHook = new TabPage();
+		tableLayoutPanel19 = new TableLayoutPanel();
+		lblWebHookUrl = new Label();
+		label6 = new Label();
 		toolStripContainer1 = new ToolStripContainer();
 		toolStripContainer2 = new ToolStripContainer();
 		toolStripContainer3 = new ToolStripContainer();
 		toolStripContainer4 = new ToolStripContainer();
 		toolStripContainer5 = new ToolStripContainer();
 		toolStripContainer6 = new ToolStripContainer();
+		rtxWebhook = new RichTextBox();
+		button1 = new Button();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
 		toolStrip1.SuspendLayout();
@@ -239,6 +245,8 @@ partial class MainForm {
 		grpx.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)dgvOrder).BeginInit();
 		((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
+		tbpWebHook.SuspendLayout();
+		tableLayoutPanel19.SuspendLayout();
 		toolStripContainer1.SuspendLayout();
 		toolStripContainer2.ContentPanel.SuspendLayout();
 		toolStripContainer2.SuspendLayout();
@@ -289,6 +297,7 @@ partial class MainForm {
 		tabControl1.Controls.Add(tbpEventLog);
 		tabControl1.Controls.Add(tbpCDCEvents);
 		tabControl1.Controls.Add(tbpX12);
+		tabControl1.Controls.Add(tbpWebHook);
 		tabControl1.Location = new Point(0, 0);
 		tabControl1.Name = "tabControl1";
 		tabControl1.SelectedIndex = 0;
@@ -1045,14 +1054,14 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle2.BackColor = SystemColors.Control;
-		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
+		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle1.BackColor = SystemColors.Control;
+		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
 		dgvOrderList.Size = new Size(392, 159);
 		dgvOrderList.TabIndex = 11;
 		// 
@@ -2040,6 +2049,62 @@ partial class MainForm {
 		webView21.TabIndex = 4;
 		webView21.ZoomFactor = 1D;
 		// 
+		// tbpWebHook
+		// 
+		tbpWebHook.Controls.Add(tableLayoutPanel19);
+		tbpWebHook.Location = new Point(4, 24);
+		tbpWebHook.Name = "tbpWebHook";
+		tbpWebHook.Padding = new Padding(3);
+		tbpWebHook.Size = new Size(1415, 684);
+		tbpWebHook.TabIndex = 8;
+		tbpWebHook.Text = "WebHook";
+		tbpWebHook.UseVisualStyleBackColor = true;
+		// 
+		// tableLayoutPanel19
+		// 
+		tableLayoutPanel19.ColumnCount = 4;
+		tableLayoutPanel19.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34.2391319F));
+		tableLayoutPanel19.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65.76087F));
+		tableLayoutPanel19.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 336F));
+		tableLayoutPanel19.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 704F));
+		tableLayoutPanel19.Controls.Add(lblWebHookUrl, 1, 0);
+		tableLayoutPanel19.Controls.Add(label6, 0, 0);
+		tableLayoutPanel19.Controls.Add(rtxWebhook, 0, 1);
+		tableLayoutPanel19.Controls.Add(button1, 3, 0);
+		tableLayoutPanel19.Dock = DockStyle.Fill;
+		tableLayoutPanel19.Location = new Point(3, 3);
+		tableLayoutPanel19.Name = "tableLayoutPanel19";
+		tableLayoutPanel19.RowCount = 3;
+		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 5.022831F));
+		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 94.9771652F));
+		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+		tableLayoutPanel19.Size = new Size(1409, 678);
+		tableLayoutPanel19.TabIndex = 0;
+		// 
+		// lblWebHookUrl
+		// 
+		lblWebHookUrl.AutoSize = true;
+		lblWebHookUrl.Dock = DockStyle.Left;
+		lblWebHookUrl.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+		lblWebHookUrl.ForeColor = Color.Firebrick;
+		lblWebHookUrl.Location = new Point(129, 0);
+		lblWebHookUrl.Name = "lblWebHookUrl";
+		lblWebHookUrl.Size = new Size(0, 33);
+		lblWebHookUrl.TabIndex = 1;
+		lblWebHookUrl.TextAlign = ContentAlignment.MiddleLeft;
+		// 
+		// label6
+		// 
+		label6.AutoSize = true;
+		label6.Dock = DockStyle.Left;
+		label6.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+		label6.Location = new Point(3, 0);
+		label6.Name = "label6";
+		label6.Size = new Size(119, 33);
+		label6.TabIndex = 0;
+		label6.Text = "(Env.) WebHook Url:";
+		label6.TextAlign = ContentAlignment.MiddleLeft;
+		// 
 		// toolStripContainer1
 		// 
 		// 
@@ -2120,6 +2185,25 @@ partial class MainForm {
 		toolStripContainer6.Size = new Size(1423, 761);
 		toolStripContainer6.TabIndex = 4;
 		toolStripContainer6.Text = "toolStripContainer6";
+		// 
+		// rtxWebhook
+		// 
+		tableLayoutPanel19.SetColumnSpan(rtxWebhook, 4);
+		rtxWebhook.Dock = DockStyle.Fill;
+		rtxWebhook.Location = new Point(3, 36);
+		rtxWebhook.Name = "rtxWebhook";
+		rtxWebhook.Size = new Size(1403, 618);
+		rtxWebhook.TabIndex = 2;
+		rtxWebhook.Text = "";
+		// 
+		// button1
+		// 
+		button1.Location = new Point(707, 3);
+		button1.Name = "button1";
+		button1.Size = new Size(75, 23);
+		button1.TabIndex = 3;
+		button1.Text = "button1";
+		button1.UseVisualStyleBackColor = true;
 		// 
 		// MainForm
 		// 
@@ -2221,6 +2305,9 @@ partial class MainForm {
 		grpx.PerformLayout();
 		((System.ComponentModel.ISupportInitialize)dgvOrder).EndInit();
 		((System.ComponentModel.ISupportInitialize)webView21).EndInit();
+		tbpWebHook.ResumeLayout(false);
+		tableLayoutPanel19.ResumeLayout(false);
+		tableLayoutPanel19.PerformLayout();
 		toolStripContainer1.ResumeLayout(false);
 		toolStripContainer1.PerformLayout();
 		toolStripContainer2.ContentPanel.ResumeLayout(false);
@@ -2364,7 +2451,7 @@ partial class MainForm {
 	private Button btnListEvents;
 	private TabPage tabPage1;
 	private TabPage tbpX12;
-	private RichTextBox rtxLog;
+	internal RichTextBox rtxLog;
 	private Button btnLogTest;
 	private Button btnDispatchEvent;
 	private DataGridView dgvOrderList;
@@ -2402,4 +2489,10 @@ partial class MainForm {
 	private ToolStripContainer toolStripContainer6;
 	private Button btnRetrieveOrder;
 	private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
-	}
+	private TabPage tbpWebHook;
+	private TableLayoutPanel tableLayoutPanel19;
+	private Label label6;
+	private Label lblWebHookUrl;
+	private RichTextBox rtxWebhook;
+	private Button button1;
+}

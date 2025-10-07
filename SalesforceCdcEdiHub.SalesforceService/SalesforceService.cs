@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Common;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -327,6 +328,8 @@ public class SalesforceService : ISalesforceService {
 	public async Task<DataSet> GetObjectSchemaAsDataSetAsync(string objectName, bool useTooling = false) {
 		var schemax = await GetObjectSchemaAsync(objectName, default, useTooling);
 		JsonDocument schema = JsonDocument.Parse(schemax.GetRawText());
+	
+		_logger.LogDebug(schemax.GetRawText());
 		DataSet ds = new DataSet();
 		try {
 			var fields = GetNonNullableFields(schema.RootElement);

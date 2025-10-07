@@ -190,12 +190,12 @@ To integrate Salesforce with an OpenAS2 server REST endpoint running on localhos
 
 ### 1. Expose the Local OpenAS2 Server
 
-Since Salesforce is cloud-based, it cannot directly access `http://localhost:8080`. Make the OpenAS2 REST endpoint publicly accessible using a tunneling service like **ngrok** for development:
+Since Salesforce is cloud-based, it cannot directly access `http://localhost:8080`. 
+Make the OpenAS2 REST endpoint publicly accessible using a tunneling service like <span style="color:red">**ngrok** 
 
 - **Install and Run ngrok**:
   - Download and install ngrok [](https://ngrok.com/).
-  - Run the following command to expose your local OpenAS2 server (assuming it’s on port 8080):
-    ngrok http 8080
+  - expose your local OpenAS2 -> <span style="color:red">**ngrok** http 8080
 
  --**Setup remote url in Salesforce to point to the ngrok url**
    - Note the generated public URL (e.g., `https://abcd1234.ngrok.io`).
@@ -275,6 +275,7 @@ erDiagram
 ```
 ## EdiPartnership__c metadata for the Salesforce
 ### PartnershipId__c
+<span style="color:red"> (The field level visibility must be enabled for Receiver_AccountId__c and Sender_AccountId__c in Salesforce )
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
@@ -289,7 +290,8 @@ erDiagram
     <unique>true</unique>
 </CustomField>
 ```   
-### Receiver_AccountId__c
+### Receiver_AccountId__c 
+ 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
@@ -362,11 +364,54 @@ graph TD
     B --> D[Search Bar & Filters]
     B --> E[Table: PartnershipId, Sender Account, Receiver Account, Created Date]
     E --> F[Row Click: Navigate to Record Detail]
+```
+---
+### <span style="color:red"/> Setting Up Remote Site URL in Salesforce for Ngrok and Executing Apex Code
 
 
+To allow Salesforce to call external services (such as an `ngrok` tunnel exposing your local application), you must register the ngrok URL as a **Remote Site**.  
+
+1. In Salesforce, go to **Setup** → **Security** → **Remote Site Settings**.  
+2. Click **New Remote Site** and provide:  
+   - **Remote Site Name**: `Ngrok_Tunnel`  
+   - **Remote Site URL**: Paste the `https://<your-ngrok-subdomain>.ngrok.io` URL provided by the `ngrok` session.  
+   - Save the configuration.  
+3. Verify that the status of your new remote site is **Active**.  
 
 
+### Testing with Apex in Workbench (Basic Authentication)
 
+Once the Remote Site is configured, you can test HTTP callouts from Salesforce using **Workbench**:  
+
+1. Log in to [Workbench](https://workbench.developerforce.com).  
+2. Navigate to **Utilities** → **Execute Anonymous**.  
+3. Paste the following sample Apex code and click **Execute**:  
+
+```apex
+// Replace with your actual username and password
+String username = 'yourUsername';
+String password = 'yourPassword';
+
+// Encode credentials for Basic Auth
+Blob credentials = Blob.valueOf(username + ':' + password);
+String authorizationHeader = 'Basic ' + EncodingUtil.base64Encode(credentials);
+
+Http http = new Http();
+HttpRequest req = new HttpRequest();
+req.setEndpoint('https://<your-ngrok-subdomain>.ngrok.io/api/test');
+req.setMethod('GET');
+
+// Add headers
+req.setHeader('Content-Type', 'application/json');
+req.setHeader('Authorization', authorizationHeader);
+
+HttpResponse res = http.send(req);
+
+// Debug log
+System.debug('Status: ' + res.getStatus());
+System.debug('Response: ' + res.getBody());
+```
+---
 
 
 

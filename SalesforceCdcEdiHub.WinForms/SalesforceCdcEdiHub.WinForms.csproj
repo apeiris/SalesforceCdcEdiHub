@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+		<PackageReference Include="flurl.http" Version="4.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
@@ -37,6 +38,7 @@
 		<ProjectReference Include="..\Common\Common.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.LoggerEmailExtensions\SalesforceCdcEdiHub.LoggerEmailExtensions.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.SqlServerLib\SalesforceCdcEdihub.SqlServerLib.csproj" />
+		<ProjectReference Include="..\SalesforceCdcEdiHub.WebhookListener\SalesforceCdcEdiHub.WebHookListener.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.X12\SalesforceCdcEdiHub.X12.csproj" />
 	</ItemGroup>
 
