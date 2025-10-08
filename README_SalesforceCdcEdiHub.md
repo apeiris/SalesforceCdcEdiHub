@@ -412,9 +412,48 @@ System.debug('Status: ' + res.getStatus());
 System.debug('Response: ' + res.getBody());
 ```
 ---
+### 🔗 Association Between OpenAS2 Partners and Salesforce Accounts
+
+Every OpenAS2 Partner must be linked to a corresponding Salesforce Account. Only Accounts with the type “EDI Partner” are eligible for this association.
+
+For Accounts of type EDI Partner, the as2_id of the OpenAS2 Partner is mapped directly to the Salesforce Account’s Id. This ensures a one-to-one relationship between each OpenAS2 Partner and its Salesforce Account.
 
 
+```mermaid
+erDiagram
+    %% Entities
+    OpenAS2_Partner {
+        string as2_id "AS2 Identifier"
+        string name
+    }
+    Salesforce_Account {
+        string Id "Salesforce Account Id"
+        string Name
+        string Type "Account Type (EDI Partner)"
+    }
 
+    %% Relationship
+    OpenAS2_Partner ||--|| Salesforce_Account : "🔗 linked to if Type = EDI Partner"
+```
+
+### OpenAS2 → Salesforce Account Synchronization
+OpenAS2 commits are captured via the Web UI and propagated to the Salesforce EDI Hub (SalesforceCdcEdiHub) using webhooks.
+To ensure consistency between OpenAS2 and Salesforce, Salesforce Accounts must be synchronized with OpenAS2 Partners at server startup. This guarantees that every OpenAS2 Partner has a corresponding Salesforce Account, maintaining proper mapping and avoiding inconsistencies.
+
+```mermaid
+flowchart TD
+    %% OpenAS2 WebUI commits
+   
+    %% Webhook propagation to Salesforce
+    B[OpenAs2] -->|Webhook| C[Salesforce EDI Hub - SalesforceCdcEdiHub]
+
+    %% Startup synchronization to ensure consistency
+    subgraph SYNC
+        B[OpenAS2 Partners] <--> E[Salesforce Accounts.Type=EDI Partner]
+        E <--> C
+    end
+```
+---
 
 
 

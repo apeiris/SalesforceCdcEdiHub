@@ -169,14 +169,18 @@ partial class MainForm {
 		tableLayoutPanel19 = new TableLayoutPanel();
 		lblWebHookUrl = new Label();
 		label6 = new Label();
+		rtxWebhook = new RichTextBox();
+		button1 = new Button();
+		tbpPartners = new TabPage();
+		tableLayoutPanel20 = new TableLayoutPanel();
+		cmbPartnerList = new ComboBox();
 		toolStripContainer1 = new ToolStripContainer();
 		toolStripContainer2 = new ToolStripContainer();
 		toolStripContainer3 = new ToolStripContainer();
 		toolStripContainer4 = new ToolStripContainer();
 		toolStripContainer5 = new ToolStripContainer();
 		toolStripContainer6 = new ToolStripContainer();
-		rtxWebhook = new RichTextBox();
-		button1 = new Button();
+		btnGetPartnerList = new Button();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
 		toolStrip1.SuspendLayout();
@@ -247,6 +251,8 @@ partial class MainForm {
 		((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
 		tbpWebHook.SuspendLayout();
 		tableLayoutPanel19.SuspendLayout();
+		tbpPartners.SuspendLayout();
+		tableLayoutPanel20.SuspendLayout();
 		toolStripContainer1.SuspendLayout();
 		toolStripContainer2.ContentPanel.SuspendLayout();
 		toolStripContainer2.SuspendLayout();
@@ -298,6 +304,7 @@ partial class MainForm {
 		tabControl1.Controls.Add(tbpCDCEvents);
 		tabControl1.Controls.Add(tbpX12);
 		tabControl1.Controls.Add(tbpWebHook);
+		tabControl1.Controls.Add(tbpPartners);
 		tabControl1.Location = new Point(0, 0);
 		tabControl1.Name = "tabControl1";
 		tabControl1.SelectedIndex = 0;
@@ -2105,6 +2112,65 @@ partial class MainForm {
 		label6.Text = "(Env.) WebHook Url:";
 		label6.TextAlign = ContentAlignment.MiddleLeft;
 		// 
+		// rtxWebhook
+		// 
+		tableLayoutPanel19.SetColumnSpan(rtxWebhook, 4);
+		rtxWebhook.Dock = DockStyle.Fill;
+		rtxWebhook.Location = new Point(3, 36);
+		rtxWebhook.Name = "rtxWebhook";
+		rtxWebhook.Size = new Size(1403, 618);
+		rtxWebhook.TabIndex = 2;
+		rtxWebhook.Text = "";
+		// 
+		// button1
+		// 
+		button1.Location = new Point(707, 3);
+		button1.Name = "button1";
+		button1.Size = new Size(75, 23);
+		button1.TabIndex = 3;
+		button1.Text = "button1";
+		button1.UseVisualStyleBackColor = true;
+		// 
+		// tbpPartners
+		// 
+		tbpPartners.Controls.Add(tableLayoutPanel20);
+		tbpPartners.Location = new Point(4, 24);
+		tbpPartners.Name = "tbpPartners";
+		tbpPartners.Padding = new Padding(3);
+		tbpPartners.Size = new Size(1415, 684);
+		tbpPartners.TabIndex = 9;
+		tbpPartners.Text = "Partners";
+		tbpPartners.UseVisualStyleBackColor = true;
+		// 
+		// tableLayoutPanel20
+		// 
+		tableLayoutPanel20.ColumnCount = 5;
+		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 44.436203F));
+		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55.563797F));
+		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+		tableLayoutPanel20.Controls.Add(cmbPartnerList, 0, 0);
+		tableLayoutPanel20.Controls.Add(btnGetPartnerList, 1, 0);
+		tableLayoutPanel20.Dock = DockStyle.Fill;
+		tableLayoutPanel20.Location = new Point(3, 3);
+		tableLayoutPanel20.Name = "tableLayoutPanel20";
+		tableLayoutPanel20.RowCount = 3;
+		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Percent, 17.5F));
+		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Percent, 82.5F));
+		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Absolute, 477F));
+		tableLayoutPanel20.Size = new Size(1409, 678);
+		tableLayoutPanel20.TabIndex = 0;
+		// 
+		// cmbPartnerList
+		// 
+		cmbPartnerList.DropDownStyle = ComboBoxStyle.DropDownList;
+		cmbPartnerList.FormattingEnabled = true;
+		cmbPartnerList.Location = new Point(3, 3);
+		cmbPartnerList.Name = "cmbPartnerList";
+		cmbPartnerList.Size = new Size(593, 23);
+		cmbPartnerList.TabIndex = 0;
+		// 
 		// toolStripContainer1
 		// 
 		// 
@@ -2186,24 +2252,15 @@ partial class MainForm {
 		toolStripContainer6.TabIndex = 4;
 		toolStripContainer6.Text = "toolStripContainer6";
 		// 
-		// rtxWebhook
+		// btnGetPartnerList
 		// 
-		tableLayoutPanel19.SetColumnSpan(rtxWebhook, 4);
-		rtxWebhook.Dock = DockStyle.Fill;
-		rtxWebhook.Location = new Point(3, 36);
-		rtxWebhook.Name = "rtxWebhook";
-		rtxWebhook.Size = new Size(1403, 618);
-		rtxWebhook.TabIndex = 2;
-		rtxWebhook.Text = "";
-		// 
-		// button1
-		// 
-		button1.Location = new Point(707, 3);
-		button1.Name = "button1";
-		button1.Size = new Size(75, 23);
-		button1.TabIndex = 3;
-		button1.Text = "button1";
-		button1.UseVisualStyleBackColor = true;
+		btnGetPartnerList.Location = new Point(602, 3);
+		btnGetPartnerList.Name = "btnGetPartnerList";
+		btnGetPartnerList.Size = new Size(104, 23);
+		btnGetPartnerList.TabIndex = 1;
+		btnGetPartnerList.Text = "Get Partner list";
+		btnGetPartnerList.UseVisualStyleBackColor = true;
+		btnGetPartnerList.Click += btnGetPartnerList_Click;
 		// 
 		// MainForm
 		// 
@@ -2308,6 +2365,8 @@ partial class MainForm {
 		tbpWebHook.ResumeLayout(false);
 		tableLayoutPanel19.ResumeLayout(false);
 		tableLayoutPanel19.PerformLayout();
+		tbpPartners.ResumeLayout(false);
+		tableLayoutPanel20.ResumeLayout(false);
 		toolStripContainer1.ResumeLayout(false);
 		toolStripContainer1.PerformLayout();
 		toolStripContainer2.ContentPanel.ResumeLayout(false);
@@ -2495,4 +2554,8 @@ partial class MainForm {
 	private Label lblWebHookUrl;
 	private RichTextBox rtxWebhook;
 	private Button button1;
+	private TabPage tbpPartners;
+	private TableLayoutPanel tableLayoutPanel20;
+	private ComboBox cmbPartnerList;
+	private Button btnGetPartnerList;
 }

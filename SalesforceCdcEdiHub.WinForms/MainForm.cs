@@ -1219,7 +1219,7 @@ public partial class MainForm : Form {
 				//	}
 				break;
 			case "tbpwebhook":
-				lblWebHookUrl.Text = Environment.GetEnvironmentVariable("VUE_APP_WEBHOOK_URL"); 
+				lblWebHookUrl.Text = Environment.GetEnvironmentVariable("VUE_APP_WEBHOOK_URL");
 				break;
 			default:
 
@@ -1266,14 +1266,27 @@ public partial class MainForm : Form {
 	}
 
 	private void dgvSchema_CellContentClick(object sender, DataGridViewCellEventArgs e) {
-		if(e.RowIndex < 0 || e.ColumnIndex < 0) return;
-		if(dgvSchema.Columns.Contains("Type")) {
+		if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+		if (dgvSchema.Columns.Contains("Type")) {
 			if (dgvSchema.Rows[e.RowIndex].Cells["Type"].Value.ToString() == "picklist") {
 				btnGetPickList.Enabled = true;
-				cmbField.Text= dgvSchema.Rows[e.RowIndex].Cells["Name"].Value.ToString() ?? string.Empty;
+				cmbField.Text = dgvSchema.Rows[e.RowIndex].Cells["Name"].Value.ToString() ?? string.Empty;
 
 			}
 		}
 
-		}
+	}
+
+	static async Task GetJsonDocumentAsync(string url) {
+		using HttpClient client = new HttpClient();
+		HttpResponseMessage response = await client.GetAsync(url);
+		response.EnsureSuccessStatusCode();
+		string responseBody = await response.Content.ReadAsStringAsync();
+		JsonDocument jsonDoc = JsonDocument.Parse(responseBody);
+	}
+
+
+	private void btnGetPartnerList_Click(object sender, EventArgs e) {
+
+	}
 }
