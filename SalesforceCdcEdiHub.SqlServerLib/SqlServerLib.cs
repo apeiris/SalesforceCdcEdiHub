@@ -91,7 +91,7 @@ public class SqlServerLib {
 	private void RaiseSqlTableEvent(DataTable dt, SqlEvents e) {
 		SqlTableEvent?.Invoke(this, new SqlTableEvent(dt, e));
 		}
-	#region SqlServerLib.ctor
+	#region  SqlServerLib.ctor
 	public SqlServerLib(PubSubService pubSubService, ISalesforceService salesforceService, IConfiguration configuration, ILogger<SqlServerLib> logger) {
 		_pubSubService = pubSubService ?? throw new ArgumentNullException(nameof(pubSubService));
 		_connectionString = configuration.GetConnectionString("mssql") ?? throw new ArgumentNullException(nameof(configuration));
@@ -786,8 +786,8 @@ public static class SqlServerLibExtensions {
 		transposedTable.Columns.Add("ColumnName", typeof(string));
 		transposedTable.Columns.Add("Value", typeof(object));
 
-		// Ensure the input DataTable has exactly one row
-		if (dt.Rows.Count != 1) {
+		
+		if (dt.Rows.Count != 1) {// Ensure the input DataTable has exactly one row
 			throw new ArgumentException("Input DataTable must contain exactly one row.");
 			}
 

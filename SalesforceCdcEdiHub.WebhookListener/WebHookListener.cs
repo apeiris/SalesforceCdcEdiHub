@@ -7,11 +7,20 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace SalesforceCdcEdiHub;
+public class WebHookEventArg : EventArgs {
+	public string Message { get; set; }
+	public WebHookEventArg(string message) {
+		Message = message;
+	}
+}	
 public class KestrelWebhookListener : BackgroundService {
+
 	private readonly ILogger<KestrelWebhookListener> _logger;
 	private readonly IConfiguration _config;
-	private readonly string _webhookUrl;
-
+	private readonly string _webhookUrl;	
+	public event EventHandler<WebHookEventArg> WebHookEvent;
+	
+	#region KestrelWebhookListener.ctor
 	public KestrelWebhookListener(ILogger<KestrelWebhookListener> logger, IConfiguration config) {
 		_logger = logger;
 		_config = config;
@@ -19,6 +28,7 @@ public class KestrelWebhookListener : BackgroundService {
 		_webhookUrl =Environment.GetEnvironmentVariable("VUE_APP_WEBHOOK_URL")?? _config.GetValue<string>("Webhook:Url")?? "http://0.0.0.0:5005";
 		_logger.LogInformation("🛠️ Webhook listener configured for {WebhookUrl}", _webhookUrl);
 	}
+	#endregion
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
 		try {
 			var builder = WebApplication.CreateBuilder();
@@ -40,6 +50,7 @@ public class KestrelWebhookListener : BackgroundService {
 					var body = await reader.ReadToEndAsync();
 					_logger.LogInformation("✅ Received webhook: {Body}", body);
 					context.Response.StatusCode = 200;
+					WebHookEvent?.Invoke(this, new WebHookEventArg(body));
 					await context.Response.WriteAsync("Webhook received");
 				} catch (Exception ex) {
 					_logger.LogError(ex, "Error processing webhook request");

@@ -442,19 +442,15 @@ To ensure consistency between OpenAS2 and Salesforce, Salesforce Accounts must b
 
 ```mermaid
 flowchart TD
-    %% OpenAS2 WebUI commits
-   
-    %% Webhook propagation to Salesforce
-    B[OpenAs2] -->|Webhook| C[Salesforce EDI Hub - SalesforceCdcEdiHub]
-
-    %% Startup synchronization to ensure consistency
-    subgraph SYNC
-        B[OpenAS2 Partners] <--> E[Salesforce Accounts.Type=EDI Partner]
-        E <--> C
-    end
-```
----
-
-
+%% Entities
+    A[OpenAS2 WebUI] -->|Insert / Update / Delete Partner or Partnership| B[Webhook]
+    B -->|Propagate change event| C[As2Agent]
+    C -->|Verify Partner/Partnership entry| D[Salesforce]
+    A -->|Update / Insert / Delete Partner or Partnership| E[(AS2 Configuration Database)]
+    %%styling
+    class A,B,C,D,E system;
+    classDef system fill:#e0f7fa,stroke:#00796b,stroke-width:1px,color:#004d40;
+    classDef process fill:#f1f8e9,stroke:#558b2f,stroke-width:1px,color:#33691e;
+    classDef data fill:#fff8e1,stroke:#f9a825,stroke-width:1px,color:#795548;
 
 

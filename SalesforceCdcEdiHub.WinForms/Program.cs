@@ -97,9 +97,12 @@ internal static class Program {
 				services.AddScoped<SqlServerLib>();
 				services.AddScoped<X12>();
 				services.AddHttpClient();
+				services.AddSingleton<KestrelWebhookListener>();
+				services.AddHostedService(provider => provider.GetRequiredService<KestrelWebhookListener>());
 
-				// Hosted Kestrel-based WebhookListener
-				services.AddHostedService<KestrelWebhookListener>();
+
+
+
 
 				// MainForm
 				services.AddScoped<MainForm>();

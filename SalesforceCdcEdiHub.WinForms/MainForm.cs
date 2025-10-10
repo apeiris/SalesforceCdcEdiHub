@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -21,6 +21,8 @@ using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
+
+
 namespace WinForms;
 public partial class MainForm : Form {
 	#region enums
@@ -76,6 +78,7 @@ public partial class MainForm : Form {
 	private static readonly List<string> orderStates = new List<string> { "Revision Required", "In Production", "Completed" };
 	#endregion fields
 	#region events handlers and delegates
+	private readonly KestrelWebhookListener _webhookListener;
 	#region pubsubservice events
 	private void PubSubService_ProgressUpdated(object sender, ProgressUpdateEventArgs e) {
 		if (lbxCDCTopics.InvokeRequired) {
@@ -114,6 +117,27 @@ public partial class MainForm : Form {
 			}
 		}
 	}
+
+	private void WebhookListener_WebHookEvent(object? sender, WebHookEventArg e) {
+		// Ensure UI updates happen on the main thread
+		if (InvokeRequired) {
+			BeginInvoke(new Action(() => WebhookListener_WebHookEvent(sender, e)));
+			return;
+		}
+
+		// Example: display webhook message in your log box or status area
+		string message = $"🔔 Webhook received at {DateTime.Now}: {e.Message}";
+		_logger.LogInformation(message);
+
+		// Update UI (example)
+		rtxLog.AppendText($"{message}\n");
+		ShowStatus("Webhook received!", 3);
+
+		// TODO: parse webhook and act
+		// var payload = JsonSerializer.Deserialize<PartnerWebhookPayload>(e.Message);
+		// _sqlServerLib.UpdatePartner(payload);
+	}
+
 	private void _sqlServerLib_SqlTableEvent(object? sender, SqlTableEvent e) {
 		try {
 			DataRow r = e.table.Rows[0];
@@ -161,10 +185,19 @@ public partial class MainForm : Form {
 		//}));
 		ShowStatus($"Authenticating: {e.Message}");
 	}
+
+
+
 	#endregion events	
 	#region form	
 	private System.Windows.Forms.Timer _statusTimer;
-	public MainForm(IMemoryCache cache, ISalesforceService salesforceService, PubSubService pubSubService, IOptions<SalesforceConfig> config, SqlServerLib sqlServerLib, ILogger<MainForm> logger, X12 x12) {
+	public MainForm(IMemoryCache cache,
+		ISalesforceService salesforceService,
+		PubSubService pubSubService,
+		IOptions<SalesforceConfig> config,
+		SqlServerLib sqlServerLib,
+		ILogger<MainForm> logger, X12 x12,
+		KestrelWebhookListener webhookListener) {
 		InitializeComponent();
 		#region tt
 		ToolTip tt = new ToolTip();
@@ -208,10 +241,13 @@ public partial class MainForm : Form {
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		_logger.LogDebug("MainForm initialized.");
 		_logger.LogInformation("(logInformation)MainForm initialized.");
+		_webhookListener = webhookListener;//DI
+		_webhookListener.WebHookEvent += async (s, e) => await WebhookListener_WebHookEventAsync(e);
+
+
 		saveTabPageColors();
 		#region soql tab & controls
 		rtSoqlQuery.Text = "";
-
 		dgvSOQLResult.DataSource = null;
 		dgvSOQLResult.AllowUserToAddRows = true;
 		dgvSOQLResult.RowsAdded += dgvSOQLResult_RowsAdded;
@@ -219,6 +255,16 @@ public partial class MainForm : Form {
 		#endregion soql tab & controls
 		SetupRichTextBoxContextMenu(rtxLog);
 		RichTextBoxTarget.ReInitializeAllTextboxes(this);
+	}
+	private async Task WebhookListener_WebHookEventAsync(WebHookEventArg e) {
+		await Task.Delay(10);   // Simulate async processing (e.g., API call, DB write)
+		if (InvokeRequired) {
+			Invoke(new Action(() => {
+				_logger.LogDebug($"✅ Invoked: {e.Message}\n");
+			}));
+		} else {
+			_logger.LogDebug($"✅ None Invoked: {e.Message}\n");
+		}
 	}
 	private void Form1_Load(object sender, EventArgs e) {
 		string savedTab = string.IsNullOrEmpty(Properties.Settings.Default.SelectedTab) ? "tbpSfObjects" : Properties.Settings.Default.SelectedTab;
@@ -970,7 +1016,7 @@ public partial class MainForm : Form {
 			if (ds != null) {
 				script = _sqlServerLib.GenerateCreateTableScript(ds.Tables[0], "sfo", cdcEntry);
 				_sqlServerLib.ExecuteNoneQuery(script);
-				rtfLog.Text = script;
+				rtxLog.Text = script;
 			} else Log($"Schema for the table {cdcEntry} could not be retrived..", LogLevel.Error);
 		}
 	}
@@ -1285,8 +1331,21 @@ public partial class MainForm : Form {
 		JsonDocument jsonDoc = JsonDocument.Parse(responseBody);
 	}
 
+	DataSet _dsOpenAs2 = new DataSet();
+	private async void btnGetPartnerList_Click(object sender, EventArgs e) {
+		try {
+			var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/view/MyCompany-to-PartnerA", "userID", "pWd");
+			_dsOpenAs2.Clear();
+			_dsOpenAs2.ReadXml(x.CreateReader());
+			cmbOpenAs2ResultObjects.Items.Clear();
+			cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables.Cast<DataTable>().Select(t => t.TableName).ToArray());
+			dgvOpenAs2Results.DataSource = _dsOpenAs2.Tables[0];
+		} catch (Exception ex) {
+			MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+	}
 
-	private void btnGetPartnerList_Click(object sender, EventArgs e) {
-
+	private void cmbOpenAs2ResultObjects_SelectedIndexChanged(object sender, EventArgs e) {
+		dgvOpenAs2Results.DataSource = _dsOpenAs2.Tables[cmbOpenAs2ResultObjects.Text].Transpose();
 	}
 }

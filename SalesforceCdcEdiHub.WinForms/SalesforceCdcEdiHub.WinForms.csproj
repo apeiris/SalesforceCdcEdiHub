@@ -36,6 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Axios\Axios.csproj" />
 		<ProjectReference Include="..\Common\Common.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.LoggerEmailExtensions\SalesforceCdcEdiHub.LoggerEmailExtensions.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.SqlServerLib\SalesforceCdcEdihub.SqlServerLib.csproj" />

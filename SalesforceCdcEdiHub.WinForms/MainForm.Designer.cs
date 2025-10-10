@@ -138,13 +138,10 @@ partial class MainForm {
 		btnDeleteCmbObjectSelected = new Button();
 		btnGetPickList = new Button();
 		tbpEventLog = new TabPage();
-		splitContainer3 = new SplitContainer();
 		tableLayoutPanel6 = new TableLayoutPanel();
-		tableLayoutPanel7 = new TableLayoutPanel();
-		btnLogTest = new Button();
-		btnClearLog = new Button();
 		rtxLog = new RichTextBox();
-		rtfLog = new RichTextBox();
+		btnClearLog = new Button();
+		btnLogTest = new Button();
 		tbpCDCEvents = new TabPage();
 		tableLayoutPanel8 = new TableLayoutPanel();
 		splitContainer4 = new SplitContainer();
@@ -173,14 +170,15 @@ partial class MainForm {
 		button1 = new Button();
 		tbpPartners = new TabPage();
 		tableLayoutPanel20 = new TableLayoutPanel();
-		cmbPartnerList = new ComboBox();
+		cmbOpenAs2ResultObjects = new ComboBox();
+		btnGetPartnerList = new Button();
+		dgvOpenAs2Results = new DataGridView();
 		toolStripContainer1 = new ToolStripContainer();
 		toolStripContainer2 = new ToolStripContainer();
 		toolStripContainer3 = new ToolStripContainer();
 		toolStripContainer4 = new ToolStripContainer();
 		toolStripContainer5 = new ToolStripContainer();
 		toolStripContainer6 = new ToolStripContainer();
-		btnGetPartnerList = new Button();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
 		toolStrip1.SuspendLayout();
@@ -226,12 +224,7 @@ partial class MainForm {
 		tableLayoutPanel5.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)dgvSchema).BeginInit();
 		tbpEventLog.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
-		splitContainer3.Panel1.SuspendLayout();
-		splitContainer3.Panel2.SuspendLayout();
-		splitContainer3.SuspendLayout();
 		tableLayoutPanel6.SuspendLayout();
-		tableLayoutPanel7.SuspendLayout();
 		tbpCDCEvents.SuspendLayout();
 		tableLayoutPanel8.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)splitContainer4).BeginInit();
@@ -253,6 +246,7 @@ partial class MainForm {
 		tableLayoutPanel19.SuspendLayout();
 		tbpPartners.SuspendLayout();
 		tableLayoutPanel20.SuspendLayout();
+		((System.ComponentModel.ISupportInitialize)dgvOpenAs2Results).BeginInit();
 		toolStripContainer1.SuspendLayout();
 		toolStripContainer2.ContentPanel.SuspendLayout();
 		toolStripContainer2.SuspendLayout();
@@ -305,10 +299,11 @@ partial class MainForm {
 		tabControl1.Controls.Add(tbpX12);
 		tabControl1.Controls.Add(tbpWebHook);
 		tabControl1.Controls.Add(tbpPartners);
+		tabControl1.Dock = DockStyle.Fill;
 		tabControl1.Location = new Point(0, 0);
 		tabControl1.Name = "tabControl1";
 		tabControl1.SelectedIndex = 0;
-		tabControl1.Size = new Size(1423, 712);
+		tabControl1.Size = new Size(1423, 736);
 		tabControl1.TabIndex = 4;
 		tabControl1.Selected += TabControl1_Selected1;
 		// 
@@ -318,7 +313,7 @@ partial class MainForm {
 		tbpSfObjects.Controls.Add(tableLayoutPanel3);
 		tbpSfObjects.Location = new Point(4, 24);
 		tbpSfObjects.Name = "tbpSfObjects";
-		tbpSfObjects.Size = new Size(1415, 684);
+		tbpSfObjects.Size = new Size(1415, 708);
 		tbpSfObjects.TabIndex = 2;
 		tbpSfObjects.Text = "Objects";
 		tbpSfObjects.UseVisualStyleBackColor = true;
@@ -967,7 +962,7 @@ partial class MainForm {
 		tbpPubSub.Location = new Point(4, 24);
 		tbpPubSub.Name = "tbpPubSub";
 		tbpPubSub.Padding = new Padding(3);
-		tbpPubSub.Size = new Size(1415, 684);
+		tbpPubSub.Size = new Size(1415, 708);
 		tbpPubSub.TabIndex = 1;
 		tbpPubSub.Text = "Pub/Sub";
 		tbpPubSub.UseVisualStyleBackColor = true;
@@ -989,7 +984,7 @@ partial class MainForm {
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 47.0779228F));
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 52.9220772F));
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
-		tableLayoutPanel1.Size = new Size(1409, 678);
+		tableLayoutPanel1.Size = new Size(1409, 702);
 		tableLayoutPanel1.TabIndex = 0;
 		// 
 		// splitContainer1
@@ -1007,7 +1002,7 @@ partial class MainForm {
 		// 
 		splitContainer1.Panel2.Controls.Add(dgvObject);
 		splitContainer1.Panel2.Controls.Add(lblSelectedTable);
-		splitContainer1.Size = new Size(1403, 287);
+		splitContainer1.Size = new Size(1403, 298);
 		splitContainer1.SplitterDistance = 392;
 		splitContainer1.TabIndex = 6;
 		// 
@@ -1026,8 +1021,8 @@ partial class MainForm {
 		// splitContainer2.Panel2
 		// 
 		splitContainer2.Panel2.Controls.Add(dgvOrderList);
-		splitContainer2.Size = new Size(392, 287);
-		splitContainer2.SplitterDistance = 124;
+		splitContainer2.Size = new Size(392, 298);
+		splitContainer2.SplitterDistance = 128;
 		splitContainer2.TabIndex = 7;
 		// 
 		// lbxObjects
@@ -1036,7 +1031,7 @@ partial class MainForm {
 		lbxObjects.FormattingEnabled = true;
 		lbxObjects.Location = new Point(0, 21);
 		lbxObjects.Name = "lbxObjects";
-		lbxObjects.Size = new Size(392, 103);
+		lbxObjects.Size = new Size(392, 107);
 		lbxObjects.TabIndex = 5;
 		lbxObjects.SelectedIndexChanged += lbxObjects_SelectedIndexChanged;
 		// 
@@ -1069,7 +1064,7 @@ partial class MainForm {
 		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
 		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
 		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
-		dgvOrderList.Size = new Size(392, 159);
+		dgvOrderList.Size = new Size(392, 166);
 		dgvOrderList.TabIndex = 11;
 		// 
 		// dgvObject
@@ -1081,7 +1076,7 @@ partial class MainForm {
 		dgvObject.Dock = DockStyle.Fill;
 		dgvObject.Location = new Point(0, 21);
 		dgvObject.Name = "dgvObject";
-		dgvObject.Size = new Size(1007, 266);
+		dgvObject.Size = new Size(1007, 277);
 		dgvObject.TabIndex = 4;
 		dgvObject.CellContentClick += dgvObject_CellContentClick_1;
 		// 
@@ -1108,7 +1103,7 @@ partial class MainForm {
 		tableLayoutPanel2.Controls.Add(btnDeleteCDCRegistration, 1, 4);
 		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 3);
 		tableLayoutPanel2.Dock = DockStyle.Fill;
-		tableLayoutPanel2.Location = new Point(3, 343);
+		tableLayoutPanel2.Location = new Point(3, 354);
 		tableLayoutPanel2.Name = "tableLayoutPanel2";
 		tableLayoutPanel2.RowCount = 5;
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 91.70985F));
@@ -1117,7 +1112,7 @@ partial class MainForm {
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel2.Size = new Size(391, 323);
+		tableLayoutPanel2.Size = new Size(391, 336);
 		tableLayoutPanel2.TabIndex = 3;
 		// 
 		// pnlOrderStates
@@ -1157,7 +1152,7 @@ partial class MainForm {
 		// 
 		btnDispatchEvent.BackColor = Color.Green;
 		btnDispatchEvent.ForeColor = Color.Yellow;
-		btnDispatchEvent.Location = new Point(196, 168);
+		btnDispatchEvent.Location = new Point(196, 181);
 		btnDispatchEvent.Name = "btnDispatchEvent";
 		btnDispatchEvent.Size = new Size(155, 44);
 		btnDispatchEvent.TabIndex = 10;
@@ -1169,7 +1164,7 @@ partial class MainForm {
 		// 
 		btnRetrieveOrder.BackColor = Color.Green;
 		btnRetrieveOrder.ForeColor = Color.Yellow;
-		btnRetrieveOrder.Location = new Point(3, 168);
+		btnRetrieveOrder.Location = new Point(3, 181);
 		btnRetrieveOrder.Name = "btnRetrieveOrder";
 		btnRetrieveOrder.Size = new Size(155, 44);
 		btnRetrieveOrder.TabIndex = 13;
@@ -1181,7 +1176,7 @@ partial class MainForm {
 		// 
 		btnDeleteCDCRegistration.BackColor = Color.Green;
 		btnDeleteCDCRegistration.ForeColor = Color.Yellow;
-		btnDeleteCDCRegistration.Location = new Point(196, 275);
+		btnDeleteCDCRegistration.Location = new Point(196, 288);
 		btnDeleteCDCRegistration.Name = "btnDeleteCDCRegistration";
 		btnDeleteCDCRegistration.Size = new Size(155, 44);
 		btnDeleteCDCRegistration.TabIndex = 8;
@@ -1193,7 +1188,7 @@ partial class MainForm {
 		// 
 		btnListEvents.BackColor = Color.Green;
 		btnListEvents.ForeColor = Color.Yellow;
-		btnListEvents.Location = new Point(3, 223);
+		btnListEvents.Location = new Point(3, 236);
 		btnListEvents.Name = "btnListEvents";
 		btnListEvents.Size = new Size(155, 44);
 		btnListEvents.TabIndex = 9;
@@ -1208,13 +1203,13 @@ partial class MainForm {
 		tableLayoutPanel4.Controls.Add(dgvObjectUrls, 0, 1);
 		tableLayoutPanel4.Controls.Add(lblRelations, 0, 0);
 		tableLayoutPanel4.Dock = DockStyle.Fill;
-		tableLayoutPanel4.Location = new Point(400, 343);
+		tableLayoutPanel4.Location = new Point(400, 354);
 		tableLayoutPanel4.Name = "tableLayoutPanel4";
 		tableLayoutPanel4.RowCount = 2;
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 11.8942728F));
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 88.10573F));
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel4.Size = new Size(1006, 323);
+		tableLayoutPanel4.Size = new Size(1006, 336);
 		tableLayoutPanel4.TabIndex = 7;
 		// 
 		// dgvObjectUrls
@@ -1224,9 +1219,9 @@ partial class MainForm {
 		dgvObjectUrls.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
 		dgvObjectUrls.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		dgvObjectUrls.Dock = DockStyle.Fill;
-		dgvObjectUrls.Location = new Point(3, 41);
+		dgvObjectUrls.Location = new Point(3, 42);
 		dgvObjectUrls.Name = "dgvObjectUrls";
-		dgvObjectUrls.Size = new Size(1000, 279);
+		dgvObjectUrls.Size = new Size(1000, 291);
 		dgvObjectUrls.TabIndex = 10;
 		// 
 		// lblRelations
@@ -1283,7 +1278,7 @@ partial class MainForm {
 		tbpOAuth2.Location = new Point(4, 24);
 		tbpOAuth2.Name = "tbpOAuth2";
 		tbpOAuth2.Padding = new Padding(3);
-		tbpOAuth2.Size = new Size(1415, 684);
+		tbpOAuth2.Size = new Size(1415, 708);
 		tbpOAuth2.TabIndex = 0;
 		tbpOAuth2.Text = "OAuth2";
 		tbpOAuth2.UseVisualStyleBackColor = true;
@@ -1293,7 +1288,7 @@ partial class MainForm {
 		tbpSOQL.Controls.Add(tableLayoutPanel11);
 		tbpSOQL.Location = new Point(4, 24);
 		tbpSOQL.Name = "tbpSOQL";
-		tbpSOQL.Size = new Size(1415, 684);
+		tbpSOQL.Size = new Size(1415, 708);
 		tbpSOQL.TabIndex = 6;
 		tbpSOQL.Text = "SOQL";
 		tbpSOQL.UseVisualStyleBackColor = true;
@@ -1313,13 +1308,13 @@ partial class MainForm {
 		tableLayoutPanel11.RowCount = 2;
 		tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 12.0943956F));
 		tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 87.9056F));
-		tableLayoutPanel11.Size = new Size(1415, 684);
+		tableLayoutPanel11.Size = new Size(1415, 708);
 		tableLayoutPanel11.TabIndex = 0;
 		// 
 		// splitcSoql
 		// 
 		tableLayoutPanel11.SetColumnSpan(splitcSoql, 4);
-		splitcSoql.Location = new Point(3, 85);
+		splitcSoql.Location = new Point(3, 88);
 		splitcSoql.Name = "splitcSoql";
 		// 
 		// splitcSoql.Panel1
@@ -1510,7 +1505,7 @@ partial class MainForm {
 		lblSoqlText.ForeColor = Color.Brown;
 		lblSoqlText.Location = new Point(503, 0);
 		lblSoqlText.Name = "lblSoqlText";
-		lblSoqlText.Size = new Size(757, 82);
+		lblSoqlText.Size = new Size(757, 85);
 		lblSoqlText.TabIndex = 5;
 		lblSoqlText.Text = "soql";
 		// 
@@ -1579,7 +1574,7 @@ partial class MainForm {
 		tbpDescribeObject.Controls.Add(tableLayoutPanel5);
 		tbpDescribeObject.Location = new Point(4, 24);
 		tbpDescribeObject.Name = "tbpDescribeObject";
-		tbpDescribeObject.Size = new Size(1415, 684);
+		tbpDescribeObject.Size = new Size(1415, 708);
 		tbpDescribeObject.TabIndex = 3;
 		tbpDescribeObject.Text = "Describe Object";
 		tbpDescribeObject.UseVisualStyleBackColor = true;
@@ -1609,7 +1604,7 @@ partial class MainForm {
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 53.3333321F));
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 46.6666679F));
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 578F));
-		tableLayoutPanel5.Size = new Size(1415, 684);
+		tableLayoutPanel5.Size = new Size(1415, 708);
 		tableLayoutPanel5.TabIndex = 0;
 		// 
 		// label1
@@ -1618,7 +1613,7 @@ partial class MainForm {
 		label1.Dock = DockStyle.Fill;
 		label1.Location = new Point(3, 0);
 		label1.Name = "label1";
-		label1.Size = new Size(79, 56);
+		label1.Size = new Size(79, 69);
 		label1.TabIndex = 0;
 		label1.Text = "Object Name";
 		label1.TextAlign = ContentAlignment.MiddleLeft;
@@ -1628,7 +1623,7 @@ partial class MainForm {
 		dgvSchema.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		tableLayoutPanel5.SetColumnSpan(dgvSchema, 5);
 		dgvSchema.Dock = DockStyle.Fill;
-		dgvSchema.Location = new Point(3, 108);
+		dgvSchema.Location = new Point(3, 132);
 		dgvSchema.Name = "dgvSchema";
 		dgvSchema.Size = new Size(1119, 573);
 		dgvSchema.TabIndex = 3;
@@ -1649,7 +1644,7 @@ partial class MainForm {
 		lblCDCName.AutoSize = true;
 		lblCDCName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblCDCName.ForeColor = Color.IndianRed;
-		lblCDCName.Location = new Point(1125, 56);
+		lblCDCName.Location = new Point(1125, 69);
 		lblCDCName.Margin = new Padding(0);
 		lblCDCName.Name = "lblCDCName";
 		lblCDCName.Size = new Size(40, 15);
@@ -1659,7 +1654,7 @@ partial class MainForm {
 		// label5
 		// 
 		label5.AutoSize = true;
-		label5.Location = new Point(3, 56);
+		label5.Location = new Point(3, 69);
 		label5.Name = "label5";
 		label5.Size = new Size(67, 15);
 		label5.TabIndex = 10;
@@ -1669,7 +1664,7 @@ partial class MainForm {
 		// cmbField
 		// 
 		cmbField.FormattingEnabled = true;
-		cmbField.Location = new Point(88, 59);
+		cmbField.Location = new Point(88, 72);
 		cmbField.Name = "cmbField";
 		cmbField.Size = new Size(564, 23);
 		cmbField.TabIndex = 11;
@@ -1698,7 +1693,7 @@ partial class MainForm {
 		// btnGetPickList
 		// 
 		btnGetPickList.Enabled = false;
-		btnGetPickList.Location = new Point(1128, 108);
+		btnGetPickList.Location = new Point(1128, 132);
 		btnGetPickList.Name = "btnGetPickList";
 		btnGetPickList.Size = new Size(148, 35);
 		btnGetPickList.TabIndex = 9;
@@ -1708,108 +1703,68 @@ partial class MainForm {
 		// 
 		// tbpEventLog
 		// 
-		tbpEventLog.Controls.Add(splitContainer3);
+		tbpEventLog.Controls.Add(tableLayoutPanel6);
 		tbpEventLog.Location = new Point(4, 24);
 		tbpEventLog.Name = "tbpEventLog";
-		tbpEventLog.Size = new Size(1415, 684);
+		tbpEventLog.Size = new Size(1415, 708);
 		tbpEventLog.TabIndex = 4;
 		tbpEventLog.Text = "Event Log";
 		tbpEventLog.UseVisualStyleBackColor = true;
 		// 
-		// splitContainer3
-		// 
-		splitContainer3.Dock = DockStyle.Fill;
-		splitContainer3.Location = new Point(0, 0);
-		splitContainer3.Name = "splitContainer3";
-		// 
-		// splitContainer3.Panel1
-		// 
-		splitContainer3.Panel1.Controls.Add(tableLayoutPanel6);
-		// 
-		// splitContainer3.Panel2
-		// 
-		splitContainer3.Panel2.Controls.Add(rtfLog);
-		splitContainer3.Size = new Size(1415, 684);
-		splitContainer3.SplitterDistance = 1338;
-		splitContainer3.TabIndex = 0;
-		// 
 		// tableLayoutPanel6
 		// 
-		tableLayoutPanel6.ColumnCount = 1;
-		tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel6.Controls.Add(tableLayoutPanel7, 0, 1);
+		tableLayoutPanel6.ColumnCount = 2;
+		tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 6.99646664F));
+		tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 93.00353F));
 		tableLayoutPanel6.Controls.Add(rtxLog, 0, 0);
+		tableLayoutPanel6.Controls.Add(btnClearLog, 0, 1);
+		tableLayoutPanel6.Controls.Add(btnLogTest, 1, 1);
 		tableLayoutPanel6.Dock = DockStyle.Fill;
 		tableLayoutPanel6.Location = new Point(0, 0);
 		tableLayoutPanel6.Name = "tableLayoutPanel6";
 		tableLayoutPanel6.RowCount = 2;
-		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 90.26549F));
-		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 9.734513F));
-		tableLayoutPanel6.Size = new Size(1338, 684);
-		tableLayoutPanel6.TabIndex = 0;
-		// 
-		// tableLayoutPanel7
-		// 
-		tableLayoutPanel7.ColumnCount = 2;
-		tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel7.Controls.Add(btnLogTest, 1, 0);
-		tableLayoutPanel7.Controls.Add(btnClearLog, 0, 0);
-		tableLayoutPanel7.Location = new Point(3, 620);
-		tableLayoutPanel7.Name = "tableLayoutPanel7";
-		tableLayoutPanel7.RowCount = 2;
-		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-		tableLayoutPanel7.Size = new Size(200, 60);
-		tableLayoutPanel7.TabIndex = 0;
-		// 
-		// btnLogTest
-		// 
-		btnLogTest.Location = new Point(103, 3);
-		btnLogTest.Name = "btnLogTest";
-		btnLogTest.Size = new Size(93, 23);
-		btnLogTest.TabIndex = 1;
-		btnLogTest.Text = "Log Test";
-		btnLogTest.UseVisualStyleBackColor = true;
-		btnLogTest.Click += btnLogTest_Click;
-		// 
-		// btnClearLog
-		// 
-		btnClearLog.Location = new Point(3, 3);
-		btnClearLog.Name = "btnClearLog";
-		btnClearLog.Size = new Size(93, 23);
-		btnClearLog.TabIndex = 0;
-		btnClearLog.Text = "Clear log";
-		btnClearLog.UseVisualStyleBackColor = true;
-		btnClearLog.Click += btnClearLog_Click;
+		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 95.32164F));
+		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 4.67836237F));
+		tableLayoutPanel6.Size = new Size(1415, 708);
+		tableLayoutPanel6.TabIndex = 1;
 		// 
 		// rtxLog
 		// 
 		rtxLog.BackColor = Color.Black;
+		tableLayoutPanel6.SetColumnSpan(rtxLog, 2);
 		rtxLog.Dock = DockStyle.Fill;
 		rtxLog.Font = new Font("Consolas", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
 		rtxLog.ForeColor = Color.Lime;
 		rtxLog.Location = new Point(3, 3);
 		rtxLog.Name = "rtxLog";
-		rtxLog.Size = new Size(1332, 611);
-		rtxLog.TabIndex = 1;
+		rtxLog.Size = new Size(1409, 668);
+		rtxLog.TabIndex = 2;
 		rtxLog.Text = "";
 		// 
-		// rtfLog
+		// btnClearLog
 		// 
-		rtfLog.Location = new Point(289, 0);
-		rtfLog.Name = "rtfLog";
-		rtfLog.Size = new Size(360, 678);
-		rtfLog.TabIndex = 0;
-		rtfLog.Text = "";
+		btnClearLog.Location = new Point(3, 677);
+		btnClearLog.Name = "btnClearLog";
+		btnClearLog.Size = new Size(93, 23);
+		btnClearLog.TabIndex = 3;
+		btnClearLog.Text = "Clear log";
+		btnClearLog.UseVisualStyleBackColor = true;
+		// 
+		// btnLogTest
+		// 
+		btnLogTest.Location = new Point(102, 677);
+		btnLogTest.Name = "btnLogTest";
+		btnLogTest.Size = new Size(93, 23);
+		btnLogTest.TabIndex = 4;
+		btnLogTest.Text = "Log Test";
+		btnLogTest.UseVisualStyleBackColor = true;
 		// 
 		// tbpCDCEvents
 		// 
 		tbpCDCEvents.Controls.Add(tableLayoutPanel8);
 		tbpCDCEvents.Location = new Point(4, 24);
 		tbpCDCEvents.Name = "tbpCDCEvents";
-		tbpCDCEvents.Size = new Size(1415, 684);
+		tbpCDCEvents.Size = new Size(1415, 708);
 		tbpCDCEvents.TabIndex = 5;
 		tbpCDCEvents.Text = "CDC Events";
 		tbpCDCEvents.UseVisualStyleBackColor = true;
@@ -1828,7 +1783,7 @@ partial class MainForm {
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 78.46608F));
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 21.5339241F));
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-		tableLayoutPanel8.Size = new Size(1415, 684);
+		tableLayoutPanel8.Size = new Size(1415, 708);
 		tableLayoutPanel8.TabIndex = 0;
 		// 
 		// splitContainer4
@@ -1844,7 +1799,7 @@ partial class MainForm {
 		// splitContainer4.Panel2
 		// 
 		splitContainer4.Panel2.Controls.Add(splitContainer5);
-		splitContainer4.Size = new Size(1409, 483);
+		splitContainer4.Size = new Size(1409, 502);
 		splitContainer4.SplitterDistance = 525;
 		splitContainer4.TabIndex = 0;
 		// 
@@ -1856,7 +1811,7 @@ partial class MainForm {
 		lbxCDCTopics.Location = new Point(0, 0);
 		lbxCDCTopics.Name = "lbxCDCTopics";
 		lbxCDCTopics.ScrollAlwaysVisible = true;
-		lbxCDCTopics.Size = new Size(525, 483);
+		lbxCDCTopics.Size = new Size(525, 502);
 		lbxCDCTopics.TabIndex = 1;
 		// 
 		// splitContainer5
@@ -1872,7 +1827,7 @@ partial class MainForm {
 		// splitContainer5.Panel2
 		// 
 		splitContainer5.Panel2.Controls.Add(dgvFilteredFields);
-		splitContainer5.Size = new Size(880, 483);
+		splitContainer5.Size = new Size(880, 502);
 		splitContainer5.SplitterDistance = 401;
 		splitContainer5.TabIndex = 0;
 		// 
@@ -1884,7 +1839,7 @@ partial class MainForm {
 		lbxCDCEvents.Location = new Point(0, 0);
 		lbxCDCEvents.Name = "lbxCDCEvents";
 		lbxCDCEvents.ScrollAlwaysVisible = true;
-		lbxCDCEvents.Size = new Size(401, 483);
+		lbxCDCEvents.Size = new Size(401, 502);
 		lbxCDCEvents.TabIndex = 0;
 		// 
 		// dgvFilteredFields
@@ -1893,7 +1848,7 @@ partial class MainForm {
 		dgvFilteredFields.Dock = DockStyle.Fill;
 		dgvFilteredFields.Location = new Point(0, 0);
 		dgvFilteredFields.Name = "dgvFilteredFields";
-		dgvFilteredFields.Size = new Size(475, 483);
+		dgvFilteredFields.Size = new Size(475, 502);
 		dgvFilteredFields.TabIndex = 0;
 		// 
 		// tableLayoutPanel9
@@ -1904,7 +1859,7 @@ partial class MainForm {
 		tableLayoutPanel9.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 235F));
 		tableLayoutPanel9.Controls.Add(btnGetCDCSubscriptions, 1, 0);
 		tableLayoutPanel9.Controls.Add(btnCDCStartSubscription, 0, 0);
-		tableLayoutPanel9.Location = new Point(3, 492);
+		tableLayoutPanel9.Location = new Point(3, 511);
 		tableLayoutPanel9.Name = "tableLayoutPanel9";
 		tableLayoutPanel9.RowCount = 1;
 		tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -1935,7 +1890,7 @@ partial class MainForm {
 		// 
 		lblCDCStatus.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
 		lblCDCStatus.AutoSize = true;
-		lblCDCStatus.Location = new Point(3, 623);
+		lblCDCStatus.Location = new Point(3, 647);
 		lblCDCStatus.Name = "lblCDCStatus";
 		lblCDCStatus.Size = new Size(66, 61);
 		lblCDCStatus.TabIndex = 2;
@@ -1948,7 +1903,7 @@ partial class MainForm {
 		tbpX12.Location = new Point(4, 24);
 		tbpX12.Name = "tbpX12";
 		tbpX12.Padding = new Padding(3);
-		tbpX12.Size = new Size(1415, 684);
+		tbpX12.Size = new Size(1415, 708);
 		tbpX12.TabIndex = 7;
 		tbpX12.Text = "X12";
 		tbpX12.UseVisualStyleBackColor = true;
@@ -1973,7 +1928,7 @@ partial class MainForm {
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 288F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel18.Size = new Size(1409, 678);
+		tableLayoutPanel18.Size = new Size(1409, 702);
 		tableLayoutPanel18.TabIndex = 0;
 		// 
 		// cmbOrderTables
@@ -2052,7 +2007,7 @@ partial class MainForm {
 		webView21.Location = new Point(584, 64);
 		webView21.Name = "webView21";
 		tableLayoutPanel18.SetRowSpan(webView21, 4);
-		webView21.Size = new Size(822, 611);
+		webView21.Size = new Size(822, 635);
 		webView21.TabIndex = 4;
 		webView21.ZoomFactor = 1D;
 		// 
@@ -2062,7 +2017,7 @@ partial class MainForm {
 		tbpWebHook.Location = new Point(4, 24);
 		tbpWebHook.Name = "tbpWebHook";
 		tbpWebHook.Padding = new Padding(3);
-		tbpWebHook.Size = new Size(1415, 684);
+		tbpWebHook.Size = new Size(1415, 708);
 		tbpWebHook.TabIndex = 8;
 		tbpWebHook.Text = "WebHook";
 		tbpWebHook.UseVisualStyleBackColor = true;
@@ -2085,7 +2040,7 @@ partial class MainForm {
 		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 5.022831F));
 		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 94.9771652F));
 		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel19.Size = new Size(1409, 678);
+		tableLayoutPanel19.Size = new Size(1409, 702);
 		tableLayoutPanel19.TabIndex = 0;
 		// 
 		// lblWebHookUrl
@@ -2096,7 +2051,7 @@ partial class MainForm {
 		lblWebHookUrl.ForeColor = Color.Firebrick;
 		lblWebHookUrl.Location = new Point(129, 0);
 		lblWebHookUrl.Name = "lblWebHookUrl";
-		lblWebHookUrl.Size = new Size(0, 33);
+		lblWebHookUrl.Size = new Size(0, 34);
 		lblWebHookUrl.TabIndex = 1;
 		lblWebHookUrl.TextAlign = ContentAlignment.MiddleLeft;
 		// 
@@ -2107,7 +2062,7 @@ partial class MainForm {
 		label6.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		label6.Location = new Point(3, 0);
 		label6.Name = "label6";
-		label6.Size = new Size(119, 33);
+		label6.Size = new Size(119, 34);
 		label6.TabIndex = 0;
 		label6.Text = "(Env.) WebHook Url:";
 		label6.TextAlign = ContentAlignment.MiddleLeft;
@@ -2116,9 +2071,9 @@ partial class MainForm {
 		// 
 		tableLayoutPanel19.SetColumnSpan(rtxWebhook, 4);
 		rtxWebhook.Dock = DockStyle.Fill;
-		rtxWebhook.Location = new Point(3, 36);
+		rtxWebhook.Location = new Point(3, 37);
 		rtxWebhook.Name = "rtxWebhook";
-		rtxWebhook.Size = new Size(1403, 618);
+		rtxWebhook.Size = new Size(1403, 641);
 		rtxWebhook.TabIndex = 2;
 		rtxWebhook.Text = "";
 		// 
@@ -2137,9 +2092,9 @@ partial class MainForm {
 		tbpPartners.Location = new Point(4, 24);
 		tbpPartners.Name = "tbpPartners";
 		tbpPartners.Padding = new Padding(3);
-		tbpPartners.Size = new Size(1415, 684);
+		tbpPartners.Size = new Size(1415, 708);
 		tbpPartners.TabIndex = 9;
-		tbpPartners.Text = "Partners";
+		tbpPartners.Text = "OpenAS2";
 		tbpPartners.UseVisualStyleBackColor = true;
 		// 
 		// tableLayoutPanel20
@@ -2150,8 +2105,9 @@ partial class MainForm {
 		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
 		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
 		tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel20.Controls.Add(cmbPartnerList, 0, 0);
+		tableLayoutPanel20.Controls.Add(cmbOpenAs2ResultObjects, 0, 0);
 		tableLayoutPanel20.Controls.Add(btnGetPartnerList, 1, 0);
+		tableLayoutPanel20.Controls.Add(dgvOpenAs2Results, 0, 1);
 		tableLayoutPanel20.Dock = DockStyle.Fill;
 		tableLayoutPanel20.Location = new Point(3, 3);
 		tableLayoutPanel20.Name = "tableLayoutPanel20";
@@ -2159,17 +2115,38 @@ partial class MainForm {
 		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Percent, 17.5F));
 		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Percent, 82.5F));
 		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Absolute, 477F));
-		tableLayoutPanel20.Size = new Size(1409, 678);
+		tableLayoutPanel20.Size = new Size(1409, 702);
 		tableLayoutPanel20.TabIndex = 0;
 		// 
-		// cmbPartnerList
+		// cmbOpenAs2ResultObjects
 		// 
-		cmbPartnerList.DropDownStyle = ComboBoxStyle.DropDownList;
-		cmbPartnerList.FormattingEnabled = true;
-		cmbPartnerList.Location = new Point(3, 3);
-		cmbPartnerList.Name = "cmbPartnerList";
-		cmbPartnerList.Size = new Size(593, 23);
-		cmbPartnerList.TabIndex = 0;
+		cmbOpenAs2ResultObjects.DropDownStyle = ComboBoxStyle.DropDownList;
+		cmbOpenAs2ResultObjects.FormattingEnabled = true;
+		cmbOpenAs2ResultObjects.Location = new Point(3, 3);
+		cmbOpenAs2ResultObjects.Name = "cmbOpenAs2ResultObjects";
+		cmbOpenAs2ResultObjects.Size = new Size(593, 23);
+		cmbOpenAs2ResultObjects.TabIndex = 0;
+		cmbOpenAs2ResultObjects.SelectedIndexChanged += cmbOpenAs2ResultObjects_SelectedIndexChanged;
+		// 
+		// btnGetPartnerList
+		// 
+		btnGetPartnerList.Location = new Point(602, 3);
+		btnGetPartnerList.Name = "btnGetPartnerList";
+		btnGetPartnerList.Size = new Size(104, 23);
+		btnGetPartnerList.TabIndex = 1;
+		btnGetPartnerList.Text = "Get Partner list";
+		btnGetPartnerList.UseVisualStyleBackColor = true;
+		btnGetPartnerList.Click += btnGetPartnerList_Click;
+		// 
+		// dgvOpenAs2Results
+		// 
+		dgvOpenAs2Results.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		dgvOpenAs2Results.Dock = DockStyle.Fill;
+		dgvOpenAs2Results.Location = new Point(3, 42);
+		dgvOpenAs2Results.Name = "dgvOpenAs2Results";
+		tableLayoutPanel20.SetRowSpan(dgvOpenAs2Results, 2);
+		dgvOpenAs2Results.Size = new Size(593, 657);
+		dgvOpenAs2Results.TabIndex = 2;
 		// 
 		// toolStripContainer1
 		// 
@@ -2252,16 +2229,6 @@ partial class MainForm {
 		toolStripContainer6.TabIndex = 4;
 		toolStripContainer6.Text = "toolStripContainer6";
 		// 
-		// btnGetPartnerList
-		// 
-		btnGetPartnerList.Location = new Point(602, 3);
-		btnGetPartnerList.Name = "btnGetPartnerList";
-		btnGetPartnerList.Size = new Size(104, 23);
-		btnGetPartnerList.TabIndex = 1;
-		btnGetPartnerList.Text = "Get Partner list";
-		btnGetPartnerList.UseVisualStyleBackColor = true;
-		btnGetPartnerList.Click += btnGetPartnerList_Click;
-		// 
 		// MainForm
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -2337,12 +2304,7 @@ partial class MainForm {
 		tableLayoutPanel5.PerformLayout();
 		((System.ComponentModel.ISupportInitialize)dgvSchema).EndInit();
 		tbpEventLog.ResumeLayout(false);
-		splitContainer3.Panel1.ResumeLayout(false);
-		splitContainer3.Panel2.ResumeLayout(false);
-		((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
-		splitContainer3.ResumeLayout(false);
 		tableLayoutPanel6.ResumeLayout(false);
-		tableLayoutPanel7.ResumeLayout(false);
 		tbpCDCEvents.ResumeLayout(false);
 		tableLayoutPanel8.ResumeLayout(false);
 		tableLayoutPanel8.PerformLayout();
@@ -2367,6 +2329,7 @@ partial class MainForm {
 		tableLayoutPanel19.PerformLayout();
 		tbpPartners.ResumeLayout(false);
 		tableLayoutPanel20.ResumeLayout(false);
+		((System.ComponentModel.ISupportInitialize)dgvOpenAs2Results).EndInit();
 		toolStripContainer1.ResumeLayout(false);
 		toolStripContainer1.PerformLayout();
 		toolStripContainer2.ContentPanel.ResumeLayout(false);
@@ -2430,11 +2393,6 @@ partial class MainForm {
 	private Label lblRelations;
 	private DataGridView dgvObjectUrls;
 	private TabPage tbpEventLog;
-	private SplitContainer splitContainer3;
-	private TableLayoutPanel tableLayoutPanel6;
-	private TableLayoutPanel tableLayoutPanel7;
-	private Button btnClearLog;
-	private RichTextBox rtfLog;
 	private TabPage tbpCDCEvents;
 	private TableLayoutPanel tableLayoutPanel8;
 	private SplitContainer splitContainer4;
@@ -2491,7 +2449,6 @@ partial class MainForm {
 	private TableLayoutPanel tableLayoutPanel13;
 	private TableLayoutPanel tableLayoutPanel14;
 	private Button button29;
-	private Button button28;
 	private Button btnSoqlSave;
 	private Button btnSoqlRDelete;
 	private TableLayoutPanel tableLayoutPanel15;
@@ -2508,10 +2465,7 @@ partial class MainForm {
 	private TableLayoutPanel tableLayoutPanel17;
 	private Label lblSOQLRowCount;
 	private Button btnListEvents;
-	private TabPage tabPage1;
 	private TabPage tbpX12;
-	internal RichTextBox rtxLog;
-	private Button btnLogTest;
 	private Button btnDispatchEvent;
 	private DataGridView dgvOrderList;
 	private Panel pnlOrderStates;
@@ -2556,6 +2510,11 @@ partial class MainForm {
 	private Button button1;
 	private TabPage tbpPartners;
 	private TableLayoutPanel tableLayoutPanel20;
-	private ComboBox cmbPartnerList;
+	private ComboBox cmbOpenAs2ResultObjects;
 	private Button btnGetPartnerList;
+	private DataGridView dgvOpenAs2Results;
+	private TableLayoutPanel tableLayoutPanel6;
+	internal RichTextBox rtxLog;
+	private Button btnClearLog;
+	private Button btnLogTest;
 }
