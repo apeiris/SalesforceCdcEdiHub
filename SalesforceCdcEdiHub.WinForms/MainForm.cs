@@ -232,7 +232,7 @@ public partial class MainForm : Form {
 			cs.AuthenticationAttempt += SalesforceService_AuthenticationAttempt!;
 		}
 		_sqlServerLib.SqlEvent += (s, e) => {
-			Log(e.Message, e.LogLevel);
+			Log(e.Message, NLog.LogLevel.Debug);
 		};
 		_sqlServerLib.SqlObjectExist += SqlEventObjectExist;
 		_sqlServerLib.SqlEvent += _sqlServerLib_SqlEvent;
