@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdihub.SqlServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.PubSubService", "SalesforceCdcEdiHub.PubSubService\SalesforceCdcEdiHub.PubSubService.csproj", "{62C10ACF-745A-E678-24E8-F06E1E7FA585}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{BE230F10-2D02-4AA7-BE52-7142A8A8D73E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.GrpcProto", "SalesforceCdcEdiHub.GrpcProto\SalesforceCdcEdiHub.GrpcProto.csproj", "{68741DC9-5111-4EF9-A58F-D2712646C631}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.WinForms", "SalesforceCdcEdiHub.WinForms\SalesforceCdcEdiHub.WinForms.csproj", "{4A9F25A2-D3E6-A6A9-8344-3DE8AA66C4F0}"
@@ -32,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.WebHook
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axios", "Axios\Axios.csproj", "{240E57C1-0BD2-4A7C-8649-8AC5387CC415}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesfroceCdcEdiHub.Common", "SalesfroceCdcEdiHub.Common\SalesfroceCdcEdiHub.Common.csproj", "{719CD196-3FBF-478C-974A-10E3E7E766E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,10 +46,6 @@ Global
 		{62C10ACF-745A-E678-24E8-F06E1E7FA585}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62C10ACF-745A-E678-24E8-F06E1E7FA585}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62C10ACF-745A-E678-24E8-F06E1E7FA585}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE230F10-2D02-4AA7-BE52-7142A8A8D73E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE230F10-2D02-4AA7-BE52-7142A8A8D73E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE230F10-2D02-4AA7-BE52-7142A8A8D73E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE230F10-2D02-4AA7-BE52-7142A8A8D73E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{68741DC9-5111-4EF9-A58F-D2712646C631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{68741DC9-5111-4EF9-A58F-D2712646C631}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68741DC9-5111-4EF9-A58F-D2712646C631}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -78,6 +74,10 @@ Global
 		{240E57C1-0BD2-4A7C-8649-8AC5387CC415}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{240E57C1-0BD2-4A7C-8649-8AC5387CC415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{240E57C1-0BD2-4A7C-8649-8AC5387CC415}.Release|Any CPU.Build.0 = Release|Any CPU
+		{719CD196-3FBF-478C-974A-10E3E7E766E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{719CD196-3FBF-478C-974A-10E3E7E766E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{719CD196-3FBF-478C-974A-10E3E7E766E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{719CD196-3FBF-478C-974A-10E3E7E766E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

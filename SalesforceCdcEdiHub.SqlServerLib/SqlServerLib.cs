@@ -2,26 +2,26 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Common;
+using System.Threading.Tasks;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SalesforceCdcEdiHub.Common;
 using LogLevel = NLog.LogLevel;
 namespace SalesforceCdcEdiHub;
 public class SqlServerConfig { public string ConnectionString { get; set; } }
-#region enums
-public enum SqlEvents {
-	None,
-	Create,
-	Inserted,
-	Deleted,
-	Updated,
-	ReSeeded,
-	SqlException,
-	Exception,
-	}
-#endregion enums
+public delegate Task SqlEventHandler(SqlEventArgs args);
 #region event args
+public class SqlEventArgs : EventArgs {
+	public string EntityName { get; set; }
+	public string RecordId { get; set; }
+	public string Operation { get; set; } // "INSERT", "UPDATE", "DELETE"
+	public bool Success { get; set; }
+	public DateTime ProcessedAt { get; set; }
+	public string ErrorMessage { get; set; }
+}
+
 public class SqlEventArg : EventArgs {
 	public LogLevel LogLevel { get; }
 	public string Message { get; }
@@ -63,6 +63,19 @@ public class SqlTableEvent : EventArgs {
 		}
 	}
 #endregion event args
+#region enums
+public enum SqlEvents {
+	None,
+	Create,
+	Inserted,
+	Deleted,
+	Updated,
+	ReSeeded,
+	SqlException,
+	Exception,
+	}
+#endregion enums
+
 public class ColumnMetadata {
 	public string ColumnName { get; set; }
 	public string DataType { get; set; }
@@ -80,6 +93,7 @@ public class SqlServerLib {
 	public event EventHandler<SqlEventArg> SqlEvent;
 	public event EventHandler<SqlObjectQuery> SqlObjectExist;
 	public event EventHandler<SqlTableEvent> SqlTableEvent;
+	public event SqlEventHandler OnSqlEvent;
 	private void RaisSqlEvent(string message, SqlEvents enmSqlEvent, LogLevel ll, bool hasErrors, [CallerMemberName] string callerMemberName = "", [CallerLineNumber] int callerLineNumber = 0) {
 		message = $"{message}:{callerMemberName}:{callerLineNumber}";
 		SqlEvent?.Invoke(this, new SqlEventArg(message, enmSqlEvent, ll, callerMemberName, hasErrors));
@@ -102,9 +116,38 @@ public class SqlServerLib {
 			_logger.LogError("Connection string 'mssql' is missing or empty in the configuration.!");
 			throw new InvalidOperationException("Connection string 'mssql' is missing or empty in configuration.");
 			}
-		_pubSubService.CDCEvent += _pubSubService_CDCEvent;
+	//	_pubSubService.CDCEvent += _pubSubService_CDCEvent;
+		
+	_pubSubService.CDCEvent += async (sender, e) => await _pubSubService_CDCEvent(sender, e);
+	}
+
+	private async Task RaiseSqlEventAsync(string entityName, string recordId,
+	string operation, bool success, string errorMessage = null) {
+		if (OnSqlEvent != null) {
+			var args = new SqlEventArgs {
+				EntityName = entityName,
+				RecordId = recordId,
+				Operation = operation,
+				Success = success,
+				ProcessedAt = DateTime.UtcNow,
+				ErrorMessage = errorMessage
+			};
+
+			// Fire and forget for completion events (non-blocking)
+			_ = Task.Run(async () =>
+			{
+				try {
+					await OnSqlEvent.Invoke(args);
+				} catch (Exception ex) {
+					// Log but don't break existing flow
+					// Use existing logger
+					Console.WriteLine($"SqlEvent handler failed: {ex.Message}");
+				}
+			});
 		}
-	private void _pubSubService_CDCEvent(object? sender, CDCEventArgs e) {
+	}
+
+	private async Task _pubSubService_CDCEvent(object? sender, CDCEventArgs e) {
 		DataTable dtTransposed = e.DeltaFields.Transpose(primaryKey: "Id");//Transpose to row to columnset, and  defaults  FieldName, and Value as columns
 		string sql = $"SELECT  {columnList(dtTransposed)} FROM sfo.[{dtTransposed.TableName}] where {dtTransposed.PrimaryKey.FirstOrDefault()?.ColumnName}='{e.RecordIds[0]}';";
 
@@ -114,6 +157,7 @@ public class SqlServerLib {
 			case enmIsTo.Create:
 			case enmIsTo.Update:
 				UpdateOrInsertRecordAsync(dtTransposed, e.RecordIds[0], isto);
+				await RaiseSqlEventAsync(e.DeltaFields.TableName, e.RecordIds[0],isto.ToString(), true, "done");
 				break;
 			case enmIsTo.Delete:
 				int rowsAffected = DeleteRecord(e.DeltaFields.TableName, e.RecordIds[0]);

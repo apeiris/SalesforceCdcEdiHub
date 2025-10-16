@@ -1,8 +1,6 @@
-﻿
-using System.Data;
+﻿using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -10,18 +8,17 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using Common;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NLog;
-using static Common.ISalesforceService;
+using Salesforce.Common;
+using SalesforceCdcEdiHub.Common;
 using HttpMethod = System.Net.Http.HttpMethod;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using LogLevel = NLog.LogLevel;
+
 
 namespace SalesforceCdcEdiHub;
 public class SalesforceService : ISalesforceService {

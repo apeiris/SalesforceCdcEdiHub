@@ -10,8 +10,8 @@ using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SalesforceCdcEdiHub;
+using SalesforceCdcEdiHub.Common;
 using static SalesforceCdcEdiHub.PubSub;
-namespace Common;
 public class ProgressUpdateEventArgs : EventArgs {
 	public string Message { get; }
 	public ProgressUpdateEventArgs(string message) {
@@ -44,6 +44,7 @@ public class PubSubService : IDisposable {
 	private readonly ILogger<PubSubService> _logger;
 	private readonly List<(AsyncDuplexStreamingCall<FetchRequest, FetchResponse> Call, CancellationTokenSource Cts)> _subscriptions;
 	private readonly Dictionary<string, RecordSchema> _schemaCache;
+	
 	#region events
 	public event EventHandler<ProgressUpdateEventArgs> ProgressUpdated;
 	public event EventHandler<CDCEventArgs> CDCEvent;

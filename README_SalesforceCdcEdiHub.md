@@ -452,5 +452,25 @@ flowchart TD
     classDef system fill:#e0f7fa,stroke:#00796b,stroke-width:1px,color:#004d40;
     classDef process fill:#f1f8e9,stroke:#558b2f,stroke-width:1px,color:#33691e;
     classDef data fill:#fff8e1,stroke:#f9a825,stroke-width:1px,color:#795548;
+```
+---
+
+```mermaid
+sequenceDiagram
+    participant SF as Salesforce
+    participant PS as PubSubService
+    participant SQL as SqlServerLib
+    participant Wire as Agent
+
+    SF->>PS: PlatformEvent (Avro bytes)
+    PS->>PS: DecodeChangeEvent()
+    PS-->>SQL: CDCEvent(result)
+    SQL->>SQL: UpdateOrInsertRecordAsync() / DeleteRecord()
+    Note over SQL: Process completes successfully
+    SQL-->>PS: SqlEvent (completion wire event)
+    PS->>Wire: Publish WireEvent
+    Wire-->>PS: Ack/Confirmation
+    Note over PS,SQL:New callback mechanism added
 
 
+   

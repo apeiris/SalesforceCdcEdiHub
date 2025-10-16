@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Common;
+
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog.Windows.Forms;
 using SalesforceCdcEdiHub;
-using SalesforceCdcEdiHub;
+using SalesforceCdcEdiHub.Common;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
@@ -243,7 +243,18 @@ public partial class MainForm : Form {
 		_logger.LogInformation("(logInformation)MainForm initialized.");
 		_webhookListener = webhookListener;//DI
 		_webhookListener.WebHookEvent += async (s, e) => await WebhookListener_WebHookEventAsync(e);
+		_sqlServerLib.OnSqlEvent += async (args) =>
+		{
+			_logger.LogInformation($"Entity: {args.EntityName}");
+			_logger.LogInformation($"Record: {args.RecordId}");
+			_logger.LogInformation($"Operation: {args.Operation}");
+			_logger.LogInformation($"Success: {args.Success}");
+			if (!args.Success)
+				_logger.LogInformation($"Error: {args.ErrorMessage}");
 
+			// You can do async work here
+			await Task.CompletedTask;
+		};
 
 		saveTabPageColors();
 		#region soql tab & controls

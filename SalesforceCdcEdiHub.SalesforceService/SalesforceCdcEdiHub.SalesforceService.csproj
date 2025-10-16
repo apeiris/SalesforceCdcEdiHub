@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\SalesfroceCdcEdiHub.Common\SalesfroceCdcEdiHub.Common.csproj" />
   </ItemGroup>
 
 </Project>

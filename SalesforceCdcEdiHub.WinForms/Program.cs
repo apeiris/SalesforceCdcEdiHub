@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Text;
-using Common;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Windows.Forms;
+using SalesforceCdcEdiHub.Common;
 using WinForms;
 
 namespace SalesforceCdcEdiHub.WinForms;

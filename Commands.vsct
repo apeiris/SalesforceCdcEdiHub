@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable">
+
+	<Commands>
+		<Groups>
+			<Group guid="guidFunctionKeyMacroExtensionCmdSet" id="MyMenuGroup" priority="0x0600">
+				<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+			</Group>
+		</Groups>
+
+		<Buttons>
+			<Button guid="guidFunctionKeyMacroExtensionCmdSet" id="RunMacroCommandId"
+					priority="0x0100" type="Button">
+				<Parent guid="guidFunctionKeyMacroExtensionCmdSet" id="MyMenuGroup"/>
+				<Strings>
+					<ButtonText>Run Macro</ButtonText>
+				</Strings>
+			</Button>
+		</Buttons>
+	</Commands>
+
+	<KeyBindings>
+		<KeyBinding guid="guidFunctionKeyMacroExtensionCmdSet"
+					id="RunMacroCommandId"
+					key1="VK_F9" />
+	</KeyBindings>
+
+	<Symbols>
+		<GuidSymbol name="guidFunctionKeyMacroExtensionCmdSet" value="{e2b9dcb5-4b61-4b13-8e6d-d198ef2a857b}">
+			<IDSymbol name="RunMacroCommandId" value="0x0100" />
+			<IDSymbol name="MyMenuGroup" value="0x1020" />
+		</GuidSymbol>
+	</Symbols>
+
+</CommandTable>
