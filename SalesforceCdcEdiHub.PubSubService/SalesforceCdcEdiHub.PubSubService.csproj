@@ -8,7 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="CustomGrpcCredentials.cs" />
 	  <Compile Include="PubSubService.cs" />
 	</ItemGroup>
 	<ItemGroup>

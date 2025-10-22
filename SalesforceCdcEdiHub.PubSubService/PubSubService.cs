@@ -49,6 +49,12 @@ public class PubSubService : IDisposable {
 	public event EventHandler<ProgressUpdateEventArgs> ProgressUpdated;
 	public event EventHandler<CDCEventArgs> CDCEvent;
 	public static event EventHandler<string> LogEmit;
+	public event Func<object, CDCEventArgs, Task> CDCEventAsync;
+	public async Task RasiseCDCEventAsync(CDCEventArgs args) {
+		if (CDCEventAsync != null) {
+			await CDCEventAsync.Invoke(this, args);
+			}
+	}
 	#endregion events
 	public bool DebugBreak { get { return _DebugBreak; } set { _DebugBreak = value; } }
 	public PubSubService(ISalesforceService oauthService, IOptions<SalesforceConfig> configOptions, ILogger<PubSubService> logger) {

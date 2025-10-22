@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -138,6 +139,9 @@ public class SqlServerLib {
 			{
 				try {
 					await OnSqlEvent.Invoke(args);
+					_logger.LogDebug($"args:{args}");
+					_logger.Log(Microsoft.Extensions.Logging.LogLevel.Debug, "here...");
+				//    _pubSubService_CDCEvent 
 				} catch (Exception ex) {
 					// Log but don't break existing flow
 					// Use existing logger
@@ -157,6 +161,7 @@ public class SqlServerLib {
 			case enmIsTo.Create:
 			case enmIsTo.Update:
 				UpdateOrInsertRecordAsync(dtTransposed, e.RecordIds[0], isto);
+				_logger.LogDebug($"prep:RaiseSqlEvent : table={dtTransposed.TableName}, recid : isto={isto.ToString()} ");
 				await RaiseSqlEventAsync(e.DeltaFields.TableName, e.RecordIds[0],isto.ToString(), true, "done");
 				break;
 			case enmIsTo.Delete:

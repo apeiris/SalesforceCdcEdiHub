@@ -3,8 +3,6 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
@@ -143,7 +141,7 @@ public partial class MainForm : Form {
 			DataRow r = e.table.Rows[0];
 			string result = string.Join(", ", e.table.Columns.Cast<DataColumn>()
 				.Select(col => $"{col.ColumnName}={r[col]}"));
-			_logger.LogDebug($"hello ***+++ here:{result}");
+			_logger.LogDebug($"_sqlServerLib_SqlTableEvent-  hello ***+++ here:{result}");
 			switch (e.table.TableName) {
 				case "Order__c":
 					string state = e.table.Rows[0]["Status__c"].ToString();
