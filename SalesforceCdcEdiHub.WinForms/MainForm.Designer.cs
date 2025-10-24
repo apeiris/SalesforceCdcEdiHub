@@ -168,7 +168,7 @@ partial class MainForm {
 		label6 = new Label();
 		rtxWebhook = new RichTextBox();
 		button1 = new Button();
-		tbpPartners = new TabPage();
+		tbpOpenAS2 = new TabPage();
 		tableLayoutPanel20 = new TableLayoutPanel();
 		cmbOpenAs2ResultObjects = new ComboBox();
 		btnGetPartnerList = new Button();
@@ -244,7 +244,7 @@ partial class MainForm {
 		((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
 		tbpWebHook.SuspendLayout();
 		tableLayoutPanel19.SuspendLayout();
-		tbpPartners.SuspendLayout();
+		tbpOpenAS2.SuspendLayout();
 		tableLayoutPanel20.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)dgvOpenAs2Results).BeginInit();
 		toolStripContainer1.SuspendLayout();
@@ -298,7 +298,7 @@ partial class MainForm {
 		tabControl1.Controls.Add(tbpCDCEvents);
 		tabControl1.Controls.Add(tbpX12);
 		tabControl1.Controls.Add(tbpWebHook);
-		tabControl1.Controls.Add(tbpPartners);
+		tabControl1.Controls.Add(tbpOpenAS2);
 		tabControl1.Dock = DockStyle.Fill;
 		tabControl1.Location = new Point(0, 0);
 		tabControl1.Name = "tabControl1";
@@ -2086,16 +2086,16 @@ partial class MainForm {
 		button1.Text = "button1";
 		button1.UseVisualStyleBackColor = true;
 		// 
-		// tbpPartners
+		// tbpOpenAS2
 		// 
-		tbpPartners.Controls.Add(tableLayoutPanel20);
-		tbpPartners.Location = new Point(4, 24);
-		tbpPartners.Name = "tbpPartners";
-		tbpPartners.Padding = new Padding(3);
-		tbpPartners.Size = new Size(1415, 708);
-		tbpPartners.TabIndex = 9;
-		tbpPartners.Text = "OpenAS2";
-		tbpPartners.UseVisualStyleBackColor = true;
+		tbpOpenAS2.Controls.Add(tableLayoutPanel20);
+		tbpOpenAS2.Location = new Point(4, 24);
+		tbpOpenAS2.Name = "tbpOpenAS2";
+		tbpOpenAS2.Padding = new Padding(3);
+		tbpOpenAS2.Size = new Size(1415, 708);
+		tbpOpenAS2.TabIndex = 9;
+		tbpOpenAS2.Text = "OpenAS2";
+		tbpOpenAS2.UseVisualStyleBackColor = true;
 		// 
 		// tableLayoutPanel20
 		// 
@@ -2327,7 +2327,7 @@ partial class MainForm {
 		tbpWebHook.ResumeLayout(false);
 		tableLayoutPanel19.ResumeLayout(false);
 		tableLayoutPanel19.PerformLayout();
-		tbpPartners.ResumeLayout(false);
+		tbpOpenAS2.ResumeLayout(false);
 		tableLayoutPanel20.ResumeLayout(false);
 		((System.ComponentModel.ISupportInitialize)dgvOpenAs2Results).EndInit();
 		toolStripContainer1.ResumeLayout(false);
@@ -2517,4 +2517,5 @@ partial class MainForm {
 	internal RichTextBox rtxLog;
 	private Button btnClearLog;
 	private Button btnLogTest;
+	private TabPage tbpOpenAS2;
 }

@@ -1,6 +1,10 @@
-using System.Diagnostics;
+﻿using System;
+using System.IO;
 using System.Text;
-
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,112 +12,143 @@ using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Windows.Forms;
+using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
+using SalesforceCdcEdiHub.WinForms;
+using SalesfroceCdcEdiHub.Common;
 using WinForms;
 
-namespace SalesforceCdcEdiHub.WinForms;
+namespace SalesforceCdcEdiHub.WinForms {
+	internal static class Program {
+		[STAThread]
+		static void Main() {
+			Directory.CreateDirectory("logs");
+			Console.SetOut(new DebugTextWriter());
 
-internal static class Program {
-	[STAThread]
-	static void Main() {
-		Directory.CreateDirectory("logs");
-		Console.SetOut(new DebugTextWriter());
-		Console.WriteLine($"Creating logs directory {Directory.GetCurrentDirectory()}");
+			// WinForms initialization
+			Application.EnableVisualStyles();
+			Application.SetCompatibleTextRenderingDefault(false);
 
-		// WinForms initialization must come first
-		Application.EnableVisualStyles();
-		Application.SetCompatibleTextRenderingDefault(false);
+			// Initialize NLog
+			var nlogLogger = LogManager.Setup()
+				.LoadConfigurationFromFile("nlog.config", optional: true)
+				.GetCurrentClassLogger();
 
-		// Initialize NLog
-		var nlogLogger = LogManager.Setup()
-								  .LoadConfigurationFromFile("nlog.config", optional: true)
-								  .GetCurrentClassLogger();
+			try {
+				nlogLogger.Info("Starting WinForms host...");
 
-		try {
-			nlogLogger.Info("Starting WinForms host...");
+				using var host = CreateHostBuilder().Build();
 
-			// Build host
-			using var host = CreateHostBuilder().Build();
+				// Start the host
+				host.Start();
 
-			// Start host
-			host.Start();
+				var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
+				var logger = loggerFactory.CreateLogger("Program");
+				logger.LogInformation("Host started successfully.");
 
-			// Logging works now via Microsoft.Extensions.Logging
-			var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
-			var logger = loggerFactory.CreateLogger("Program");
-			logger.LogInformation("Host started successfully.");
+				// Resolve main form
+				var form = host.Services.GetRequiredService<MainForm>();
 
-			// Resolve main form
-			var form = host.Services.GetRequiredService<MainForm>();
+				// Attach RichTextBoxTarget for NLog
+				AttachRichTextBoxTarget(form);
 
-			// Attach RichTextBox target dynamically
-			AttachRichTextBoxTarget(form);
+				// Resolve webhook listener
+				var webhookListener = host.Services.GetRequiredService<KestrelWebhookListener>();
 
-			Application.Run(form);
+				// Run Kestrel in background for webhook endpoint
+				Task.Run(() => {
+					var builder = WebApplication.CreateBuilder();
 
-			host.Dispose();
-		} catch (Exception ex) {
-			nlogLogger.Error(ex, "Application stopped because of exception");
-			throw;
+					// Register CORS for UseCors middleware
+					builder.Services.AddCors(options => {
+						options.AddDefaultPolicy(policy => {
+							policy
+								.AllowAnyOrigin()
+								.AllowAnyHeader()
+								.AllowAnyMethod();
+						});
+					});
+
+					builder.WebHost.UseUrls("http://0.0.0.0:5005"); // listen on all interfaces
+					var app = builder.Build();
+
+					// Enable CORS
+					app.UseCors();
+
+					// Map webhook endpoint
+					webhookListener.MapWebhook(app);
+
+					app.Run();
+				});
+
+				// Subscribe to webhook events
+				webhookListener.WebHookEvent += (sender, e) => {
+					logger.LogInformation("Webhook received: {Message}", e.Message);
+					// Optionally update MainForm UI here
+				};
+
+				// Start WinForms UI
+				Application.Run(form);
+			} catch (Exception ex) {
+				nlogLogger.Error(ex, "Application stopped due to exception");
+				throw;
+			}
+			finally {
+				LogManager.Shutdown();
+			}
 		}
-		finally {
-			LogManager.Shutdown();
+
+		static void AttachRichTextBoxTarget(MainForm form) {
+			var rtbTarget = LogManager.Configuration.FindTargetByName<RichTextBoxTarget>("rtb");
+			if (rtbTarget != null) {
+				rtbTarget.FormName = form.Name;
+				rtbTarget.ControlName = form.rtxLog.Name; // RichTextBox control
+				LogManager.ReconfigExistingLoggers();
+			}
 		}
+
+		static IHostBuilder CreateHostBuilder() =>
+			Host.CreateDefaultBuilder()
+				.ConfigureAppConfiguration((context, config) => {
+					config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+						  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+						  .AddEnvironmentVariables();
+				})
+				.ConfigureServices((context, services) => {
+					// Config sections
+					services.Configure<SalesforceConfig>(context.Configuration.GetSection("Salesforce"));
+					services.Configure<SqlServerConfig>(context.Configuration.GetSection("SqlServer"));
+					services.Configure<OpenAs2Config>(context.Configuration.GetSection("OpenAs2")); // 👈 add this
+
+					// Core services
+					services.AddMemoryCache();
+					services.AddScoped<ISalesforceService, SalesforceService>();
+					services.AddScoped<PubSubService>();
+					services.AddScoped<SqlServerLib>();
+					services.AddScoped<X12>();
+					services.AddHttpClient();
+
+					// Webhook listener
+					services.AddSingleton<KestrelWebhookListener>();
+
+					// Main form
+					services.AddScoped<MainForm>();
+
+					// Logging
+					services.AddLogging(loggingBuilder => {
+						loggingBuilder.ClearProviders();
+						loggingBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+						loggingBuilder.AddNLog();
+					});
+				})
+				.UseConsoleLifetime();
 	}
 
-	static void AttachRichTextBoxTarget(MainForm form) {
-		//	var rtbTarget = LogManager.Configuration.FindTargetByName<NLog.Targets.RichTextBoxTarget>("rtb");
-		var rtbTarget = LogManager.Configuration.FindTargetByName<RichTextBoxTarget>("rtb");
-
-		if (rtbTarget != null) {
-			rtbTarget.FormName = form.Name;
-			rtbTarget.ControlName = form.rtxLog.Name; // Assuming property LogTextBox exists
-			LogManager.ReconfigExistingLoggers();
-		}
-	}
-
+	// Custom Debug TextWriter for Console output in Debug
 	public class DebugTextWriter : TextWriter {
 		public override Encoding Encoding => Encoding.UTF8;
-		public override void Write(char value) => Debug.Write(value);
-		public override void Write(string? value) => Debug.Write(value);
-		public override void WriteLine(string? value) => Debug.WriteLine(value);
+		public override void Write(char value) => System.Diagnostics.Debug.Write(value);
+		public override void Write(string? value) => System.Diagnostics.Debug.Write(value);
+		public override void WriteLine(string? value) => System.Diagnostics.Debug.WriteLine(value);
 	}
-
-	static IHostBuilder CreateHostBuilder() =>
-		Host.CreateDefaultBuilder()
-			.ConfigureAppConfiguration((context, config) => {
-				config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-					  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-					  .AddEnvironmentVariables();
-			})
-			.ConfigureServices((context, services) => {
-				// Config
-				services.Configure<SalesforceConfig>(context.Configuration.GetSection("Salesforce"));
-				services.Configure<SqlServerConfig>(context.Configuration.GetSection("SqlServer"));
-
-				// Core services
-				services.AddMemoryCache();
-				services.AddScoped<ISalesforceService, SalesforceService>();
-				services.AddScoped<PubSubService>();
-				services.AddScoped<SqlServerLib>();
-				services.AddScoped<X12>();
-				services.AddHttpClient();
-				services.AddSingleton<KestrelWebhookListener>();
-				services.AddHostedService(provider => provider.GetRequiredService<KestrelWebhookListener>());
-
-
-
-
-
-				// MainForm
-				services.AddScoped<MainForm>();
-
-				// Logging
-				services.AddLogging(loggingBuilder => {
-					loggingBuilder.ClearProviders();
-					loggingBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-					loggingBuilder.AddNLog();
-				});
-			});
 }
-

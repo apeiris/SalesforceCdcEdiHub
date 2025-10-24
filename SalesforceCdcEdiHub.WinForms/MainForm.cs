@@ -3,8 +3,12 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-
+using System.Xml;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using Google.Protobuf.WellKnownTypes;
+using JsonExtensions;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -74,6 +78,7 @@ public partial class MainForm : Form {
 	private Color _dfFColor;
 	private Dictionary<TabPage, (Color bcolor, Color fcolor)> _tabColors = new Dictionary<TabPage, (Color, Color)>();
 	private static readonly List<string> orderStates = new List<string> { "Revision Required", "In Production", "Completed" };
+	private IConfiguration _cfg;
 	#endregion fields
 	#region events handlers and delegates
 	private readonly KestrelWebhookListener _webhookListener;
@@ -193,6 +198,7 @@ public partial class MainForm : Form {
 		ISalesforceService salesforceService,
 		PubSubService pubSubService,
 		IOptions<SalesforceConfig> config,
+		IConfiguration cfg,
 		SqlServerLib sqlServerLib,
 		ILogger<MainForm> logger, X12 x12,
 		KestrelWebhookListener webhookListener) {
@@ -223,6 +229,7 @@ public partial class MainForm : Form {
 		_salesforceService = salesforceService;
 		_pubSubService = pubSubService;
 		_config = config.Value;
+		_cfg = cfg;
 		_sqlServerLib = sqlServerLib;
 		_x12 = x12;
 		_pubSubService.ProgressUpdated += PubSubService_ProgressUpdated!;
@@ -241,8 +248,7 @@ public partial class MainForm : Form {
 		_logger.LogInformation("(logInformation)MainForm initialized.");
 		_webhookListener = webhookListener;//DI
 		_webhookListener.WebHookEvent += async (s, e) => await WebhookListener_WebHookEventAsync(e);
-		_sqlServerLib.OnSqlEvent += async (args) =>
-		{
+		_sqlServerLib.OnSqlEvent += async (args) => {
 			_logger.LogInformation($"Entity: {args.EntityName}");
 			_logger.LogInformation($"Record: {args.RecordId}");
 			_logger.LogInformation($"Operation: {args.Operation}");
@@ -267,12 +273,54 @@ public partial class MainForm : Form {
 	}
 	private async Task WebhookListener_WebHookEventAsync(WebHookEventArg e) {
 		await Task.Delay(10);   // Simulate async processing (e.g., API call, DB write)
+		await Task.Delay(10); // Simulate async processing
+
 		if (InvokeRequired) {
-			Invoke(new Action(() => {
-				_logger.LogDebug($"✅ Invoked: {e.Message}\n");
-			}));
+			// Use InvokeAsync to support await inside
+			await InvokeAsync(async () =>
+			{
+				using JsonDocument d = JsonDocument.Parse(e.Message);
+				string eventType = d.RootElement.GetProperty("event").GetString()!.ToUpper();
+				string resource = d.RootElement.GetProperty("resource").GetString()!.ToUpper();
+
+				if (eventType == "SAVE") {
+					switch (resource) {
+						case "PARTNERSHIP":
+							JsonElement data = d.RootElement.GetProperty("data");
+
+							// Convert to DataTable -> DataSet -> XML
+							DataTable? dt = JsonExtensions.JsonExtensions.ToDataTable(data, resource).Transpose();
+							DataSet ds = new DataSet();
+							ds.Tables.Add(dt);
+							dt = null;
+							string xml = ds.GetXml();
+
+							// Extract IDs
+							string receiverId = data.GetProperty("receiverIDs").GetString()!;
+							string senderId = data.GetProperty("senderIDs").GetString()!;
+							string partnershipName = data.GetProperty("name").GetString()!;
+							// Build OpenAS2 URL safely
+							string baseUrl = _cfg["OpenAs2:Url"]!.TrimEnd('/');
+							string url = $"{baseUrl}/api/partnership/view/{partnershipName}";
+
+							_logger.LogInformation("Fetching OpenAS2 partnership: {Url}", url);
+
+							// ✅ Await the async HTTP call
+							XmlDocument xmlDoc = await Axios.GetXmlDocumentAsync(url, _cfg["OpenAs2:Username"], _cfg["OpenAs2:Password"]);
+
+							_logger.LogDebug("✅ OpenAS2 Response:\n{Xml}", xmlDoc.OuterXml);
+							break;
+
+						default:
+							_logger.LogWarning("Unhandled resource type: {Resource}", resource);
+							break;
+					}
+				}
+
+				_logger.LogDebug($"✅ Invoked WebHookEvent message:\n{e.Message}\n");
+			});
 		} else {
-			_logger.LogDebug($"✅ None Invoked: {e.Message}\n");
+			_logger.LogDebug($"✅ WebHookEvent processed without Invoke:\n{e.Message}\n");
 		}
 	}
 	private void Form1_Load(object sender, EventArgs e) {
@@ -1276,10 +1324,20 @@ public partial class MainForm : Form {
 			case "tbpwebhook":
 				lblWebHookUrl.Text = Environment.GetEnvironmentVariable("VUE_APP_WEBHOOK_URL");
 				break;
-			default:
-
+			case "tbpopenas2":
+				var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/list", "userID", "pWd");
+				_dsOpenAs2.Clear();
+				_dsOpenAs2.ReadXml(x.CreateReader());
+				cmbOpenAs2ResultObjects.Items.Clear();
+				//cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables.Cast<DataTable>().Select(t => t.TableName).ToArray());
+				cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables["Root"]
+								.AsEnumerable()
+								.SelectMany(r => r["result"].ToString()
+								.Split(new[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+								.ToArray());
 				break;
-
+			default:
+				break;
 		}
 		if (_hasUnInitDbArtefacts) {
 			HashSet<string> x = _dtRegisteredCDCCandidates.AsEnumerable()
@@ -1344,6 +1402,7 @@ public partial class MainForm : Form {
 	private async void btnGetPartnerList_Click(object sender, EventArgs e) {
 		try {
 			var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/view/MyCompany-to-PartnerA", "userID", "pWd");
+			//var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/list", "userID", "pWd");
 			_dsOpenAs2.Clear();
 			_dsOpenAs2.ReadXml(x.CreateReader());
 			cmbOpenAs2ResultObjects.Items.Clear();
@@ -1356,5 +1415,9 @@ public partial class MainForm : Form {
 
 	private void cmbOpenAs2ResultObjects_SelectedIndexChanged(object sender, EventArgs e) {
 		dgvOpenAs2Results.DataSource = _dsOpenAs2.Tables[cmbOpenAs2ResultObjects.Text].Transpose();
+	}
+
+	private async void button1_Click(object sender, EventArgs e) {
+
 	}
 }

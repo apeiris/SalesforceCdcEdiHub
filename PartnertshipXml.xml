@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<results>
+	<attributes>
+		<as2_mdn_options>signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1</as2_mdn_options>
+		<receiverIDs>PartnerA</receiverIDs>
+		<subject>File $attributes.filename$ sent from $sender.name$ to $receiver.name$</subject>
+		<remove_cms_algorithm_protection_attrib>false</remove_cms_algorithm_protection_attrib>
+		<compression_type></compression_type>
+		<sign>SHA1</sign>
+		<prevent_canonicalization_for_mic>false</prevent_canonicalization_for_mic>
+		<senderIDs>Trail blazors</senderIDs>
+		<resend_max_retries></resend_max_retries>
+		<as2_receipt_option>https://192.168.86.122:10081</as2_receipt_option>
+		<content_transfer_encoding>8bit</content_transfer_encoding>
+		<protocol></protocol>
+		<as2_mdn_to>edi@myCompany.com</as2_mdn_to>
+		<encrypt>RC2_CBC</encrypt>
+		<as2_url>https://192.168.86.122:10080</as2_url>
+		<rename_digest_to_old_name>false</rename_digest_to_old_name>
+		<name>ebikeS-To-EbikeM</name>
+		<_id>3</_id>
+	</attributes>
+	<receiverIDs>
+		<as2_id>PartnerA</as2_id>
+		<name>PartnerA</name>
+		<email>as2msgs@partnera.com</email>
+		<x509_alias>partnera</x509_alias>
+	</receiverIDs>
+	<senderIDs>
+		<as2_id>Trailblazor</as2_id>
+		<name>Trail blazors</name>
+		<email>trailblazer@hotmail.com</email>
+		<x509_alias>partnerb</x509_alias>
+	</senderIDs>
+	<name>ebikeS-To-EbikeM</name>
+	<useDynamicContentTypeLookup>false</useDynamicContentTypeLookup>
+	<noChunkedMaxSize>0</noChunkedMaxSize>
+	<preventCanonicalization>false</preventCanonicalization>
+	<asyncMDN>true</asyncMDN>
+	<removeCmsAlgorithmProtectionAttr>false</removeCmsAlgorithmProtectionAttr>
+	<renameDigestToOldName>false</renameDigestToOldName>
+	<setTransferEncodingOnInitialBodyPart>true</setTransferEncodingOnInitialBodyPart>
+	<rejectUnsignedMessages>false</rejectUnsignedMessages>
+</results>

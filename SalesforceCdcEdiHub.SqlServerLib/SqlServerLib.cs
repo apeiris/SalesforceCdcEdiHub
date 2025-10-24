@@ -76,7 +76,6 @@ public enum SqlEvents {
 	Exception,
 	}
 #endregion enums
-
 public class ColumnMetadata {
 	public string ColumnName { get; set; }
 	public string DataType { get; set; }
@@ -117,11 +116,8 @@ public class SqlServerLib {
 			_logger.LogError("Connection string 'mssql' is missing or empty in the configuration.!");
 			throw new InvalidOperationException("Connection string 'mssql' is missing or empty in configuration.");
 			}
-	//	_pubSubService.CDCEvent += _pubSubService_CDCEvent;
-		
 	_pubSubService.CDCEvent += async (sender, e) => await _pubSubService_CDCEvent(sender, e);
 	}
-
 	private async Task RaiseSqlEventAsync(string entityName, string recordId,
 	string operation, bool success, string errorMessage = null) {
 		if (OnSqlEvent != null) {
@@ -133,28 +129,21 @@ public class SqlServerLib {
 				ProcessedAt = DateTime.UtcNow,
 				ErrorMessage = errorMessage
 			};
-
-			// Fire and forget for completion events (non-blocking)
-			_ = Task.Run(async () =>
+			_ = Task.Run(async () =>// Fire and forget for completion events (non-blocking)
 			{
 				try {
 					await OnSqlEvent.Invoke(args);
 					_logger.LogDebug($"args:{args}");
-					_logger.Log(Microsoft.Extensions.Logging.LogLevel.Debug, "here...");
-				//    _pubSubService_CDCEvent 
+					_logger.LogDebug("here...");
 				} catch (Exception ex) {
-					// Log but don't break existing flow
-					// Use existing logger
-					Console.WriteLine($"SqlEvent handler failed: {ex.Message}");
+					_logger.LogError($"SqlEvent handler failed: {ex.Message}");
 				}
 			});
 		}
 	}
-
 	private async Task _pubSubService_CDCEvent(object? sender, CDCEventArgs e) {
 		DataTable dtTransposed = e.DeltaFields.Transpose(primaryKey: "Id");//Transpose to row to columnset, and  defaults  FieldName, and Value as columns
 		string sql = $"SELECT  {columnList(dtTransposed)} FROM sfo.[{dtTransposed.TableName}] where {dtTransposed.PrimaryKey.FirstOrDefault()?.ColumnName}='{e.RecordIds[0]}';";
-
 		enmIsTo isto = (enmIsTo)Enum.Parse(typeof(enmIsTo), e.ChangeType, ignoreCase: true);
 		switch (isto) {
 			case enmIsTo.Insert:
