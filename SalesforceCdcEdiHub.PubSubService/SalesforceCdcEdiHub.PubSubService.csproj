@@ -12,7 +12,7 @@
 	</ItemGroup>
 	<ItemGroup>
 
-		<ProjectReference Include="..\SalesforceCdcEdiHub.Common\Common.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
 
 		<ProjectReference Include="..\SalesforceCdcEdiHub.GrpcProto\SalesforceCdcEdiHub.GrpcProto.csproj" />
 	</ItemGroup>

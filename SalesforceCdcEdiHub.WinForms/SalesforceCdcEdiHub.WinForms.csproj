@@ -37,8 +37,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Axios\Axios.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
 		<ProjectReference Include="..\JsonExtensions\JsonExtensions.csproj" />
-		<ProjectReference Include="..\SalesforceCdcEdiHub.Common\Common.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.LoggerEmailExtensions\SalesforceCdcEdiHub.LoggerEmailExtensions.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.SqlServerLib\SalesforceCdcEdihub.SqlServerLib.csproj" />
 		<ProjectReference Include="..\SalesforceCdcEdiHub.WebhookListener\SalesforceCdcEdiHub.WebHookListener.csproj" />

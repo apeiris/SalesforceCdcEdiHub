@@ -11,7 +11,7 @@
     <PackageReference Include="NLog" Version="6.0.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SalesforceCdcEdiHub.Common\Common.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\SalesforceCdcEdiHub.PubSubService\SalesforceCdcEdiHub.PubSubService.csproj" />
     <ProjectReference Include="..\SalesforceCdcEdiHub.SalesforceService\SalesforceCdcEdiHub.SalesforceService.csproj" />
   </ItemGroup>
