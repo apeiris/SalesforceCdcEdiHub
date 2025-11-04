@@ -14,7 +14,7 @@
 
 		<ProjectReference Include="..\Common\Common.csproj" />
 
-		<ProjectReference Include="..\SalesforceCdcEdiHub.GrpcProto\GrpcProto.csproj" />
+		<ProjectReference Include="..\GrpcProto\GrpcProto.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
