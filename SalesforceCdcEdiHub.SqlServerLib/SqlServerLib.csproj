@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\SalesforceCdcEdiHub.PubSubService\SalesforceCdcEdiHub.PubSubService.csproj" />
-    <ProjectReference Include="..\SalesforceCdcEdiHub.SalesforceService\SalesforceCdcEdiHub.SalesforceService.csproj" />
+    <ProjectReference Include="..\SalesforceCdcEdiHub.PubSubService\PubSubService.csproj" />
+    <ProjectReference Include="..\SalesforceCdcEdiHub.SalesforceService\SalesforceService.csproj" />
   </ItemGroup>
 </Project>
