@@ -1,51 +1,38 @@
-﻿# Salesforce CDC EDI Hub
+﻿
+# 🚀 Salesforce ↔ OpenAS2 ↔ SQL Server Integration
 
-## Overview
+## 📖 Overview
+This application demonstrates seamless integration between **Salesforce**, **OpenAS2**, and **SQL Server** systems.
 
-This application integrates with Salesforce using the **Pub/Sub API** to listen for real-time change events (Create, Update, Delete) on selected Salesforce objects. It also simulates submission of Salesforce EBikes orders to the manufacturer via the Pub/Sub API over the **OpenAS2 protocol**.  
+It leverages the **Salesforce Pub/Sub API** to listen for real-time change events—**Create**, **Update**, and **Delete**—on selected Salesforce objects.  
+The system also simulates the submission of **Salesforce E-Bikes** orders to the manufacturer via the Pub/Sub API, transmitted over the **OpenAS2 protocol**.
 
-When an event is received, it is **deserialized using Google Protobuf**, processed, and synchronized into a **SQL Server database**, ensuring that Salesforce data remains up-to-date and accessible locally.  
+When a change event is received, it is **deserialized using Google Protobuf**, processed, and synchronized into a **SQL Server** database.  
+This ensures that Salesforce data remains current, accurate, and accessible locally for downstream processes or reporting.
 
-Additionally, the project implements **EDI X12 interactions via the AS2 protocol**. For example, when an order status changes to `'Submitted to Manufacturing'`, the system automatically initiate and transmits the corresponding EDI documents.
-
----
-
-## Prerequisites
-
-### Adding new *Salesforce* Status to facilitate EDI integration
-
-Add new picklist values (`Completed` and `Revision Required`) to the `Status__c` field in Salesforce.  
-These values correspond to the order status flow shown in the sequence diagram, tracking the order lifecycle between Salesforce and the Manufacturer.
+Additionally, the project implements **EDI X12 message exchanges** using the **AS2 protocol**.  
+For example, when an order status transitions to `'Submitted to Manufacturing'`, the system automatically generates and transmits the corresponding **EDI documents** to the trading partner.
 
 ---
 
-## Steps to Add Picklist Values
+## 🧩 Architecture
 
-1. **Navigate to Object Manager in Setup**
-   - In the **Quick Find** box, search for **Order__c** (or your custom object) and select it.
+```mermaid
+flowchart TD
+    SF["Salesforce<br/>(Pub/Sub API)"]
+    HUB["Integration Hub<br/>(This Application)"]
+    SQL["Local SQL Server<br/>(On Docker)"]
+    AS2["OpenAS2<br/>(Trading Partner)"]
 
-2. **Access the Status__c Field**
-   - In **Order__c**, click **Fields & Relationships**.
-   - Click the `Status__c` field name to edit.
-
-3. **Add New Picklist Values**
-   - In the **Picklist Values** section, click **New**.
-   - Enter the values:
-     - `Completed`
-     - `Revision Required`
-   - (Optional) Set a default value for new orders (e.g., `Draft`).
-   - Click **Save**.
-
-4. **Update Record Types (If Applicable)**
-   - If your org uses record types, ensure the new values are assigned to the relevant record types.
-   - Go to **Object Manager** > **Order__c** > **Record Types**.
-   - Select a record type and edit the picklist values for `Status__c`.
-   - Add `Completed` and `Revision Required` to the **Selected Values** list.
-   - Save.
-
-5. **Verify Field-Level Security**
-   - Ensure the `Status__c` field is accessible to the relevant profiles:
-     - Click **Set Field-Level Securi**
+    SF -->|"Real-Time Events\n(Protobuf)"| HUB
+    HUB -->|Data Sync| SQL
+    HUB <-->|"EDI X12 / AS2 Messages"| AS2
+    style SF   fill:#00A1E0,stroke:#036,stroke-width:1px,color:#fff
+    style HUB  fill:#8C52FF,stroke:#3A0070,stroke-width:1px,color:#fff
+    style SQL  fill:#0078D7,stroke:#003C7E,stroke-width:1px,color:#fff
+    style AS2  fill:#FF7B00,stroke:#703500,stroke-width:1px,color:#fff
+```
+---
 
 
 ### Salesforce Setup
