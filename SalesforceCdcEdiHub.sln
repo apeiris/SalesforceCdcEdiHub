@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdihub.SqlServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.PubSubService", "SalesforceCdcEdiHub.PubSubService\SalesforceCdcEdiHub.PubSubService.csproj", "{62C10ACF-745A-E678-24E8-F06E1E7FA585}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.GrpcProto", "SalesforceCdcEdiHub.GrpcProto\SalesforceCdcEdiHub.GrpcProto.csproj", "{68741DC9-5111-4EF9-A58F-D2712646C631}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrpcProto", "SalesforceCdcEdiHub.GrpcProto\GrpcProto.csproj", "{68741DC9-5111-4EF9-A58F-D2712646C631}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceCdcEdiHub.WinForms", "SalesforceCdcEdiHub.WinForms\SalesforceCdcEdiHub.WinForms.csproj", "{4A9F25A2-D3E6-A6A9-8344-3DE8AA66C4F0}"
 EndProject

@@ -34,9 +34,7 @@
 
 	<!-- Generate Salesforce gRPC client into Generated folder -->
 	<ItemGroup>
-		<Protobuf Include="Proto\Salesforce.proto"
-				  GrpcServices="Client"
-				  OutputDir="Generated" />
+		<Protobuf Include="Proto\Salesforce.proto" GrpcServices="Client" OutputDir="Generated" />
 	</ItemGroup>
 
 	<!-- Include generated files in project, visible in VS -->
@@ -45,6 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="obj\" />
 		<Folder Include="Proto\" />
 		<Folder Include="Generated\" />
 	</ItemGroup>
