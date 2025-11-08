@@ -2,7 +2,7 @@
 # 🚀 Salesforce ↔ OpenAS2 ↔ SQL Server Integration
 
 ## 📖 Overview
-This application demonstrates seamless integration between **Salesforce**, **OpenAS2**, and **SQL Server** systems.
+This application demonstrates seamless integration between **Salesforce**, **OpenAS2**, and **SQL Server**.
 
 It leverages the **Salesforce Pub/Sub API** to listen for real-time change events—**Create**, **Update**, and **Delete**—on selected Salesforce objects.  
 The system also simulates the submission of **Salesforce E-Bikes** orders to the manufacturer via the Pub/Sub API, transmitted over the **OpenAS2 protocol**.
@@ -21,17 +21,36 @@ For example, when an order status transitions to `'Submitted to Manufacturing'`,
 flowchart TD
     SF["Salesforce<br/>(Pub/Sub API)"]
     HUB["Integration Hub<br/>(This Application)"]
+    X12["X12 Parser"]
     SQL["Local SQL Server<br/>(On Docker)"]
-    AS2["OpenAS2<br/>(Trading Partner)"]
+    AS2["OpenAS2<br>[Trading Partner]<br>[Message]"]
 
-    SF -->|"Real-Time Events\n(Protobuf)"| HUB
+    %% Hub + X12 are inside the subgraph
+    subgraph hub_container ["Integration Hub"]
+        direction TB
+        HUB
+        X12
+    end
+
+    SF -->|"Real-Time Events<br>(Protobuf)"| HUB
     HUB -->|Data Sync| SQL
-    HUB <-->|"EDI X12 / AS2 Messages"| AS2
-    style SF   fill:#00A1E0,stroke:#036,stroke-width:1px,color:#fff
-    style HUB  fill:#8C52FF,stroke:#3A0070,stroke-width:1px,color:#fff
-    style SQL  fill:#0078D7,stroke:#003C7E,stroke-width:1px,color:#fff
-    style AS2  fill:#FF7B00,stroke:#703500,stroke-width:1px,color:#fff
+    HUB -->|"EDI X12 Messages"| X12
+    X12 <-->|"AS2 Transport<br>(MDN, Encryption)"| AS2
+
+    %% ---- Styles -------------------------------------------------
+    style SF fill:#00A1E0,stroke:#036,stroke-width:1px,color:#fff
+    style HUB fill:#8C52FF,stroke:#3A0070,stroke-width:1px,color:#fff
+    style X12 fill:#C13EFF,stroke:#5A0099,stroke-width:1px,color:#fff
+    style SQL fill:#0078D7,stroke:#003C7E,stroke-width:1px,color:#fff
+    style AS2 fill:#FF7B00,stroke:#703500,stroke-width:1px,color:#fff
+
+    %% Light-blue background for the whole Hub container
+    style hub_container fill:lightcyan,stroke:#8C52FF,stroke-dasharray: 5 5    
+
 ```
+
+
+
 ---
 
 

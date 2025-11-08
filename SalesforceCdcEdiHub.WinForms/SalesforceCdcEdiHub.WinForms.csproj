@@ -40,6 +40,7 @@
 		<ProjectReference Include="..\Common\Common.csproj" />
 		<ProjectReference Include="..\JsonExtensions\JsonExtensions.csproj" />
 		<ProjectReference Include="..\LoggerEmailExtensions\LoggerEmailExtensions.csproj" />
+		<ProjectReference Include="..\MondayCom\MondayCom.csproj" />
 		<ProjectReference Include="..\SqlServerLib\SqlServerLib.csproj" />
 		<ProjectReference Include="..\WebhookListener\WebHookListener.csproj" />
 		<ProjectReference Include="..\X12\X12.csproj" />

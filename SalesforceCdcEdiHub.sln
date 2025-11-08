@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebHookListener", "WebhookL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X12", "X12\X12.csproj", "{2E69FA08-E7EC-47D9-7749-965AA78569DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MondayCom", "MondayCom\MondayCom.csproj", "{DC5C28D8-DCED-40B9-99CB-986A99864038}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{2E69FA08-E7EC-47D9-7749-965AA78569DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E69FA08-E7EC-47D9-7749-965AA78569DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E69FA08-E7EC-47D9-7749-965AA78569DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC5C28D8-DCED-40B9-99CB-986A99864038}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC5C28D8-DCED-40B9-99CB-986A99864038}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC5C28D8-DCED-40B9-99CB-986A99864038}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC5C28D8-DCED-40B9-99CB-986A99864038}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

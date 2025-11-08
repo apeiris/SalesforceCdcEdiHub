@@ -17,6 +17,7 @@ public class SalesforceConfig {
 	public List<Topic> Topics { get; set; }
 	public string pfxPath { get; set; }
 	public string pfxPassword { get; set; }
+
 	}
 
 public class Topic {

@@ -12,10 +12,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MondayCom.PurchaseOrders;
+using MondayCom.PurchaseOrders.Models;
 using Newtonsoft.Json;
 using NLog.Windows.Forms;
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
+using SalesforceCdcEdiHub.MondayCom;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
@@ -23,7 +26,6 @@ using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
-
 
 namespace WinForms;
 public partial class MainForm : Form {
@@ -277,8 +279,7 @@ public partial class MainForm : Form {
 
 		if (InvokeRequired) {
 			// Use InvokeAsync to support await inside
-			await InvokeAsync(async () =>
-			{
+			await InvokeAsync(async () => {
 				using JsonDocument d = JsonDocument.Parse(e.Message);
 				string eventType = d.RootElement.GetProperty("event").GetString()!.ToUpper();
 				string resource = d.RootElement.GetProperty("resource").GetString()!.ToUpper();
@@ -1336,6 +1337,13 @@ public partial class MainForm : Form {
 								.Split(new[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries))
 								.ToArray());
 				break;
+			case "tbpmondaycom":// tbpMondayCom
+				_logger.LogDebug("Loading Monday.com data...", LogLevel.Debug);
+				var xx = Environment.GetEnvironmentVariable("Monday_com_token");
+				_logger.LogDebug($"Monday.com data loaded. Apikey={Environment.GetEnvironmentVariable("Monday_com_token")}", LogLevel.Debug);
+
+				// Load Monday.com data
+				break;
 			default:
 				break;
 		}
@@ -1420,4 +1428,47 @@ public partial class MainForm : Form {
 	private async void button1_Click(object sender, EventArgs e) {
 
 	}
+
+	private async void btnMcCreatePO_Click(object sender, EventArgs e) {
+		//using var client = new SalesforceCdcEdiHub. MondayComClient("YOUR_API_TOKEN_HERE");
+		using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
+		var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
+
+		try {
+			var po = await poService.CreatePurchaseOrderAsync(
+				boardId: 18369790477,
+				poNumber: "PO-2025-003: Printer Ink",
+				vendorUserId: 987654321,
+				amount: 199.99m,
+				deliveryDate: new DateTime(2025, 12, 25),
+				statusLabel: "Completed"
+			);
+
+			_logger.LogInformation($"PO Created: {po.Name} (ID: {po.Id})");
+		} catch (Exception ex) {
+			_logger.LogError(ex.Message);
+		}
+	}
+
+	private async void btnRetriveMondayComPOs(object sender, EventArgs e) {
+		using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
+		var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
+		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+	
+
+		try {
+			var pos = await poService.GetAllPurchaseOrdersAsync(
+				boardId: 18369790477,	
+				cancellationToken: cts.Token);
+			dgvMondayComPOs.DataSource = pos; //.ToDataTable();
+
+			_logger.LogInformation($"Got {pos.Count} POs");
+		} catch (MondayApiException ex) {
+			_logger.LogError($"API Error: {ex.Message}");
+		} catch (OperationCanceledException) {
+			_logger.LogError("Request was cancelled (timeout)");
+		}
+
+	}
 }
+
