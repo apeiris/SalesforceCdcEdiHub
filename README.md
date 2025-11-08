@@ -1,56 +1,87 @@
-﻿
-# 🚀 Salesforce ↔ OpenAS2 ↔ SQL Server Integration
-
-## 📖 Overview
-This application demonstrates seamless integration between **Salesforce**, **OpenAS2**, and **SQL Server**.
-
+﻿# Salesforce / Monday.Com → OpenAS2 → SQL Server Integration
+## Overview
+This application demonstrates seamless integration between **Salesforce / Monday.Com** , **OpenAS2**, and **SQL Server**.  
 It leverages the **Salesforce Pub/Sub API** to listen for real-time change events—**Create**, **Update**, and **Delete**—on selected Salesforce objects.  
 The system also simulates the submission of **Salesforce E-Bikes** orders to the manufacturer via the Pub/Sub API, transmitted over the **OpenAS2 protocol**.
 
-When a change event is received, it is **deserialized using Google Protobuf**, processed, and synchronized into a **SQL Server** database.  
-This ensures that Salesforce data remains current, accurate, and accessible locally for downstream processes or reporting.
+#### Sql server integration is optional and can be disabled if not needed.
 
-Additionally, the project implements **EDI X12 message exchanges** using the **AS2 protocol**.  
-For example, when an order status transitions to `'Submitted to Manufacturing'`, the system automatically generates and transmits the corresponding **EDI documents** to the trading partner.
+
+### Key Features
+- Real-time CDC (Change Data Capture) from Salesforce
+- EDI X12 payload generation from monday.com Purchase Orders
+- Secure AS2 transmission with encryption and MDN
+- Local SQL Server persistence (Dockerized)
+- WinForms UI for monitoring and manual control
 
 ---
 
-## 🧩 Architecture
+## monday.com → EDI X12 Trigger Workflow
 
+**The X12 EDI payload generation from monday.com can be configured to trigger when a Purchase Order status transitions from any given state to another.**
+
+### Example:
+> **`Awaiting Approval` → `Approved`**
+
+Once this **predefined state change** occurs:
+1. The system detects the status update via **monday.com webhook or polling**.
+2. An **EDI X12 850 (Purchase Order)** message is automatically generated.
+3. The payload is sent to a **pre-configured AS2 endpoint**.
+
+### AS2 Endpoint Flexibility
+The target endpoint can be:
+- **On-Premise**: Local OpenAS2 server (e.g., behind firewall)
+- **Cloud-Hosted**: AWS, Azure, or any public AS2 gateway
+
+> Configuration is fully customizable via UI or config files (`SalesforceConfig.cs`, environment variables).
+
+---
+---
+
+## Architecture
 ```mermaid
-flowchart TD
+flowchart LR
+    %% External Systems
     SF["Salesforce<br/>(Pub/Sub API)"]
-    HUB["Integration Hub<br/>(This Application)"]
-    X12["X12 Parser"]
-    SQL["Local SQL Server<br/>(On Docker)"]
-    AS2["OpenAS2<br>[Trading Partner]<br>[Message]"]
+    MC["monday.com<br/>(Purchase Orders)"]
 
-    %% Hub + X12 are inside the subgraph
+    %% Integration Hub (Core)
+    HUB["Integration Hub<br/>(This Application)"]
+    X12["X12 Parser<br/>(Internal Layer)"]
+
+    %% Optional & Partner Systems
+    SQL["Local SQL Server<br/>(On Docker - Optional)"]
+    AS2["OpenAS2<br/>(Trading Partner<br>MDN, Encryption)"]
+
+    %% Group Hub Components
     subgraph hub_container ["Integration Hub"]
         direction TB
         HUB
         X12
     end
 
+    %% Core Required Flows
     SF -->|"Real-Time Events<br>(Protobuf)"| HUB
-    HUB -->|Data Sync| SQL
+    MC <-->|"Create/Update PO<br>(GraphQL API)"| HUB
     HUB -->|"EDI X12 Messages"| X12
     X12 <-->|"AS2 Transport<br>(MDN, Encryption)"| AS2
 
-    %% ---- Styles -------------------------------------------------
+    %% Optional Sync (Dashed Line)
+    HUB -.->|"Optional Data Sync"| SQL
+
+    %% Styles
     style SF fill:#00A1E0,stroke:#036,stroke-width:1px,color:#fff
+    style MC fill:#00C7B7,stroke:#006D5B,stroke-width:1px,color:#fff
     style HUB fill:#8C52FF,stroke:#3A0070,stroke-width:1px,color:#fff
     style X12 fill:#C13EFF,stroke:#5A0099,stroke-width:1px,color:#fff
-    style SQL fill:#0078D7,stroke:#003C7E,stroke-width:1px,color:#fff
+    style SQL fill:#0078D7,stroke:#003C7E,stroke-width:1px,color:#fff,opacity:0.7
     style AS2 fill:#FF7B00,stroke:#703500,stroke-width:1px,color:#fff
+    style hub_container fill:#E6F7FF,stroke:#8C52FF,stroke-dasharray: 5 5
 
-    %% Light-blue background for the whole Hub container
-    style hub_container fill:lightcyan,stroke:#8C52FF,stroke-dasharray: 5 5    
-
+    %% Emphasize SQL is optional
+    classDef optional fill:#0078D7,stroke:#003C7E,stroke-dasharray: 3 3,opacity:0.6
+    class SQL optional
 ```
-
-
-
 ---
 
 
