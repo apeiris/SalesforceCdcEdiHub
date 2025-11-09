@@ -4,18 +4,15 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
-using DocumentFormat.OpenXml.ExtendedProperties;
-using Google.Protobuf.WellKnownTypes;
-using JsonExtensions;
+
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MondayCom.PurchaseOrders;
-using MondayCom.PurchaseOrders.Models;
 using Newtonsoft.Json;
 using NLog.Windows.Forms;
+
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
 using SalesforceCdcEdiHub.MondayCom;
@@ -26,6 +23,11 @@ using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
+
+//using iText.Layout;
+using PdfDataExtraction;
+
+
 
 namespace WinForms;
 public partial class MainForm : Form {
@@ -81,6 +83,7 @@ public partial class MainForm : Form {
 	private Dictionary<TabPage, (Color bcolor, Color fcolor)> _tabColors = new Dictionary<TabPage, (Color, Color)>();
 	private static readonly List<string> orderStates = new List<string> { "Revision Required", "In Production", "Completed" };
 	private IConfiguration _cfg;
+	private static readonly long _MondayComBoardId = long.Parse(Environment.GetEnvironmentVariable("Monday_com_BoardId")!.ToString());
 	#endregion fields
 	#region events handlers and delegates
 	private readonly KestrelWebhookListener _webhookListener;
@@ -1035,8 +1038,8 @@ public partial class MainForm : Form {
 			   .ToHashSet();
 		_dtRegisteredCDCCandidates.TableName = "RegisteredCDCCandidates";
 		_dtRegisteredCDCCandidates.Columns.Add("Initialize", typeof(bool)); // Add a column for status icons
-		_dtRegisteredCDCCandidates.Columns.Add("DB", typeof(Image)); // Add a column for status iconsRow
-		_dtRegisteredCDCCandidates.Columns.Add("Create", typeof(Image));
+		_dtRegisteredCDCCandidates.Columns.Add("DB", typeof(System.Drawing.Image)); // Add a column for status iconsRow
+		_dtRegisteredCDCCandidates.Columns.Add("Create", typeof(System.Drawing.Image));
 		HashSet<string> replicatedNames = new HashSet<string>(
 			 _sqlServerLib.Select("select name from [dbo].[ftTablesOfSchema] ('sfo')").AsEnumerable()
 				.Select(r => r["name"].ToString())!, StringComparer.OrdinalIgnoreCase);
@@ -1185,7 +1188,7 @@ public partial class MainForm : Form {
 							orderStates.Select((option, index) => new RadioButton {
 								Text = option,
 								AutoSize = true,
-								Location = new Point(10, 20 + index * 25)
+								Location = new System.Drawing.Point(10, 20 + index * 25)
 							}).ToList().ForEach(rb =>
 								pnlOrderStates.Controls.Add(rb));
 
@@ -1425,40 +1428,38 @@ public partial class MainForm : Form {
 		dgvOpenAs2Results.DataSource = _dsOpenAs2.Tables[cmbOpenAs2ResultObjects.Text].Transpose();
 	}
 
-	private async void button1_Click(object sender, EventArgs e) {
 
-	}
 
 	private async void btnMcCreatePO_Click(object sender, EventArgs e) {
 		//using var client = new SalesforceCdcEdiHub. MondayComClient("YOUR_API_TOKEN_HERE");
-		using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
-		var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
+		//using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
+		//var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
 
-		try {
-			var po = await poService.CreatePurchaseOrderAsync(
-				boardId: 18369790477,
-				poNumber: "PO-2025-003: Printer Ink",
-				vendorUserId: 987654321,
-				amount: 199.99m,
-				deliveryDate: new DateTime(2025, 12, 25),
-				statusLabel: "Completed"
-			);
+		//try {
+		//	var po = await poService.CreatePurchaseOrderAsync(
+		//		boardId: 18369790477,
+		//		poNumber: "PO-2025-003: Printer Ink",
+		//		vendorUserId: 987654321,
+		//		amount: 199.99m,
+		//		deliveryDate: new DateTime(2025, 12, 25),
+		//		statusLabel: "Completed"
+		//	);
 
-			_logger.LogInformation($"PO Created: {po.Name} (ID: {po.Id})");
-		} catch (Exception ex) {
-			_logger.LogError(ex.Message);
-		}
+		//	_logger.LogInformation($"PO Created: {po.Name} (ID: {po.Id})");
+		//} catch (Exception ex) {
+		//	_logger.LogError(ex.Message);
+		//}
 	}
 
 	private async void btnRetriveMondayComPOs(object sender, EventArgs e) {
 		using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
 		var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
 		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-	
+
 
 		try {
 			var pos = await poService.GetAllPurchaseOrdersAsync(
-				boardId: 18369790477,	
+				boardId: 18369790477,
 				cancellationToken: cts.Token);
 			dgvMondayComPOs.DataSource = pos; //.ToDataTable();
 
@@ -1470,5 +1471,36 @@ public partial class MainForm : Form {
 		}
 
 	}
+
+	private async void dgvMondayComPOs_CellContentClick(object sender, DataGridViewCellEventArgs e) {
+		if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+		if (dgvMondayComPOs.Columns.Contains("Id")) {
+			using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
+			var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
+
+			long AssetId = long.Parse(dgvMondayComPOs.Rows[e.RowIndex].Cells["Id"].Value!.ToString()!);
+			MessageBox.Show($"PO ID: {AssetId} boardId={_MondayComBoardId}");
+			var po = await poService.GetPurchaseOrderByAssetIdAsync(AssetId.ToString(), _MondayComBoardId);
+		}
+	}
+
+
+	public static readonly String dest = "results/txt/parse_custom.txt";
+	private void btnExtractPdf_Click(object sender, EventArgs e) {
+		//using var ofd = new OpenFileDialog { Filter = "PDF Files|*.pdf" };
+		try {                               //     X1,  Y1,  X2,  Y2
+			iText.Kernel.Geom.Rectangle rect = new(40, 607, 312, 640);
+			DataTable dt = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable("C:\\Users\\tony\\Downloads\\PO 3.pdf", 1, rect, "BYer");
+		} catch (Exception ex) {
+			MessageBox.Show($"Error: {ex.Message}");
+		}
+	}
+
+
+
 }
+
+
+
+
 

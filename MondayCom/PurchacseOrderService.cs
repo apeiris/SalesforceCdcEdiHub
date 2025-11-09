@@ -14,48 +14,48 @@ public class PurchaseOrderService {
 		_client = client;
 	}
 
-	public async Task<CreateItemResponse> CreatePurchaseOrderAsync(
-	long boardId,
-	string poNumber,
-	long vendorUserId,
-	decimal amount,
-	DateTime deliveryDate,
-	string statusLabel = "Ordered") {
-		// Build column values as JsonObject first
-		var columnValuesObj = new JsonObject {
-			["status"] = new JsonObject { ["label"] = statusLabel },
-			["people"] = new JsonObject {
-				["personsAndTeams"] = new JsonArray(
-					new JsonObject { ["id"] = vendorUserId, ["kind"] = "person" }
-				)
-			},
-			["numbers"] = amount,
-			["date4"] = new JsonObject { ["date"] = deliveryDate.ToString("yyyy-MM-dd") }
-		};
+	//public async Task<CreateItemResponse> CreatePurchaseOrderAsync(
+	//long boardId,
+	//string poNumber,
+	//long vendorUserId,
+	//decimal amount,
+	//DateTime deliveryDate,
+	//string statusLabel = "Ordered") {
+	//	// Build column values as JsonObject first
+	//	var columnValuesObj = new JsonObject {
+	//		["status"] = new JsonObject { ["label"] = statusLabel },
+	//		["people"] = new JsonObject {
+	//			["personsAndTeams"] = new JsonArray(
+	//				new JsonObject { ["id"] = vendorUserId, ["kind"] = "person" }
+	//			)
+	//		},
+	//		["numbers"] = amount,
+	//		["date4"] = new JsonObject { ["date"] = deliveryDate.ToString("yyyy-MM-dd") }
+	//	};
 
-		// Convert to **escaped JSON string**
-		string columnValuesString = columnValuesObj.ToJsonString();
+	//	// Convert to **escaped JSON string**
+	//	string columnValuesString = columnValuesObj.ToJsonString();
 
-		const string query = @"
-        mutation CreatePO($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
-            create_item(
-                board_id: $boardId
-                item_name: $itemName
-                column_values: $columnValues
-            ) {
-                id
-                name
-            }
-        }";
+	//	const string query = @"
+ //       mutation CreatePO($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+ //           create_item(
+ //               board_id: $boardId
+ //               item_name: $itemName
+ //               column_values: $columnValues
+ //           ) {
+ //               id
+ //               name
+ //           }
+ //       }";
 
-		var variables = new JsonObject {
-			["boardId"] = boardId.ToString(),
-			["itemName"] = poNumber,
-			["columnValues"] = columnValuesString  // ← STRING, not JsonNode
-		};
+	//	var variables = new JsonObject {
+	//		["boardId"] = boardId.ToString(),
+	//		["itemName"] = poNumber,
+	//		["columnValues"] = columnValuesString  // ← STRING, not JsonNode
+	//	};
 
-		return await _client.ExecuteMutationAsync<CreateItemResponse>(query, variables);
-	}
+	//	return await _client.ExecuteMutationAsync<CreateItemResponse>(query, variables);
+	//}
 
 	public async Task<List<PurchaseOrderDto>> GetAllPurchaseOrdersAsync(long boardId, CancellationToken cancellationToken) {
 		const string query = @"
@@ -124,6 +124,59 @@ public class PurchaseOrderService {
 		}
 
 		return pos;
+	}
+
+	public async Task<PurchaseOrderDto?> GetPurchaseOrderByAssetIdAsync(string assetId,	long boardId) {
+		if (string.IsNullOrWhiteSpace(assetId))
+			throw new ArgumentException("AssetId required.", nameof(assetId));
+
+		const string query = @"
+        query GetPOByAsset($boardId: ID!) {
+            boards(ids: [$boardId]) {
+                items_page(limit: 500) {
+                    items {
+                        id
+                        name
+                        column_values(ids: [""edi_files""]) {
+                            id
+                            value
+                        }
+                    }
+                }
+            }
+        }";
+
+		var variables = new JsonObject { ["boardId"] = boardId.ToString() };
+
+		// **NOTE:** pass the operation name (exact name after `query`)
+		var result = await _client.ExecuteQueryAsync<JsonObject>(
+			query,
+			variables,
+			operationName: "GetPOByAsset");
+
+		var items = result["boards"]?[0]?["items_page"]?["items"]?.AsArray();
+		if (items == null) return null;
+
+		foreach (var itm in items.Cast<JsonObject>()) {
+			var col = itm["column_values"]?.AsArray()
+					 ?.FirstOrDefault(c => c["id"]?.ToString() == "edi_files");
+			if (col == null) continue;
+
+			var val = col["value"]?.ToString();
+			if (string.IsNullOrWhiteSpace(val)) continue;
+
+			try {
+				var files = JsonNode.Parse(val)?.AsArray();
+				if (files != null && files.Any(f => f?["id"]?.ToString() == assetId)) {
+					return new PurchaseOrderDto {
+						Id = itm["id"]?.ToString() ?? "",
+						Name = itm["name"]?.ToString() ?? ""
+					};
+				}
+			} catch { /* malformed JSON – skip */ }
+		}
+
+		return null;
 	}
 
 	private static string? ParseStatus(string? json) {

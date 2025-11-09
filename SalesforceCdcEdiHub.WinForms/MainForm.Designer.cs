@@ -178,14 +178,17 @@ partial class MainForm {
 		tableLayoutPanel21 = new TableLayoutPanel();
 		btnMcCreatePO = new Button();
 		button27 = new Button();
+		btnExtractPdf = new Button();
 		cmbMondayPOs = new ComboBox();
+		dgvMondayComPOs = new DataGridView();
+		dgvMondayComPoHeader = new DataGridView();
+		dgvMondayComPoItems = new DataGridView();
 		toolStripContainer1 = new ToolStripContainer();
 		toolStripContainer2 = new ToolStripContainer();
 		toolStripContainer3 = new ToolStripContainer();
 		toolStripContainer4 = new ToolStripContainer();
 		toolStripContainer5 = new ToolStripContainer();
 		toolStripContainer6 = new ToolStripContainer();
-		dgvMondayComPOs = new DataGridView();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
 		toolStrip1.SuspendLayout();
@@ -257,6 +260,9 @@ partial class MainForm {
 		tbpMondayCom.SuspendLayout();
 		tableLayoutPanel7.SuspendLayout();
 		tableLayoutPanel21.SuspendLayout();
+		((System.ComponentModel.ISupportInitialize)dgvMondayComPOs).BeginInit();
+		((System.ComponentModel.ISupportInitialize)dgvMondayComPoHeader).BeginInit();
+		((System.ComponentModel.ISupportInitialize)dgvMondayComPoItems).BeginInit();
 		toolStripContainer1.SuspendLayout();
 		toolStripContainer2.ContentPanel.SuspendLayout();
 		toolStripContainer2.SuspendLayout();
@@ -264,7 +270,6 @@ partial class MainForm {
 		toolStripContainer4.SuspendLayout();
 		toolStripContainer5.SuspendLayout();
 		toolStripContainer6.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)dgvMondayComPOs).BeginInit();
 		SuspendLayout();
 		// 
 		// btnAuthenticate
@@ -2179,13 +2184,16 @@ partial class MainForm {
 		tableLayoutPanel7.Controls.Add(tableLayoutPanel21, 1, 1);
 		tableLayoutPanel7.Controls.Add(cmbMondayPOs, 0, 0);
 		tableLayoutPanel7.Controls.Add(dgvMondayComPOs, 0, 1);
+		tableLayoutPanel7.Controls.Add(dgvMondayComPoHeader, 0, 2);
+		tableLayoutPanel7.Controls.Add(dgvMondayComPoItems, 0, 3);
 		tableLayoutPanel7.Dock = DockStyle.Fill;
 		tableLayoutPanel7.Location = new Point(3, 3);
 		tableLayoutPanel7.Name = "tableLayoutPanel7";
-		tableLayoutPanel7.RowCount = 3;
+		tableLayoutPanel7.RowCount = 4;
 		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 4.985755F));
 		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 95.0142441F));
-		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Absolute, 104F));
+		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Absolute, 216F));
+		tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Absolute, 358F));
 		tableLayoutPanel7.Size = new Size(1409, 702);
 		tableLayoutPanel7.TabIndex = 0;
 		// 
@@ -2196,7 +2204,8 @@ partial class MainForm {
 		tableLayoutPanel21.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel21.Controls.Add(btnMcCreatePO, 1, 0);
 		tableLayoutPanel21.Controls.Add(button27, 0, 0);
-		tableLayoutPanel21.Location = new Point(1150, 32);
+		tableLayoutPanel21.Controls.Add(btnExtractPdf, 0, 1);
+		tableLayoutPanel21.Location = new Point(1150, 9);
 		tableLayoutPanel21.Name = "tableLayoutPanel21";
 		tableLayoutPanel21.RowCount = 2;
 		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -2224,6 +2233,16 @@ partial class MainForm {
 		button27.UseVisualStyleBackColor = true;
 		button27.Click += btnRetriveMondayComPOs;
 		// 
+		// btnExtractPdf
+		// 
+		btnExtractPdf.Location = new Point(3, 53);
+		btnExtractPdf.Name = "btnExtractPdf";
+		btnExtractPdf.Size = new Size(94, 44);
+		btnExtractPdf.TabIndex = 2;
+		btnExtractPdf.Text = "Extract Pdf";
+		btnExtractPdf.UseVisualStyleBackColor = true;
+		btnExtractPdf.Click += btnExtractPdf_Click;
+		// 
 		// cmbMondayPOs
 		// 
 		cmbMondayPOs.FormattingEnabled = true;
@@ -2231,6 +2250,31 @@ partial class MainForm {
 		cmbMondayPOs.Name = "cmbMondayPOs";
 		cmbMondayPOs.Size = new Size(648, 23);
 		cmbMondayPOs.TabIndex = 1;
+		// 
+		// dgvMondayComPOs
+		// 
+		dgvMondayComPOs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		dgvMondayComPOs.Location = new Point(3, 9);
+		dgvMondayComPOs.Name = "dgvMondayComPOs";
+		dgvMondayComPOs.Size = new Size(1126, 115);
+		dgvMondayComPOs.TabIndex = 2;
+		dgvMondayComPOs.CellContentClick += dgvMondayComPOs_CellContentClick;
+		// 
+		// dgvMondayComPoHeader
+		// 
+		dgvMondayComPoHeader.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		dgvMondayComPoHeader.Location = new Point(3, 130);
+		dgvMondayComPoHeader.Name = "dgvMondayComPoHeader";
+		dgvMondayComPoHeader.Size = new Size(1126, 205);
+		dgvMondayComPoHeader.TabIndex = 3;
+		// 
+		// dgvMondayComPoItems
+		// 
+		dgvMondayComPoItems.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		dgvMondayComPoItems.Location = new Point(3, 346);
+		dgvMondayComPoItems.Name = "dgvMondayComPoItems";
+		dgvMondayComPoItems.Size = new Size(1137, 318);
+		dgvMondayComPoItems.TabIndex = 4;
 		// 
 		// toolStripContainer1
 		// 
@@ -2312,14 +2356,6 @@ partial class MainForm {
 		toolStripContainer6.Size = new Size(1423, 761);
 		toolStripContainer6.TabIndex = 4;
 		toolStripContainer6.Text = "toolStripContainer6";
-		// 
-		// dgvMondayComPOs
-		// 
-		dgvMondayComPOs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-		dgvMondayComPOs.Location = new Point(3, 32);
-		dgvMondayComPOs.Name = "dgvMondayComPOs";
-		dgvMondayComPOs.Size = new Size(1126, 288);
-		dgvMondayComPOs.TabIndex = 2;
 		// 
 		// MainForm
 		// 
@@ -2425,6 +2461,9 @@ partial class MainForm {
 		tbpMondayCom.ResumeLayout(false);
 		tableLayoutPanel7.ResumeLayout(false);
 		tableLayoutPanel21.ResumeLayout(false);
+		((System.ComponentModel.ISupportInitialize)dgvMondayComPOs).EndInit();
+		((System.ComponentModel.ISupportInitialize)dgvMondayComPoHeader).EndInit();
+		((System.ComponentModel.ISupportInitialize)dgvMondayComPoItems).EndInit();
 		toolStripContainer1.ResumeLayout(false);
 		toolStripContainer1.PerformLayout();
 		toolStripContainer2.ContentPanel.ResumeLayout(false);
@@ -2438,7 +2477,6 @@ partial class MainForm {
 		toolStripContainer5.PerformLayout();
 		toolStripContainer6.ResumeLayout(false);
 		toolStripContainer6.PerformLayout();
-		((System.ComponentModel.ISupportInitialize)dgvMondayComPOs).EndInit();
 		ResumeLayout(false);
 	}
 
@@ -2621,4 +2659,7 @@ partial class MainForm {
 	private Button button27;
 	private ComboBox cmbMondayPOs;
 	private DataGridView dgvMondayComPOs;
+	private DataGridView dgvMondayComPoHeader;
+	private DataGridView dgvMondayComPoItems;
+	private Button btnExtractPdf;
 }

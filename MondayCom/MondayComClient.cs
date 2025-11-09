@@ -32,10 +32,70 @@ public class MondayComClient : IDisposable {
 			new MediaTypeWithQualityHeaderValue("application/json"));
 	}
 
+
+	public async Task<T> ExecuteQueryAsync<T>(
+	string query,
+	JsonObject? variables = null,
+	string? operationName = null,
+	CancellationToken ct = default) {
+		// ---- 1. Build the GraphQL envelope ---------------------------------
+		var payload = new JsonObject {
+			["query"] = query
+		};
+		if (variables != null) payload["variables"] = variables;
+		if (operationName != null) payload["operationName"] = operationName;
+
+		var content = new StringContent(
+			payload.ToJsonString(),
+			Encoding.UTF8,
+			"application/json");
+
+		// ---- 2. POST --------------------------------------------------------
+		HttpResponseMessage resp;
+		try { resp = await _httpClient.PostAsync("", content, ct); } catch (Exception ex) { throw new MondayApiException(0, null, $"HTTP error: {ex.Message}"); }
+
+		// ---- 3. Read body ---------------------------------------------------
+		string body;
+		try { body = await resp.Content.ReadAsStringAsync(ct); } catch (Exception ex) { throw new MondayApiException((int)resp.StatusCode, null, $"Read error: {ex.Message}"); }
+
+		// ---- 4. HTTP-level error --------------------------------------------
+		if (!resp.IsSuccessStatusCode)
+			throw new MondayApiException((int)resp.StatusCode, body,
+				$"HTTP {(int)resp.StatusCode}: {resp.ReasonPhrase}");
+
+		// ---- 5. Parse JSON --------------------------------------------------
+		JsonDocument doc;
+		try { doc = JsonDocument.Parse(body); } catch (JsonException ex) { throw new MondayApiException(400, body, $"Invalid JSON: {ex.Message}"); }
+
+		var root = doc.RootElement;
+
+		// ---- 6. GraphQL errors ----------------------------------------------
+		if (root.TryGetProperty("errors", out var err))
+			throw new MondayApiException(400, body,
+				"GraphQL errors: " + err.GetRawText());
+
+		// ---- 7. No data -----------------------------------------------------
+		if (!root.TryGetProperty("data", out var data))
+			throw new MondayApiException(400, body, "Missing 'data' field.");
+
+		// ---- 8. Deserialize -------------------------------------------------
+		try {
+			var result = data.Deserialize<T>(new JsonSerializerOptions {
+				PropertyNameCaseInsensitive = true
+			});
+
+			return result ?? throw new InvalidOperationException("Deserialized result is null.");
+		} catch (Exception ex) {
+			throw new MondayApiException(400, body,
+				$"Deserialize {typeof(T).Name} failed: {ex.Message}");
+		}
+	}
+
+
 	public async Task<T> ExecuteMutationAsync<T>(
-		string query,
-		JsonObject? variables = null,
-		CancellationToken cancellationToken = default) {
+	string query,
+	JsonObject? variables = null,
+	CancellationToken cancellationToken = default) {
 		var payload = new JsonObject {
 			["query"] = query
 		};
@@ -104,6 +164,7 @@ public class MondayComClient : IDisposable {
 				$"Deserialization failed for {typeof(T).Name}: {ex.Message}");
 		}
 	}
+
 
 	public void Dispose() {
 		if (!_disposed) {
