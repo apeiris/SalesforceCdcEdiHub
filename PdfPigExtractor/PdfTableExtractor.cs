@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using iText.Forms.Form.Element;
 using iText.Kernel.Colors;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
@@ -79,7 +80,6 @@ namespace PdfDataExtraction {
 		}
 		public static List<string> FormatTablesAsCsv(List<List<List<string>>> allExtractedTables) {
 			var csvRows = new List<string>();
-
 			foreach (var pageTables in allExtractedTables) {
 				// Assuming the simple inference logic returned a list of rows for the page
 				foreach (var rowCells in pageTables) {
@@ -94,60 +94,16 @@ namespace PdfDataExtraction {
 						}
 						return cleanedCell;
 					});
-
 					csvRows.Add(string.Join(",", formattedCells));
 				}
-
 				// Add a separator for tables/pages if needed
 				// csvRows.Add("--- END OF PAGE/TABLE ---"); 
 			}
-
 			return csvRows;
 		}
 
-		public static void DrawRectangle(
-			string sourcePdfPath,
-			string destPdfPath,
-			int pageNumber,
-			iText.Kernel.Geom.Rectangle highlightArea) {
-			// 1. Ensure the destination path's directory exists
-			string directory = Path.GetDirectoryName(destPdfPath);
-			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) {
-				Directory.CreateDirectory(directory);
-			}
+		
 
-			// Attempt to delete the file one last time to break locks
-			if (File.Exists(destPdfPath)) {
-				try { File.Delete(destPdfPath); } catch (Exception) { /* Swallow delete exception if locked, hoping FileShare.None works */ }
-			}
-
-			// Use PdfReader for the source file
-			using (PdfReader reader = new PdfReader(sourcePdfPath)) {
-				// 👇 THE FIX: Create the FileStream explicitly with exclusive access (FileShare.None)
-				using (FileStream fs = new FileStream(
-					destPdfPath,
-					FileMode.Create, // Create a new file or overwrite existing
-					FileAccess.Write,
-					FileShare.None)) // Crucial: Prevents any other process from opening the file
-				{
-					// Pass the stream to the PdfWriter
-					using (PdfWriter writer = new PdfWriter(fs)) {
-						using (PdfDocument pdfDocument = new PdfDocument(reader, writer)) {
-							// ... (rest of the drawing logic) ...
-							PdfPage page = pdfDocument.GetPage(pageNumber);
-							PdfCanvas canvas = new PdfCanvas(page);
-
-							canvas
-								.SetStrokeColor(new DeviceRgb(255, 0, 0))
-								.SetLineWidth(1.0f)
-								.Rectangle(highlightArea.GetLeft(), highlightArea.GetBottom(),
-										   highlightArea.GetWidth(), highlightArea.GetHeight())
-								.Stroke();
-						}
-					}
-				}
-			}
-		}
 
 
 		public static void AddRedBorderToPdf(string inputPath, string outputPath, iText.Kernel.Geom.Rectangle rect) {
@@ -159,37 +115,50 @@ namespace PdfDataExtraction {
 			var page = pdfDoc.GetFirstPage();
 			var canvas = new PdfCanvas(page);
 
-			// Set border properties
+			// 1. RED BORDER
 			canvas
 				.SetStrokeColor(ColorConstants.RED)
-				.SetLineWidth(1f)           // thickness in points
-				.SetLineDash(0)             // solid line (no dash)
+				.SetLineWidth(1f)
 				.Rectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
 				.Stroke();
 
-			// Optional: Add a label inside the box
-			string coordsText = $"({rect.GetX():F0}, {rect.GetY():F0}) {rect.GetWidth():F0}×{rect.GetHeight():F0}";
-			var label = new Paragraph(coordsText)
+			float x1 = rect.GetX();
+			float y1 = rect.GetY();
+			float x2 = rect.GetRight();
+			float y2 = rect.GetTop();
+
+			// 2. CORNER LABELS WITH FIXED SIZE
+			int pageNum = pdfDoc.GetPageNumber(page);
+
+			// Bottom-left label
+			string text1 = $"({x1:F0}, {y1:F0})";// {rect.GetWidth():F0}×{rect.GetHeight():F0}";
+			var label1 = new Paragraph(text1)
 				.SetFontColor(ColorConstants.WHITE)
-				.SetFontSize(8)                    // Small text
+				.SetFontSize(7)
 				.SetBackgroundColor(ColorConstants.RED)
 				.SetPadding(2)
-				.SetMargin(0);
+				.SetMargin(0)
+				.SetWidth(40)  // Fixed width
+				.SetFixedPosition(pageNum, rect.GetX() , rect.GetY() + 3, 34);
 
-			// Position: 5pt from bottom-left corner of rectangle
-			float textX = rect.GetX() + 5;
-			float textY = rect.GetY() + 5;
+			document.Add(label1);
 
-			document.ShowTextAligned(
-				label,
-				textX,
-				textY,
-				pdfDoc.GetPageNumber(page),
-				TextAlignment.LEFT,
-				VerticalAlignment.BOTTOM,
-				0
-			);
+			// Top-right label
+			string text2 = $"({x2:F0}, {y2:F0})";
+			var label2 = new Paragraph(text2)
+				.SetFontColor(ColorConstants.WHITE)
+				.SetFontSize(7)
+				.SetBackgroundColor(ColorConstants.RED)
+				.SetPadding(2)
+				.SetMargin(0)
+				.SetWidth(40)
+			
+				// SetFixedPosition(int pageNumber, float left, float bottom, float width)
+				.SetFixedPosition(pageNum, rect.GetRight() - 40, rect.GetTop() - 12, 35);
+
+			document.Add(label2);
 		}
+
 
 
 

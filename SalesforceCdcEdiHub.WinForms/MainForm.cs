@@ -1510,19 +1510,23 @@ public partial class MainForm : Form {
 
 	public static readonly String dest = "results/txt/parse_custom.txt";
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
-		//using var ofd = new OpenFileDialog { Filter = "PDF Files|*.pdf" };
+	
 		try {                               //     X1,  Y1,  X2,  Y2
-			iText.Kernel.Geom.Rectangle rect = new(38, 602, 270, 51);
+			iText.Kernel.Geom.Rectangle rectBuyer = (iText.Kernel.Geom.Rectangle)new(36, 601, 269, 54);
 			string docName = "PO 3.pdf";
 			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
-			string dest = $"C:\\temp\\xx.pdf";
+			string dest = $"C:\\temp\\testOut.pdf";
 			int pageNumber = 1;
-			DataTable dt = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable($"C:\\Users\\tony\\Downloads\\{docName}", pageNumber, rect, "BYer");
-			//PdfDataExtraction.PdfTableExtractor.DrawRectangle(src, dest,pageNumber, rect);
-			PdfDataExtraction.PdfTableExtractor.AddRedBorderToPdf(src, dest, rect);
+			DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable($"C:\\Users\\tony\\Downloads\\{docName}", pageNumber, rectBuyer, "BYer");
+			PdfDataExtraction.PdfTableExtractor.AddRedBorderToPdf(src, dest,rectBuyer);
+
+			iText.Kernel.Geom.Rectangle rectSupplier = (iText.Kernel.Geom.Rectangle)new(306, 601, 269, 54);
+			DataTable dtSupplier =  PdfDataExtraction.PdfTableExtractor.ExtractSingleTable($"C:\\Users\\tony\\Downloads\\{docName}", pageNumber, rectSupplier, "BYer");
+			PdfDataExtraction.PdfTableExtractor.AddRedBorderToPdf(src, dest, rectSupplier);
+
 			await pdfView.EnsureCoreWebView2Async();
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
-			dgvMondayComPOs.DataSource = dt;
+			dgvMondayComPOs.DataSource = dtBuyer;
 			if (chkSwitchToWebView.Checked)
 				TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
 
