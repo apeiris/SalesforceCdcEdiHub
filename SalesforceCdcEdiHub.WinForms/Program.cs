@@ -22,9 +22,13 @@ namespace SalesforceCdcEdiHub.WinForms {
 	internal static class Program {
 		[STAThread]
 		static void Main() {
+			var nlogAssembly = typeof(NLog.LogManager).Assembly;
+			Console.WriteLine($"NLog assembly: {nlogAssembly.GetName().Name} v{nlogAssembly.GetName().Version}");
+			Console.WriteLine($"Location: {nlogAssembly.Location}");
+
 			Directory.CreateDirectory("logs");
 			Console.SetOut(new DebugTextWriter());
-
+		
 			// WinForms initialization
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);

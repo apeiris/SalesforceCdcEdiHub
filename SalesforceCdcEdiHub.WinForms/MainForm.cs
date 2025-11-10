@@ -1,18 +1,22 @@
 ﻿using System.Data;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.Xml;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
-
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NLog;
 using NLog.Windows.Forms;
-
+//using iText.Layout;
+using PdfDataExtraction;
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
 using SalesforceCdcEdiHub.MondayCom;
@@ -23,9 +27,6 @@ using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
-
-//using iText.Layout;
-using PdfDataExtraction;
 
 
 
@@ -199,6 +200,13 @@ public partial class MainForm : Form {
 	#endregion events	
 	#region form	
 	private System.Windows.Forms.Timer _statusTimer;
+	private void RedirectConsoleToNLog() {
+		// 1. Make sure NLog is loaded (reads NLog.config automatically)
+		LogManager.ReconfigExistingLoggers();
+
+		// 2. Replace Console.Out with a writer that logs to NLog
+		//Console.SetOut(new NLogConsoleWriter(Logger));
+	}
 	public MainForm(IMemoryCache cache,
 		ISalesforceService salesforceService,
 		PubSubService pubSubService,
@@ -208,6 +216,8 @@ public partial class MainForm : Form {
 		ILogger<MainForm> logger, X12 x12,
 		KestrelWebhookListener webhookListener) {
 		InitializeComponent();
+		Console.SetOut(new NLogConsoleWriter(LogManager.GetCurrentClassLogger()));
+		RedirectConsoleToNLog();
 		#region tt
 		ToolTip tt = new ToolTip();
 		tt.OwnerDraw = true;
@@ -463,15 +473,15 @@ public partial class MainForm : Form {
 
 	private async void btnMoveLeft_Click(object sender, EventArgs e) {
 		if (dgvRegisteredCDCCandidates.SelectedRows.Count == 0) return;
-		_sourceTable = (DataTable)dgvCDCEnabledObjects.DataSource;
-		_destinationTable = (DataTable)dgvRegisteredCDCCandidates.DataSource;
+		_sourceTable = (DataTable)dgvCDCEnabledObjects.DataSource!;
+		_destinationTable = (DataTable)dgvRegisteredCDCCandidates.DataSource!;
 		if (_sourceTable == null) {
-			_sourceTable = _destinationTable.Clone();
+			_sourceTable = _destinationTable!.Clone();
 			dgvCDCEnabledObjects.DataSource = _sourceTable;
 		}
 		List<DataRow> rowsToRemove = new List<DataRow>();
 		foreach (DataGridViewRow row in dgvRegisteredCDCCandidates.SelectedRows) {
-			DataRow deletedRow = ((DataRowView)row.DataBoundItem).Row;
+			DataRow deletedRow = ((DataRowView)row.DataBoundItem!).Row;
 			DataRow sourceRow = _sourceTable.NewRow();
 
 			sourceRow["name"] = deletedRow["name"].ToString();
@@ -480,13 +490,13 @@ public partial class MainForm : Form {
 			rowsToRemove.Add(deletedRow);
 		}
 		foreach (DataRow row in rowsToRemove) {
-			string name = row["name"].ToString();
+			string name = row["name"].ToString()!;
 			MessageBox.Show($"object name: {name}:{SalesforceService.ObjectNameToChangeEvent(name)} ");
 			string recordId = await _salesforceService.IdOfPlatformEventChannelMember(name);
 
 			bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", recordId);
-			btnSubscribe_Click(null, null);
-			_destinationTable.Rows.Remove(row);
+			btnSubscribe_Click(null!, null!);
+			_destinationTable!.Rows.Remove(row);
 		}
 		dgvCDCEnabledObjects.DataSource = null;
 		dgvCDCEnabledObjects.DataSource = _sourceTable;
@@ -1486,13 +1496,24 @@ public partial class MainForm : Form {
 
 
 	public static readonly String dest = "results/txt/parse_custom.txt";
-	private void btnExtractPdf_Click(object sender, EventArgs e) {
+	private async void btnExtractPdf_Click(object sender, EventArgs e) {
 		//using var ofd = new OpenFileDialog { Filter = "PDF Files|*.pdf" };
 		try {                               //     X1,  Y1,  X2,  Y2
-			iText.Kernel.Geom.Rectangle rect = new(40, 607, 312, 640);
-			DataTable dt = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable("C:\\Users\\tony\\Downloads\\PO 3.pdf", 1, rect, "BYer");
+			iText.Kernel.Geom.Rectangle rect = new(40, 600, 300, 63);
+			string docName = "PO 3.pdf";
+			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
+			string dest = $"C:\\temp\\xx.pdf";
+			int pageNumber = 1;
+			DataTable dt = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable($"C:\\Users\\tony\\Downloads\\{docName}", pageNumber, rect, "BYer");
+			//PdfDataExtraction.PdfTableExtractor.DrawRectangle(src, dest,pageNumber, rect);
+			PdfDataExtraction.PdfTableExtractor.AddRedBorderToPdf(src, dest, rect);
+			await pdfView.EnsureCoreWebView2Async();
+			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
+			dgvMondayComPOs.DataSource = dt;
 		} catch (Exception ex) {
-			MessageBox.Show($"Error: {ex.Message}");
+			_logger.LogError(ex.InnerException.Message);
+			_logger.LogError(ex.StackTrace);
+			MessageBox.Show($"Error: {ex.Message}\n {ex.InnerException.Message}");
 		}
 	}
 

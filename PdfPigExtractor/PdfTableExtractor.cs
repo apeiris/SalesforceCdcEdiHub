@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using iText.Kernel.Colors;
 using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas;
 using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Layout.Element;
+using iText.Layout;
 
 namespace PdfDataExtraction {
 	public class PdfTableExtractor {
@@ -14,12 +18,12 @@ namespace PdfDataExtraction {
 		public static List<List<List<string>>> ExtractAllTables(string pdfPath) {
 			var allExtractedTables = new List<List<List<string>>>();
 
-			using (PdfDocument pdfDocument = new PdfDocument(new PdfReader(pdfPath))) {
+			using (PdfDocument pdfDocument = new(new PdfReader(pdfPath))) {
 				for (int pageNum = 1; pageNum <= pdfDocument.GetNumberOfPages(); pageNum++) {
 					PdfPage page = pdfDocument.GetPage(pageNum);
 
 					// 1. Extract all text chunks with their locations
-					CustomLocationTextExtractionStrategy strategy = new CustomLocationTextExtractionStrategy();
+					CustomLocationTextExtractionStrategy strategy = new();
 					PdfTextExtractor.GetTextFromPage(page, strategy);
 
 					List<TextChunkInfo> textChunks = strategy.GetTextContent()
@@ -27,15 +31,15 @@ namespace PdfDataExtraction {
 															  .ThenBy(c => c.Location.GetLeft())    // Then by X for columns
 															  .ToList();
 
-				// --- 2. Implement Table Inference Logic Here ---
-				// This is the part that requires custom logic based on the PDF's layout.
-				// The inference logic involves:
-				// a. Grouping chunks that have a similar BaseLineY (e.g., within 5 units) to form a Row.
-				// b. Analyzing the X-coordinates within each group (Row) to identify distinct Columns.
-				// c. Assembling the structured data.
+					// --- 2. Implement Table Inference Logic Here ---
+					// This is the part that requires custom logic based on the PDF's layout.
+					// The inference logic involves:
+					// a. Grouping chunks that have a similar BaseLineY (e.g., within 5 units) to form a Row.
+					// b. Analyzing the X-coordinates within each group (Row) to identify distinct Columns.
+					// c. Assembling the structured data.
 
-				// Example: Simple grouping by Y-coordinate
-	
+					// Example: Simple grouping by Y-coordinate
+
 					var rows = new List<List<TextChunkInfo>>();
 					if (textChunks.Any()) {
 						float currentY = textChunks[0].BaseLineY;
@@ -79,8 +83,7 @@ namespace PdfDataExtraction {
 				// Assuming the simple inference logic returned a list of rows for the page
 				foreach (var rowCells in pageTables) {
 					// Escape and quote values, then join them by a comma
-					var formattedCells = rowCells.Select(cell =>
-					{
+					var formattedCells = rowCells.Select(cell => {
 						// Clean up common PDF extraction artifacts like extra spaces or newlines
 						string cleanedCell = cell.Replace('\r', ' ').Replace('\n', ' ').Trim();
 
@@ -101,73 +104,136 @@ namespace PdfDataExtraction {
 			return csvRows;
 		}
 
-		public static DataTable ExtractSingleTable(string pdfPath, int pageNumber, iText.Kernel.Geom.Rectangle tableArea, string tableName) {
-			List<List<string>> tableRows = new List<List<string>>();
+		public static void DrawRectangle(
+			string sourcePdfPath,
+			string destPdfPath,
+			int pageNumber,
+			iText.Kernel.Geom.Rectangle highlightArea) {
+			// 1. Ensure the destination path's directory exists
+			string directory = Path.GetDirectoryName(destPdfPath);
+			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) {
+				Directory.CreateDirectory(directory);
+			}
 
-			using (PdfDocument pdfDocument = new PdfDocument(new PdfReader(pdfPath))) {
+			// Attempt to delete the file one last time to break locks
+			if (File.Exists(destPdfPath)) {
+				try { File.Delete(destPdfPath); } catch (Exception) { /* Swallow delete exception if locked, hoping FileShare.None works */ }
+			}
+
+			// Use PdfReader for the source file
+			using (PdfReader reader = new PdfReader(sourcePdfPath)) {
+				// 👇 THE FIX: Create the FileStream explicitly with exclusive access (FileShare.None)
+				using (FileStream fs = new FileStream(
+					destPdfPath,
+					FileMode.Create, // Create a new file or overwrite existing
+					FileAccess.Write,
+					FileShare.None)) // Crucial: Prevents any other process from opening the file
+				{
+					// Pass the stream to the PdfWriter
+					using (PdfWriter writer = new PdfWriter(fs)) {
+						using (PdfDocument pdfDocument = new PdfDocument(reader, writer)) {
+							// ... (rest of the drawing logic) ...
+							PdfPage page = pdfDocument.GetPage(pageNumber);
+							PdfCanvas canvas = new PdfCanvas(page);
+
+							canvas
+								.SetStrokeColor(new DeviceRgb(255, 0, 0))
+								.SetLineWidth(1.0f)
+								.Rectangle(highlightArea.GetLeft(), highlightArea.GetBottom(),
+										   highlightArea.GetWidth(), highlightArea.GetHeight())
+								.Stroke();
+						}
+					}
+				}
+			}
+		}
+
+
+		public static void AddRedBorderToPdf(string inputPath, string outputPath, iText.Kernel.Geom.Rectangle rect) {
+			using var reader = new PdfReader(inputPath);
+			using var writer = new PdfWriter(outputPath);
+			using var pdfDoc = new PdfDocument(reader, writer);
+			using var document = new Document(pdfDoc);
+
+			var page = pdfDoc.GetFirstPage();
+			var canvas = new PdfCanvas(page);
+
+			// Set border properties
+			canvas
+				.SetStrokeColor(ColorConstants.RED)
+				.SetLineWidth(3f)           // thickness in points
+				.SetLineDash(0)             // solid line (no dash)
+				.Rectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
+				.Stroke();
+
+			// Optional: Add a label inside the box
+			var label = new Paragraph("Highlighted Area")
+				.SetFontColor(ColorConstants.WHITE)
+				.SetBackgroundColor(ColorConstants.RED)
+				.SetFontSize(10);
+			document.ShowTextAligned(label, rect.GetX() + 5, rect.GetY() + rect.GetHeight() - 15, pdfDoc.GetPageNumber(page),
+				iText.Layout.Properties.TextAlignment.LEFT, iText.Layout.Properties.VerticalAlignment.TOP, 0);
+		}
+
+
+
+		public static DataTable ExtractSingleTable(string pdfPath, int pageNumber, iText.Kernel.Geom.Rectangle tableArea, string tableName) {
+			List<List<string>> tableRows = new();
+			using (PdfDocument pdfDocument = new(new PdfReader(pdfPath))) {
 				if (pageNumber > pdfDocument.GetNumberOfPages() || pageNumber < 1) {
 					throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number is out of range.");
 				}
-
 				PdfPage page = pdfDocument.GetPage(pageNumber);
-
-				// 1. Extract all text chunks on the page
-				CustomLocationTextExtractionStrategy strategy = new CustomLocationTextExtractionStrategy();
+				CustomLocationTextExtractionStrategy strategy = new(); // 1. Extract all text chunks on the page
 				PdfTextExtractor.GetTextFromPage(page, strategy);
+				//Console.WriteLine($"Getting TextArea bounded by:X1={tableArea.}}\\tY1={{tableArea.GetBottom()}}\\tX2={{tableArea.GetRight()}}\\tY2={{tableArea.GetTop()}}\");
+				Console.WriteLine($"Getting TextArea bounded by:X1={tableArea.GetX()}\tY1={tableArea.GetY()}\tX2={tableArea.GetRight()}\tY2={tableArea.GetTop()}");
 
-				// 2. Filter chunks to only those within the specified bounding box
-				List<TextChunkInfo> filteredChunks = strategy.GetTextContent()
+
+
+				List<TextChunkInfo> filteredChunks = strategy.GetTextContent()// 2. Filter chunks to only those within the specified bounding box
 					.Where(chunk =>
-						// X-AXIS (Strict Containment)
-						// Chunk's X1 must be >= Table's X1 AND Chunk's X2 must be <= Table's X2
-						chunk.Location.GetLeft() >= tableArea.GetLeft() &&
-						chunk.Location.GetRight() <= tableArea.GetRight() &&
-
-						// Y-AXIS (Strict Containment)
-						// Chunk's Y1 must be >= Table's Y1 AND Chunk's Y2 must be <= Table's Y2
-						chunk.Location.GetBottom() >= tableArea.GetBottom() &&
-						chunk.Location.GetTop() <= tableArea.GetTop()
+						chunk.Location.GetLeft() >= tableArea.GetLeft() &&// X-AXIS (Strict Containment)
+						chunk.Location.GetRight() <= tableArea.GetRight() &&// Chunk's X1 must be >= Table's X1 AND Chunk's X2 must be <= Table's X2
+						chunk.Location.GetBottom() >= tableArea.GetBottom() &&// Y-AXIS (Strict Containment)
+						chunk.Location.GetTop() <= tableArea.GetTop()// Chunk's Y1 must be >= Table's Y1 AND Chunk's Y2 must be <= Table's Y2
 					)
-							// ... [rest of the query] ...
 							.OrderByDescending(c => c.BaseLineY) // Sort by Y (rows)
 					.ThenBy(c => c.Location.GetLeft())    // Then by X (columns)
 					.ToList();
-
-				// 3. Simple grouping by Y-coordinate to form rows
-				if (filteredChunks.Any()) {
+				if (filteredChunks.Any()) {// 3. Simple grouping by Y-coordinate to form rows
 					float currentY = filteredChunks[0].BaseLineY;
 					var currentRow = new List<TextChunkInfo>();
 					const float Y_TOLERANCE = 5.0f; // Tolerance for grouping text on the same row
-
 					foreach (var chunk in filteredChunks) {
 						if (Math.Abs(chunk.BaseLineY - currentY) < Y_TOLERANCE) {
-							// Merge text chunks if they are very close horizontally (often single words)
-							if (currentRow.Any() && Math.Abs(chunk.Location.GetLeft() - currentRow.Last().Location.GetRight()) < 2) {
+							if (currentRow.Any() && Math.Abs(chunk.Location.GetLeft() - currentRow.Last().Location.GetRight()) < 2) {   // Merge text chunks if they are very close horizontally (often single words)
 								currentRow.Last().Text += " " + chunk.Text;
 							} else {
 								currentRow.Add(chunk);
 							}
 						} else {
-							// New row detected: convert row chunks to simple strings
-							tableRows.Add(currentRow.OrderBy(c => c.Location.GetLeft()).Select(c => c.Text).ToList());
 
-							// Start new row
-							currentRow = new List<TextChunkInfo> { chunk };
+							tableRows.Add(currentRow.OrderBy(c => c.Location.GetLeft()).Select(c => c.Text).ToList());// New row detected: convert row chunks to simple strings
+							currentRow = new List<TextChunkInfo> { chunk }; // Start new row
 							currentY = chunk.BaseLineY;
 						}
 					}
-					// Add the final row
-					tableRows.Add(currentRow.OrderBy(c => c.Location.GetLeft()).Select(c => c.Text).ToList());
+
+					tableRows.Add(currentRow.OrderBy(c => c.Location.GetLeft()).Select(c => c.Text).ToList());// Add the final row
 				}
 			}
 
-			// 4. Convert the list of string lists into a DataTable
-			return ConvertRowsToDataTable(tableRows, tableName);
+
+			DataTable dt = ConvertRowsToDataTable(tableRows, tableName);// 4. Convert the list of string lists into a DataTable
+
+
+			return dt;
 		}
 
 		// --- Helper Method to Convert List<List<string>> to DataTable ---
 		private static DataTable ConvertRowsToDataTable(List<List<string>> tableRows, string tableName) {
-			DataTable table = new DataTable(tableName);
+			DataTable table = new(tableName);
 
 			if (!tableRows.Any()) return table;
 
