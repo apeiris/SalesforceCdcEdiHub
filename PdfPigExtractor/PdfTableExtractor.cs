@@ -5,8 +5,9 @@ using iText.Kernel.Colors;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
 using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Layout.Element;
 using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 
 namespace PdfDataExtraction {
 	public class PdfTableExtractor {
@@ -161,18 +162,33 @@ namespace PdfDataExtraction {
 			// Set border properties
 			canvas
 				.SetStrokeColor(ColorConstants.RED)
-				.SetLineWidth(3f)           // thickness in points
+				.SetLineWidth(1f)           // thickness in points
 				.SetLineDash(0)             // solid line (no dash)
 				.Rectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
 				.Stroke();
 
 			// Optional: Add a label inside the box
-			var label = new Paragraph("Highlighted Area")
+			string coordsText = $"({rect.GetX():F0}, {rect.GetY():F0}) {rect.GetWidth():F0}×{rect.GetHeight():F0}";
+			var label = new Paragraph(coordsText)
 				.SetFontColor(ColorConstants.WHITE)
+				.SetFontSize(8)                    // Small text
 				.SetBackgroundColor(ColorConstants.RED)
-				.SetFontSize(10);
-			document.ShowTextAligned(label, rect.GetX() + 5, rect.GetY() + rect.GetHeight() - 15, pdfDoc.GetPageNumber(page),
-				iText.Layout.Properties.TextAlignment.LEFT, iText.Layout.Properties.VerticalAlignment.TOP, 0);
+				.SetPadding(2)
+				.SetMargin(0);
+
+			// Position: 5pt from bottom-left corner of rectangle
+			float textX = rect.GetX() + 5;
+			float textY = rect.GetY() + 5;
+
+			document.ShowTextAligned(
+				label,
+				textX,
+				textY,
+				pdfDoc.GetPageNumber(page),
+				TextAlignment.LEFT,
+				VerticalAlignment.BOTTOM,
+				0
+			);
 		}
 
 

@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -178,20 +178,22 @@ partial class MainForm {
 		tableLayoutPanel21 = new TableLayoutPanel();
 		btnMcCreatePO = new Button();
 		button27 = new Button();
+		tableLayoutPanel22 = new TableLayoutPanel();
 		btnExtractPdf = new Button();
+		chkSwitchToWebView = new CheckBox();
 		cmbMondayPOs = new ComboBox();
 		splitContainer3 = new SplitContainer();
 		dgvMondayComPOs = new DataGridView();
 		dgvMondayComPoHeader = new DataGridView();
 		dgvMondayComPoItems = new DataGridView();
+		tbpPdf = new TabPage();
+		pdfView = new Microsoft.Web.WebView2.WinForms.WebView2();
 		toolStripContainer1 = new ToolStripContainer();
 		toolStripContainer2 = new ToolStripContainer();
 		toolStripContainer3 = new ToolStripContainer();
 		toolStripContainer4 = new ToolStripContainer();
 		toolStripContainer5 = new ToolStripContainer();
 		toolStripContainer6 = new ToolStripContainer();
-		tbpPdf = new TabPage();
-		pdfView = new Microsoft.Web.WebView2.WinForms.WebView2();
 		tabControl1.SuspendLayout();
 		tbpSfObjects.SuspendLayout();
 		toolStrip1.SuspendLayout();
@@ -263,6 +265,7 @@ partial class MainForm {
 		tbpMondayCom.SuspendLayout();
 		tableLayoutPanel7.SuspendLayout();
 		tableLayoutPanel21.SuspendLayout();
+		tableLayoutPanel22.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
 		splitContainer3.Panel1.SuspendLayout();
 		splitContainer3.Panel2.SuspendLayout();
@@ -270,6 +273,8 @@ partial class MainForm {
 		((System.ComponentModel.ISupportInitialize)dgvMondayComPOs).BeginInit();
 		((System.ComponentModel.ISupportInitialize)dgvMondayComPoHeader).BeginInit();
 		((System.ComponentModel.ISupportInitialize)dgvMondayComPoItems).BeginInit();
+		tbpPdf.SuspendLayout();
+		((System.ComponentModel.ISupportInitialize)pdfView).BeginInit();
 		toolStripContainer1.SuspendLayout();
 		toolStripContainer2.ContentPanel.SuspendLayout();
 		toolStripContainer2.SuspendLayout();
@@ -277,8 +282,6 @@ partial class MainForm {
 		toolStripContainer4.SuspendLayout();
 		toolStripContainer5.SuspendLayout();
 		toolStripContainer6.SuspendLayout();
-		tbpPdf.SuspendLayout();
-		((System.ComponentModel.ISupportInitialize)pdfView).BeginInit();
 		SuspendLayout();
 		// 
 		// btnAuthenticate
@@ -1083,14 +1086,14 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle1.BackColor = SystemColors.Control;
-		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
+		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle2.BackColor = SystemColors.Control;
+		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
 		dgvOrderList.Size = new Size(392, 166);
 		dgvOrderList.TabIndex = 11;
 		// 
@@ -2213,13 +2216,13 @@ partial class MainForm {
 		tableLayoutPanel21.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel21.Controls.Add(btnMcCreatePO, 1, 0);
 		tableLayoutPanel21.Controls.Add(button27, 0, 0);
-		tableLayoutPanel21.Controls.Add(btnExtractPdf, 0, 1);
+		tableLayoutPanel21.Controls.Add(tableLayoutPanel22, 0, 1);
 		tableLayoutPanel21.Location = new Point(1150, 39);
 		tableLayoutPanel21.Name = "tableLayoutPanel21";
 		tableLayoutPanel21.RowCount = 2;
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-		tableLayoutPanel21.Size = new Size(200, 100);
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 29.2682934F));
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 70.7317047F));
+		tableLayoutPanel21.Size = new Size(200, 162);
 		tableLayoutPanel21.TabIndex = 0;
 		// 
 		// btnMcCreatePO
@@ -2242,15 +2245,41 @@ partial class MainForm {
 		button27.UseVisualStyleBackColor = true;
 		button27.Click += btnRetriveMondayComPOs;
 		// 
+		// tableLayoutPanel22
+		// 
+		tableLayoutPanel22.ColumnCount = 1;
+		tableLayoutPanel21.SetColumnSpan(tableLayoutPanel22, 2);
+		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+		tableLayoutPanel22.Controls.Add(btnExtractPdf, 0, 1);
+		tableLayoutPanel22.Controls.Add(chkSwitchToWebView, 0, 0);
+		tableLayoutPanel22.Location = new Point(3, 50);
+		tableLayoutPanel22.Name = "tableLayoutPanel22";
+		tableLayoutPanel22.RowCount = 2;
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 38.70968F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 61.29032F));
+		tableLayoutPanel22.Size = new Size(114, 83);
+		tableLayoutPanel22.TabIndex = 4;
+		// 
 		// btnExtractPdf
 		// 
-		btnExtractPdf.Location = new Point(3, 53);
+		btnExtractPdf.Location = new Point(3, 35);
 		btnExtractPdf.Name = "btnExtractPdf";
-		btnExtractPdf.Size = new Size(94, 44);
+		btnExtractPdf.Size = new Size(88, 40);
 		btnExtractPdf.TabIndex = 2;
 		btnExtractPdf.Text = "Extract Pdf";
 		btnExtractPdf.UseVisualStyleBackColor = true;
 		btnExtractPdf.Click += btnExtractPdf_Click;
+		// 
+		// chkSwitchToWebView
+		// 
+		chkSwitchToWebView.AutoSize = true;
+		chkSwitchToWebView.Location = new Point(3, 3);
+		chkSwitchToWebView.Name = "chkSwitchToWebView";
+		chkSwitchToWebView.Size = new Size(103, 19);
+		chkSwitchToWebView.TabIndex = 3;
+		chkSwitchToWebView.Text = "Switch to View";
+		chkSwitchToWebView.UseVisualStyleBackColor = true;
+		chkSwitchToWebView.CheckedChanged += chkSwitchToWebView_CheckedChanged;
 		// 
 		// cmbMondayPOs
 		// 
@@ -2318,6 +2347,29 @@ partial class MainForm {
 		dgvMondayComPoItems.Name = "dgvMondayComPoItems";
 		dgvMondayComPoItems.Size = new Size(1141, 353);
 		dgvMondayComPoItems.TabIndex = 4;
+		// 
+		// tbpPdf
+		// 
+		tbpPdf.Controls.Add(pdfView);
+		tbpPdf.Location = new Point(4, 24);
+		tbpPdf.Name = "tbpPdf";
+		tbpPdf.Padding = new Padding(3);
+		tbpPdf.Size = new Size(1415, 708);
+		tbpPdf.TabIndex = 11;
+		tbpPdf.Text = "PDF";
+		tbpPdf.UseVisualStyleBackColor = true;
+		// 
+		// pdfView
+		// 
+		pdfView.AllowExternalDrop = true;
+		pdfView.CreationProperties = null;
+		pdfView.DefaultBackgroundColor = Color.White;
+		pdfView.Dock = DockStyle.Fill;
+		pdfView.Location = new Point(3, 3);
+		pdfView.Name = "pdfView";
+		pdfView.Size = new Size(1409, 702);
+		pdfView.TabIndex = 5;
+		pdfView.ZoomFactor = 1D;
 		// 
 		// toolStripContainer1
 		// 
@@ -2399,29 +2451,6 @@ partial class MainForm {
 		toolStripContainer6.Size = new Size(1423, 761);
 		toolStripContainer6.TabIndex = 4;
 		toolStripContainer6.Text = "toolStripContainer6";
-		// 
-		// tbpPdf
-		// 
-		tbpPdf.Controls.Add(pdfView);
-		tbpPdf.Location = new Point(4, 24);
-		tbpPdf.Name = "tbpPdf";
-		tbpPdf.Padding = new Padding(3);
-		tbpPdf.Size = new Size(1415, 708);
-		tbpPdf.TabIndex = 11;
-		tbpPdf.Text = "PDF";
-		tbpPdf.UseVisualStyleBackColor = true;
-		// 
-		// pdfView
-		// 
-		pdfView.AllowExternalDrop = true;
-		pdfView.CreationProperties = null;
-		pdfView.DefaultBackgroundColor = Color.White;
-		pdfView.Dock = DockStyle.Fill;
-		pdfView.Location = new Point(3, 3);
-		pdfView.Name = "pdfView";
-		pdfView.Size = new Size(1409, 702);
-		pdfView.TabIndex = 5;
-		pdfView.ZoomFactor = 1D;
 		// 
 		// MainForm
 		// 
@@ -2527,6 +2556,8 @@ partial class MainForm {
 		tbpMondayCom.ResumeLayout(false);
 		tableLayoutPanel7.ResumeLayout(false);
 		tableLayoutPanel21.ResumeLayout(false);
+		tableLayoutPanel22.ResumeLayout(false);
+		tableLayoutPanel22.PerformLayout();
 		splitContainer3.Panel1.ResumeLayout(false);
 		splitContainer3.Panel2.ResumeLayout(false);
 		((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
@@ -2534,6 +2565,8 @@ partial class MainForm {
 		((System.ComponentModel.ISupportInitialize)dgvMondayComPOs).EndInit();
 		((System.ComponentModel.ISupportInitialize)dgvMondayComPoHeader).EndInit();
 		((System.ComponentModel.ISupportInitialize)dgvMondayComPoItems).EndInit();
+		tbpPdf.ResumeLayout(false);
+		((System.ComponentModel.ISupportInitialize)pdfView).EndInit();
 		toolStripContainer1.ResumeLayout(false);
 		toolStripContainer1.PerformLayout();
 		toolStripContainer2.ContentPanel.ResumeLayout(false);
@@ -2547,8 +2580,6 @@ partial class MainForm {
 		toolStripContainer5.PerformLayout();
 		toolStripContainer6.ResumeLayout(false);
 		toolStripContainer6.PerformLayout();
-		tbpPdf.ResumeLayout(false);
-		((System.ComponentModel.ISupportInitialize)pdfView).EndInit();
 		ResumeLayout(false);
 	}
 
@@ -2737,4 +2768,6 @@ partial class MainForm {
 	private SplitContainer splitContainer3;
 	private TabPage tbpPdf;
 	private Microsoft.Web.WebView2.WinForms.WebView2 pdfView;
+	private TableLayoutPanel tableLayoutPanel22;
+	private CheckBox chkSwitchToWebView;
 }

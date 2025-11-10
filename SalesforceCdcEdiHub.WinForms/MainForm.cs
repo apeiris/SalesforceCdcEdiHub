@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -45,7 +46,12 @@ public partial class MainForm : Form {
 		Oauth2,
 		DescribeO,
 		EventLog,
-		CDCEvents
+		CDCEvents,
+		X12,
+		WebHook,
+		OpenAs2,
+		MondayCom,
+		Pdf
 	}
 
 	#endregion enums
@@ -207,6 +213,9 @@ public partial class MainForm : Form {
 		// 2. Replace Console.Out with a writer that logs to NLog
 		//Console.SetOut(new NLogConsoleWriter(Logger));
 	}
+	private void ReloadSettings() {
+		chkSwitchToWebView.Checked = Properties.Settings.Default.chkSwitchToWebView;
+	}
 	public MainForm(IMemoryCache cache,
 		ISalesforceService salesforceService,
 		PubSubService pubSubService,
@@ -272,6 +281,7 @@ public partial class MainForm : Form {
 				_logger.LogInformation($"Error: {args.ErrorMessage}");
 
 			// You can do async work here
+			ReloadSettings();
 			await Task.CompletedTask;
 		};
 
@@ -1357,6 +1367,9 @@ public partial class MainForm : Form {
 
 				// Load Monday.com data
 				break;
+			//case "tbppdf":
+			//	tabControl1.SelectedIndex =(int) tbp.Pdf;
+			//	break;
 			default:
 				break;
 		}
@@ -1499,7 +1512,7 @@ public partial class MainForm : Form {
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
 		//using var ofd = new OpenFileDialog { Filter = "PDF Files|*.pdf" };
 		try {                               //     X1,  Y1,  X2,  Y2
-			iText.Kernel.Geom.Rectangle rect = new(40, 600, 300, 63);
+			iText.Kernel.Geom.Rectangle rect = new(38, 602, 270, 51);
 			string docName = "PO 3.pdf";
 			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
 			string dest = $"C:\\temp\\xx.pdf";
@@ -1510,6 +1523,10 @@ public partial class MainForm : Form {
 			await pdfView.EnsureCoreWebView2Async();
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
 			dgvMondayComPOs.DataSource = dt;
+			if (chkSwitchToWebView.Checked)
+				TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
+
+
 		} catch (Exception ex) {
 			_logger.LogError(ex.InnerException.Message);
 			_logger.LogError(ex.StackTrace);
@@ -1517,8 +1534,10 @@ public partial class MainForm : Form {
 		}
 	}
 
-
-
+	private void chkSwitchToWebView_CheckedChanged(object sender, EventArgs e) {
+		Properties.Settings.Default.chkSwitchToWebView = chkSwitchToWebView.Checked;
+		Properties.Settings.Default.Save();
+	}
 }
 
 
