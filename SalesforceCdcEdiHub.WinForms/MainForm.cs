@@ -28,7 +28,7 @@ using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
-
+using Rectangle=iText.Kernel.Geom.Rectangle;
 
 
 namespace WinForms;
@@ -1484,7 +1484,7 @@ public partial class MainForm : Form {
 			var pos = await poService.GetAllPurchaseOrdersAsync(
 				boardId: 18369790477,
 				cancellationToken: cts.Token);
-			dgvMondayComPOs.DataSource = pos; //.ToDataTable();
+			dgvMondayComBuyer.DataSource = pos; //.ToDataTable();
 
 			_logger.LogInformation($"Got {pos.Count} POs");
 		} catch (MondayApiException ex) {
@@ -1497,11 +1497,11 @@ public partial class MainForm : Form {
 
 	private async void dgvMondayComPOs_CellContentClick(object sender, DataGridViewCellEventArgs e) {
 		if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-		if (dgvMondayComPOs.Columns.Contains("Id")) {
+		if (dgvMondayComBuyer.Columns.Contains("Id")) {
 			using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
 			var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
 
-			long AssetId = long.Parse(dgvMondayComPOs.Rows[e.RowIndex].Cells["Id"].Value!.ToString()!);
+			long AssetId = long.Parse(dgvMondayComBuyer.Rows[e.RowIndex].Cells["Id"].Value!.ToString()!);
 			MessageBox.Show($"PO ID: {AssetId} boardId={_MondayComBoardId}");
 			var po = await poService.GetPurchaseOrderByAssetIdAsync(AssetId.ToString(), _MondayComBoardId);
 		}
@@ -1510,31 +1510,40 @@ public partial class MainForm : Form {
 
 	public static readonly String dest = "results/txt/parse_custom.txt";
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
-	
-		try {                               //     X1,  Y1,  X2,  Y2
-			iText.Kernel.Geom.Rectangle rectBuyer = (iText.Kernel.Geom.Rectangle)new(36, 601, 269, 54);
+		try {
 			string docName = "PO 3.pdf";
 			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
 			string dest = $"C:\\temp\\testOut.pdf";
 			int pageNumber = 1;
-			DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable($"C:\\Users\\tony\\Downloads\\{docName}", pageNumber, rectBuyer, "BYer");
-			PdfDataExtraction.PdfTableExtractor.AddRedBorderToPdf(src, dest,rectBuyer);
 
-			iText.Kernel.Geom.Rectangle rectSupplier = (iText.Kernel.Geom.Rectangle)new(306, 601, 269, 54);
-			DataTable dtSupplier =  PdfDataExtraction.PdfTableExtractor.ExtractSingleTable($"C:\\Users\\tony\\Downloads\\{docName}", pageNumber, rectSupplier, "BYer");
-			PdfDataExtraction.PdfTableExtractor.AddRedBorderToPdf(src, dest, rectSupplier);
+			// Define all rectangles
+			var rectangles = new List<(Rectangle rect, string name)>
+			{
+			(new Rectangle(36, 601, 269, 54), "Buyer"),
+			(new Rectangle(306, 601, 269, 54), "Supplier")
+            // Add more as needed
+        };
 
+			// Extract tables
+			DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[0].rect, "Buyer");
+			DataTable dtSupplier = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Supplier");
+
+			// DRAW ALL BORDERS IN ONE GO
+			PdfDataExtraction.PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
+
+			// Show in WebView
 			await pdfView.EnsureCoreWebView2Async();
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
-			dgvMondayComPOs.DataSource = dtBuyer;
+
+			dgvMondayComBuyer.DataSource = dtBuyer;
+			dgvMondayComSupplier.DataSource = dtSupplier;
+
 			if (chkSwitchToWebView.Checked)
 				TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
-
-
 		} catch (Exception ex) {
-			_logger.LogError(ex.InnerException.Message);
+			_logger.LogError(ex.Message);
 			_logger.LogError(ex.StackTrace);
-			MessageBox.Show($"Error: {ex.Message}\n {ex.InnerException.Message}");
+			MessageBox.Show($"Error: {ex.Message}\n{ex.InnerException?.Message}");
 		}
 	}
 
