@@ -2287,7 +2287,6 @@ partial class MainForm {
 		chkSwitchToWebView.TabIndex = 3;
 		chkSwitchToWebView.Text = "Switch to View";
 		chkSwitchToWebView.UseVisualStyleBackColor = true;
-		chkSwitchToWebView.CheckedChanged += chkSwitchToWebView_CheckedChanged;
 		// 
 		// cmbMondayPOs
 		// 

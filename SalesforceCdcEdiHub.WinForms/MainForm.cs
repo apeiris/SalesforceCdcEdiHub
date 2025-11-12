@@ -29,6 +29,7 @@ using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using ToolTip = System.Windows.Forms.ToolTip;
 using Rectangle=iText.Kernel.Geom.Rectangle;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 
 namespace WinForms;
@@ -64,28 +65,28 @@ public partial class MainForm : Form {
 	private readonly SalesforceConfig _config;
 	private readonly ILogger<MainForm> _logger;
 	private readonly X12 _x12;
-	private HashSet<int> _higlightTabs = new();
-	static string _token = "";
-	static string _instanceUrl = "";
-	static string _tenantId = "";
+	private readonly HashSet<int> _higlightTabs = new();
+	static readonly string _token = "";
+	static  string _instanceUrl = "";
+	static  string _tenantId = "";
 	private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 	private readonly object _dgvLock = new object();
 	static bool _cdcObjectsLoaded = false;
 	static bool _soqlLoaded = false;
 	static bool _hasUnInitDbArtefacts = false;
-	private List<string> _sfoTables = new List<string>(); // List of Salesforce objects from SQL Server
-	private List<string> _qTypeSelecter = new List<string>();
+	private readonly List<string> _sfoTables = new List<string>(); // List of Salesforce objects from SQL Server
+	private readonly List<string> _qTypeSelecter = new List<string>();
 	private DataTable _sourceTable; // Data source for dgvCDCEnabledObjects
 	private DataTable _destinationTable; // Data source for dgvRegisteredCDCCandidates
 	private DataTable _dtRegisteredCDCCandidates; // Data source for registered tables
 	private DataTable _dtSoqlResults = new DataTable();
-	private static int _lbxLogMw = 0;
+	private readonly static int _lbxLogMw = 0;
 	private List<DataRow> _rowsToMove = new List<DataRow>(); // Temp storage for rows to move
 	private readonly SqlServerLib _sqlServerLib;
 	private readonly object _lock = new object();
 	private static enmObjectSource _retrieveFrom = enmObjectSource.SalesForce;
 	private static enmRetrievedFrom _retrievedFrom = _retrieveFrom;
-	private System.Drawing.Color _dfBColor;
+	private readonly System.Drawing.Color _dfBColor;
 	private Color _dfFColor;
 	private Dictionary<TabPage, (Color bcolor, Color fcolor)> _tabColors = new Dictionary<TabPage, (Color, Color)>();
 	private static readonly List<string> orderStates = new List<string> { "Revision Required", "In Production", "Completed" };
@@ -358,7 +359,7 @@ public partial class MainForm : Form {
 		lblDestinationList.Text = "";
 		SetupDataGridViewHeaders("");
 		btnDispatchEvent.Visible = false;
-		btnSubscribe_Click(null, null);
+		btnSubscribe_Click(null!, null!);
 		string savedItems = Properties.Settings.Default.cmbObjects;
 		if (!string.IsNullOrWhiteSpace(savedItems)) {
 			var items = savedItems.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -452,7 +453,7 @@ public partial class MainForm : Form {
 		} else {
 			_destinationTable = (DataTable)dgvRegisteredCDCCandidates.DataSource;
 		}
-		List<DataRow> rowsToRemove = new List<DataRow>();// Create a list to store rows to remove (to avoid modifying collection during iteration)
+		List<DataRow> rowsToRemove = new ();// Create a list to store rows to remove (to avoid modifying collection during iteration)
 		foreach (DataGridViewRow row in dgvCDCEnabledObjects.SelectedRows) {// Move selected rows
 			DataRow sourceRow = ((DataRowView)row.DataBoundItem!).Row;
 			try {
@@ -468,7 +469,7 @@ public partial class MainForm : Form {
 				_sourceTable!.Rows.Remove(rx);
 			}
 		}
-		btnSubscribe_Click(null, null);// Refresh the subscription list after moving rows
+		btnSubscribe_Click(null!, null!);// Refresh the subscription list after moving rows
 		dgvCDCEnabledObjects.DataSource = null;// Refresh both DataGridViews
 		dgvCDCEnabledObjects.DataSource = _sourceTable;
 		dgvCDCEnabledObjects.Columns[0].HeaderText = "Salesforce Objects";
@@ -489,7 +490,7 @@ public partial class MainForm : Form {
 			_sourceTable = _destinationTable!.Clone();
 			dgvCDCEnabledObjects.DataSource = _sourceTable;
 		}
-		List<DataRow> rowsToRemove = new List<DataRow>();
+		List<DataRow> rowsToRemove = new();
 		foreach (DataGridViewRow row in dgvRegisteredCDCCandidates.SelectedRows) {
 			DataRow deletedRow = ((DataRowView)row.DataBoundItem!).Row;
 			DataRow sourceRow = _sourceTable.NewRow();
@@ -540,8 +541,8 @@ public partial class MainForm : Form {
 	private async void btnRegisterCDCCandidate(object sender, EventArgs e) {
 		DataTable dt = (DataTable)dgvRegisteredCDCCandidates.DataSource!;
 		DataTable dtSfoTables = _sqlServerLib.Select("select * from ftTablesOfSchema('sfo')");
-		HashSet<string> existingNames = new HashSet<string>(dtSfoTables.AsEnumerable().Select(r => r.Field<string>("name")!));
-		HashSet<string> listToCreate = new HashSet<string>();
+		HashSet<string> existingNames = new(dtSfoTables.AsEnumerable().Select(r => r.Field<string>("name")!));
+		HashSet<string> listToCreate = new ();
 		foreach (DataGridViewRow row in dgvRegisteredCDCCandidates.Rows) {
 			string name = row.Cells["name"].Value?.ToString() ?? string.Empty;
 			if (row.Cells["Initialize"].Value is true) {
@@ -570,7 +571,7 @@ public partial class MainForm : Form {
 			string orderId = dgvOrderList.Rows[rowId].Cells["Id"].Value?.ToString() ?? null;
 			string status = selectedRadio?.Text;
 			json = $"{{\"status__c\":\"{status}\",\"Order_Id__c\":\"{orderId}\"}}";
-			_salesforceService.UpsertSobject(lbxObjects.Text, null, json, useTooling: false);
+			_salesforceService.UpsertSobject(lbxObjects.Text, null!, json, useTooling: false);
 			ShowStatus($"Order {dgvOrderList.Rows[rowId].Cells["name"].Value?.ToString()} State is now set to {status} ", 10);
 		} catch (Exception ex) {
 			ShowStatus("Please select a Order and the Status");
@@ -589,10 +590,10 @@ public partial class MainForm : Form {
 		dgvSchema.DataSource = dt;
 		_logger.LogInformation($"{dt.Rows.Count} : rows");
 	}
-	DataSet _dsOrder = new DataSet();
+	DataSet _dsOrder = new();
 	private async void btnRetrieveOrder_Click(object sender, EventArgs e) {
-		int ix = dgvOrderList.CurrentRow.Index;
-		string oname = dgvOrderList.Rows[ix].Cells["name"].Value.ToString();
+		int ix = dgvOrderList.CurrentRow!.Index;
+		string oname = dgvOrderList.Rows[ix].Cells["name"].Value!.ToString()!;
 		string OrderXml = _sqlServerLib.ExecuteScalar<string>($"EXEC [dbo].[GetOrderXml] @OrderName= N'{oname}'");
 		_dsOrder.Clear();
 		_dsOrder.ReadXml(new System.IO.StringReader(OrderXml), XmlReadMode.InferSchema);
@@ -703,7 +704,7 @@ public partial class MainForm : Form {
 		dgvSOQLResult.DataSource = null;
 
 		_dtSoqlResults = await _salesforceService.ExecSoqlToTable(rtSoqlQuery.Text, chkUseTooling.Checked);
-		if (_dtSoqlResults.Columns.Contains("Id")) _dtSoqlResults.Columns["Id"].ReadOnly = true;
+		if (_dtSoqlResults.Columns.Contains("Id")) _dtSoqlResults.Columns["Id"]!.ReadOnly = true;
 		_dtSoqlResults.AcceptChanges();
 		dgvSOQLResult.DataSource = _dtSoqlResults;
 		lblSOQLRowCount.Text = $"Rows: {_dtSoqlResults.Rows.Count}";
@@ -715,14 +716,14 @@ public partial class MainForm : Form {
 			bindingSource.EndEdit();
 
 		} else {
-			BindingContext[dgvSOQLResult.DataSource].EndCurrentEdit();
+			BindingContext![dgvSOQLResult.DataSource!].EndCurrentEdit();
 
 		}
 
-		DataTable dtChanged = _dtSoqlResults.GetChanges(DataRowState.Modified);
+		DataTable dtChanged = _dtSoqlResults.GetChanges(DataRowState.Modified)!;
 		if (dtChanged != null) {
 			foreach (DataRow dr in dtChanged.Rows) {
-				string id = dr["Id"].ToString();
+				string id = dr["Id"].ToString()!;
 
 				string json = dr.ToJson(indented: true, excludedColumns: "Id");
 				DataTable dt = await _salesforceService.UpsertSobject(dtChanged.TableName, id, json);
@@ -730,11 +731,11 @@ public partial class MainForm : Form {
 			_dtSoqlResults.AcceptChanges();
 		}
 
-		DataTable dtAdded = _dtSoqlResults.GetChanges(DataRowState.Added);
+		DataTable dtAdded = _dtSoqlResults.GetChanges(DataRowState.Added)!;
 		if (dtAdded != null) {
 			dtAdded.Columns.Remove("Id");
 			dtAdded = removeNullColumns(dtAdded);
-			DataTable dt = await _salesforceService.UpsertSobject(dtAdded.TableName, null, dtAdded.ToJson());
+			DataTable dt = await _salesforceService.UpsertSobject(dtAdded.TableName, null!, dtAdded.ToJson());
 			_dtSoqlResults.AcceptChanges();
 		}
 
@@ -784,7 +785,7 @@ public partial class MainForm : Form {
 		}
 	}
 	private async void button30_Click(object sender, EventArgs e) {
-		Size sw = new Size(tabControl1.ClientSize.Width, splitcSoql.Panel2.ClientSize.Height);
+		Size sw = new(tabControl1.ClientSize.Width, splitcSoql.Panel2.ClientSize.Height);
 		splitcSoql.Panel2.ClientSize = sw;
 		splitcSoql.Panel1Collapsed = true;
 		tableLayoutPanel13.Width = sw.Width;
@@ -999,7 +1000,7 @@ public partial class MainForm : Form {
 			toolStripLabel1.Text = string.Empty;
 			_statusTimer.Stop();
 			_statusTimer.Dispose();
-			_statusTimer = null;
+			_statusTimer = null!;
 		};
 
 		_statusTimer.Start();
@@ -1060,7 +1061,7 @@ public partial class MainForm : Form {
 		_dtRegisteredCDCCandidates.Columns.Add("Initialize", typeof(bool)); // Add a column for status icons
 		_dtRegisteredCDCCandidates.Columns.Add("DB", typeof(System.Drawing.Image)); // Add a column for status iconsRow
 		_dtRegisteredCDCCandidates.Columns.Add("Create", typeof(System.Drawing.Image));
-		HashSet<string> replicatedNames = new HashSet<string>(
+		HashSet<string> replicatedNames = new(
 			 _sqlServerLib.Select("select name from [dbo].[ftTablesOfSchema] ('sfo')").AsEnumerable()
 				.Select(r => r["name"].ToString())!, StringComparer.OrdinalIgnoreCase);
 		_dtRegisteredCDCCandidates.AsEnumerable()
@@ -1318,7 +1319,7 @@ public partial class MainForm : Form {
 	#region tabs
 
 	private async Task tabControl1_Selected(object sender, TabControlEventArgs e) {
-		_logger.LogDebug($"(logger) tabpage={e.TabPage.Name}");
+		_logger.LogDebug($"(logger) tabpage={e.TabPage!.Name}");
 		dgvOrderList.Visible = false;
 		toolStrip1.Parent = e.TabPage;
 		switch (e.TabPage.Name.ToLower()) {
@@ -1379,7 +1380,7 @@ public partial class MainForm : Form {
 				 .Select(r => r.Field<string>("name"))
 				 .ToHashSet()!;
 			if (x.Count > 0) {
-				createCDCReplica(x);
+				await createCDCReplica(x);
 			}
 			tabControl1.SelectedTab = e.TabPage;
 		}
@@ -1415,9 +1416,9 @@ public partial class MainForm : Form {
 	private void dgvSchema_CellContentClick(object sender, DataGridViewCellEventArgs e) {
 		if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
 		if (dgvSchema.Columns.Contains("Type")) {
-			if (dgvSchema.Rows[e.RowIndex].Cells["Type"].Value.ToString() == "picklist") {
+			if (dgvSchema.Rows[e.RowIndex].Cells["Type"].Value!.ToString() == "picklist") {
 				btnGetPickList.Enabled = true;
-				cmbField.Text = dgvSchema.Rows[e.RowIndex].Cells["Name"].Value.ToString() ?? string.Empty;
+				cmbField.Text = dgvSchema.Rows[e.RowIndex].Cells["Name"].Value!.ToString() ?? string.Empty;
 
 			}
 		}
@@ -1432,7 +1433,7 @@ public partial class MainForm : Form {
 		JsonDocument jsonDoc = JsonDocument.Parse(responseBody);
 	}
 
-	DataSet _dsOpenAs2 = new DataSet();
+	DataSet _dsOpenAs2 = new();
 	private async void btnGetPartnerList_Click(object sender, EventArgs e) {
 		try {
 			var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/view/MyCompany-to-PartnerA", "userID", "pWd");
@@ -1517,26 +1518,40 @@ public partial class MainForm : Form {
 			int pageNumber = 1;
 
 			// Define all rectangles
-			var rectangles = new List<(Rectangle rect, string name)>
-			{
-			(new Rectangle(36, 601, 269, 54), "Buyer"),
-			(new Rectangle(306, 601, 269, 54), "Supplier")
-            // Add more as needed
-        };
+			var rectangles = new List<(Rectangle rect, string name)>();
+								//{
+								//	(new Rectangle(36, 601, 269, 54), "Buyer"),
+								//    (new Rectangle(306, 601, 269, 54), "Supplier"),
+								//	//(new Rectangle(36,430,494,92),"items")
+								//};
+
+
 
 			// Extract tables
-			DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[0].rect, "Buyer");
-			DataTable dtSupplier = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Supplier");
+			//DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[0].rect, "Buyer");
+			//DataTable dtSupplier = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Supplier");
+		//	DataTable dtItems = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Items");
+			//dgvMondayComBuyer.DataSource = dtBuyer;
+			//dgvMondayComSupplier.DataSource = dtSupplier;
+		//	dgvMondayComPoItems.DataSource = dtItems;
+//
+			var (tetBlocks, tables) = PdfTableExtractor.PdfTableParser.ExtractTables(src);
+			
+			var mergedRectangles = PdfTableExtractor.PdfTableParser.MergeRowsIntoTables(tables,rowTolerance:10f);
+			int tableCounter = 1;
+			foreach (var table in mergedRectangles) {
+				string name =$"Table{tableCounter++}";
+				var rect=new Rectangle(table.X,table.Y, table.Width, table.Height);
+				rectangles.Add((rect, name));
+			}
 
-			// DRAW ALL BORDERS IN ONE GO
 			PdfDataExtraction.PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
-
+			
 			// Show in WebView
 			await pdfView.EnsureCoreWebView2Async();
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
 
-			dgvMondayComBuyer.DataSource = dtBuyer;
-			dgvMondayComSupplier.DataSource = dtSupplier;
+			
 
 			if (chkSwitchToWebView.Checked)
 				TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
@@ -1547,10 +1562,6 @@ public partial class MainForm : Form {
 		}
 	}
 
-	private void chkSwitchToWebView_CheckedChanged(object sender, EventArgs e) {
-		Properties.Settings.Default.chkSwitchToWebView = chkSwitchToWebView.Checked;
-		Properties.Settings.Default.Save();
-	}
 }
 
 
