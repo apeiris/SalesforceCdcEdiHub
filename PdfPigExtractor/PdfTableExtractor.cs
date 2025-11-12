@@ -28,36 +28,43 @@ public class PdfTableExtractor {
 	}
 
 	private static void AddBorder(Document document, PdfCanvas canvas, int pageNum, Rectangle rect) {
-		canvas  // 1. RED BORDER
-							.SetStrokeColor(ColorConstants.RED)
-							.SetLineWidth(1f)
-							.Rectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
-							.Stroke();
+		// 1. Draw RED BORDER
+		canvas
+			.SetStrokeColor(ColorConstants.RED)
+			.SetLineWidth(1f)
+			.Rectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
+			.Stroke();
+
 		float x1 = rect.GetX();
 		float y1 = rect.GetY();
 		float x2 = rect.GetRight();
 		float y2 = rect.GetTop();
 		int lblWidth = 34;
-		string text1 = $"({x1:F0}, {y1:F0})";   // 2. BOTTOM-LEFT LABEL
+
+		// 2. BOTTOM-LEFT LABEL (outside)
+		string text1 = $"({x1:F0}, {y1:F0})";
 		var label1 = new Paragraph(text1)
-			.SetFontColor(ColorConstants.WHITE)
+			.SetFontColor(ColorConstants.BLACK)
 			.SetFontSize(7)
-			.SetBackgroundColor(ColorConstants.RED)
+			.SetBackgroundColor(ColorConstants.LIGHT_GRAY)
 			.SetPadding(1.5f)
 			.SetMargin(0)
-			.SetWidth(50)
-			//SetFixedPosition(int pageNumber, float left, float bottom, float width)
-			.SetFixedPosition(pageNum, rect.GetX(), rect.GetY() + 1, lblWidth);
+			.SetWidth(lblWidth)
+			
+			.SetFixedPosition(pageNum, x1 - 1, y1 - 12, lblWidth);// Move label slightly below and to the left of rect
 		document.Add(label1);
-		string text2 = $"({x2:F0}, {y2:F0})";// 3. TOP-RIGHT LABEL
+
+		
+		string text2 = $"({x2:F0}, {y2:F0})";// 3. TOP-RIGHT LABEL (above outside)
 		var label2 = new Paragraph(text2)
-			.SetFontColor(ColorConstants.WHITE)
+			.SetFontColor(ColorConstants.BLACK)
 			.SetFontSize(7)
-			.SetBackgroundColor(ColorConstants.RED)
+			.SetBackgroundColor(ColorConstants.LIGHT_GRAY)
 			.SetPadding(1.5f)
 			.SetMargin(0)
-			.SetWidth(50)
-			.SetFixedPosition(pageNum, rect.GetRight() - (lblWidth + 4), rect.GetTop() - 13, lblWidth);
+			.SetWidth(lblWidth)
+			// Move label slightly above and to the right of rect
+			.SetFixedPosition(pageNum, x2-(lblWidth+3) , y2 + 2, lblWidth);
 		document.Add(label2);
 	}
 
