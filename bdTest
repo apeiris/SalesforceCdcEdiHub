@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="BuyerTransform.xslt"?>
+<NewDataSet>
+  <Buyer>
+    <Buyer_x003A_>NextGen Tech Corp</Buyer_x003A_>
+    <Supplier_x003A_>Metro Office Furniture Co.</Supplier_x003A_>
+  </Buyer>
+  <Buyer>
+    <Buyer_x003A_>77 Bay Street, Toronto, ON M5J 2L9, Canada</Buyer_x003A_>
+    <Supplier_x003A_>1750 Market St, Denver, CO 80202, USA</Supplier_x003A_>
+  </Buyer>
+  <Buyer>
+    <Buyer_x003A_>+1 (416) 555-7789 | finance@nextgen.com</Buyer_x003A_>
+    <Supplier_x003A_>+1 (303) 555-9922 | sales@metrooffice.com</Supplier_x003A_>
+  </Buyer>
+  <POHead>
+    <PO_x0020_Number_x003A_>Delivery Date:</PO_x0020_Number_x003A_>
+    <_x0031_0345>September 20, 2025</_x0031_0345>
+    <PO_x0020_Date_x003A_>Status:</PO_x0020_Date_x003A_>
+    <September_x0020_4_x002C__x0020_2025>Pending</September_x0020_4_x002C__x0020_2025>
+  </POHead>
+  <Items>
+    <Item>Workstations (Cubicle)</Item>
+    <Code>MOF-WS600</Code>
+    <Qty>8</Qty>
+    <Unit_x0020_Price_x0020__x0028_USD_x0029_>850.00</Unit_x0020_Price_x0020__x0028_USD_x0029_>
+    <Line_x0020_Total_x0020__x0028_USD_x0029_>6,800.00</Line_x0020_Total_x0020__x0028_USD_x0029_>
+  </Items>
+  <Items>
+    <Item>Storage Cabinets</Item>
+    <Code>MOF-SC100</Code>
+    <Qty>6</Qty>
+    <Unit_x0020_Price_x0020__x0028_USD_x0029_>295.00</Unit_x0020_Price_x0020__x0028_USD_x0029_>
+    <Line_x0020_Total_x0020__x0028_USD_x0029_>1,770.00</Line_x0020_Total_x0020__x0028_USD_x0029_>
+  </Items>
+  <Items>
+    <Item>Task Chairs</Item>
+    <Code>MOF-TC210</Code>
+    <Qty>15</Qty>
+    <Unit_x0020_Price_x0020__x0028_USD_x0029_>175.00</Unit_x0020_Price_x0020__x0028_USD_x0029_>
+    <Line_x0020_Total_x0020__x0028_USD_x0029_>2,625.00</Line_x0020_Total_x0020__x0028_USD_x0029_>
+  </Items>
+  <Items>
+    <Item>Breakroom Tables</Item>
+    <Code>MOF-BT50</Code>
+    <Qty>4</Qty>
+    <Unit_x0020_Price_x0020__x0028_USD_x0029_>310.00</Unit_x0020_Price_x0020__x0028_USD_x0029_>
+    <Line_x0020_Total_x0020__x0028_USD_x0029_>1,240.00</Line_x0020_Total_x0020__x0028_USD_x0029_>
+  </Items>
+  <Totals>
+    <Subtotal_x003A_>Discount (3%):</Subtotal_x003A_>
+    <_x0024_12_x002C_435.00>-$373.05</_x0024_12_x002C_435.00>
+  </Totals>
+  <Totals>
+    <Subtotal_x003A_>Tax (7%):</Subtotal_x003A_>
+    <_x0024_12_x002C_435.00>$856.34</_x0024_12_x002C_435.00>
+  </Totals>
+  <Totals>
+    <Subtotal_x003A_>Total:</Subtotal_x003A_>
+    <_x0024_12_x002C_435.00>$12,918.29 USD</_x0024_12_x002C_435.00>
+  </Totals>
+</NewDataSet>

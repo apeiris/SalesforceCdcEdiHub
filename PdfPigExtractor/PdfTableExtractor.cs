@@ -1,15 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using iText.Forms.Form.Element;
 using iText.Kernel.Colors;
+using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using Org.BouncyCastle.Asn1.X509;
 using Rectangle = iText.Kernel.Geom.Rectangle;
+
 
 namespace PdfDataExtraction;
 public class PdfTableExtractor {
@@ -22,12 +27,12 @@ public class PdfTableExtractor {
 		var canvas = new PdfCanvas(page);
 		int pageNum = pdfDoc.GetPageNumber(page);
 		foreach (var (rect, name) in rectangles) {
-			AddBorder(document, canvas, pageNum, rect);
+			AddBorder(document, canvas, pageNum, rect,name);
 		}
 
 	}
 
-	private static void AddBorder(Document document, PdfCanvas canvas, int pageNum, Rectangle rect) {
+	private static void AddBorder(Document document, PdfCanvas canvas, int pageNum, Rectangle rect,string name) {
 		// 1. Draw RED BORDER
 		canvas
 			.SetStrokeColor(ColorConstants.RED)
@@ -46,7 +51,7 @@ public class PdfTableExtractor {
 		var label1 = new Paragraph(text1)
 			.SetFontColor(ColorConstants.BLACK)
 			.SetFontSize(7)
-			.SetBackgroundColor(ColorConstants.LIGHT_GRAY)
+			.SetBackgroundColor(System.Drawing.Color.LightGray.ToITextColor())
 			.SetPadding(1.5f)
 			.SetMargin(0)
 			.SetWidth(lblWidth)
@@ -59,15 +64,39 @@ public class PdfTableExtractor {
 		var label2 = new Paragraph(text2)
 			.SetFontColor(ColorConstants.BLACK)
 			.SetFontSize(7)
-			.SetBackgroundColor(ColorConstants.LIGHT_GRAY)
+			.SetBackgroundColor(System.Drawing.Color.LightGray.ToITextColor())
 			.SetPadding(1.5f)
 			.SetMargin(0)
 			.SetWidth(lblWidth)
 			// Move label slightly above and to the right of rect
 			.SetFixedPosition(pageNum, x2-(lblWidth+3) , y2 + 2, lblWidth);
 		document.Add(label2);
-	}
 
+		string text3 = $"{name}";// 3. TOP-RIGHT LABEL (above outside)
+								 //int lw= (int)CalculateTextWidth(text3, PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA), 7) + 4;
+
+		int lw = text3.Length * 7;
+		
+		var label3 = new Paragraph(text3)
+			.SetFontColor(ColorConstants.RED)
+			.SetFontSize(7)
+			.SetBackgroundColor(System.Drawing.Color.LightGray.ToITextColor())
+			.SetPadding(0.5f)
+			.SetMargin(0)
+			.SetWidth(lw)
+			// Move label slightly above and to the right of rect
+			.SetFixedPosition(pageNum, rect.GetX()+(rect.GetWidth()/2)-lw/2 , y2 + 2, lw);
+		document.Add(label3);
+
+	}
+	public static float CalculateTextWidth(string text, PdfFont font, float fontSize) {
+		// The PdfFont object provides the method to calculate the width of a string.
+		// The result is in typographical points (1 point = 1/72 inch).
+
+		var x = font.GetWidth(text);
+	
+		return x;
+	}
 	public static DataTable ExtractSingleTable(string pdfPath, int pageNumber, iText.Kernel.Geom.Rectangle tableArea, string tableName) {
 		List<List<string>> tableRows = new();
 		using (PdfDocument pdfDocument = new(new PdfReader(pdfPath))) {
@@ -132,6 +161,11 @@ public class PdfTableExtractor {
 			table.Rows.Add(newRow);
 		}
 		return table;
+	}
+}
+public static class ColorExtensions {
+	public static Color ToITextColor(this System.Drawing.Color c) {
+		return new DeviceRgb(c.R, c.G, c.B);
 	}
 }
 

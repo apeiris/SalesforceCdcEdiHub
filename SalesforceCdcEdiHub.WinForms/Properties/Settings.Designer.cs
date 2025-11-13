@@ -70,5 +70,53 @@ namespace SalesforceCdcEdiHub.WinForms.Properties {
                 this["SelectedTab"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int Splitter6Distance {
+            get {
+                return ((int)(this["Splitter6Distance"]));
+            }
+            set {
+                this["Splitter6Distance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int Splitter7Distance {
+            get {
+                return ((int)(this["Splitter7Distance"]));
+            }
+            set {
+                this["Splitter7Distance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int Splitter8Distance {
+            get {
+                return ((int)(this["Splitter8Distance"]));
+            }
+            set {
+                this["Splitter8Distance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int Splitter3Distance {
+            get {
+                return ((int)(this["Splitter3Distance"]));
+            }
+            set {
+                this["Splitter3Distance"] = value;
+            }
+        }
     }
 }

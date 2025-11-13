@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="BuyerTransform.xslt"?>
+<BuyerData>
+	<Name>NextGen Tech Corp</Name>
+	<Address>77 Bay Street, Toronto, ON M5J 2L9, Canada</Address>
+	<Contact>+1 (416) 555-7789 | finance@nextgen.com</Contact>
+</BuyerData>

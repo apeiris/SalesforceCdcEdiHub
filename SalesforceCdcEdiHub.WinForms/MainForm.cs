@@ -6,8 +6,11 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +21,7 @@ using NLog;
 using NLog.Windows.Forms;
 //using iText.Layout;
 using PdfDataExtraction;
+using PdfTableExtractor;
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
 using SalesforceCdcEdiHub.MondayCom;
@@ -27,9 +31,8 @@ using Control = System.Windows.Forms.Control;
 using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
-using ToolTip = System.Windows.Forms.ToolTip;
 using Rectangle=iText.Kernel.Geom.Rectangle;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using ToolTip = System.Windows.Forms.ToolTip;
 
 
 namespace WinForms;
@@ -67,8 +70,8 @@ public partial class MainForm : Form {
 	private readonly X12 _x12;
 	private readonly HashSet<int> _higlightTabs = new();
 	static readonly string _token = "";
-	static  string _instanceUrl = "";
-	static  string _tenantId = "";
+	static string _instanceUrl = "";
+	static string _tenantId = "";
 	private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 	private readonly object _dgvLock = new object();
 	static bool _cdcObjectsLoaded = false;
@@ -123,11 +126,11 @@ public partial class MainForm : Form {
 		if (!e.HasErrors) {
 			switch (e.ReturningFrom) {
 				case "RegisterExludedCDCFields":
-					lbxObjects_SelectedIndexChanged(sender, e);// redo it to refresh UI
+					lbxObjects_SelectedIndexChanged(sender!, e);// redo it to refresh UI
 					break;
 				case "DeleteCDCObject":
-					lbxObjects_SelectedIndexChanged(sender, e);// redo it to refresh UI	
-					lbxObjects.Items.Remove(lbxObjects.SelectedItem);
+					lbxObjects_SelectedIndexChanged(sender!, e);// redo it to refresh UI	
+					lbxObjects.Items.Remove(lbxObjects.SelectedItem!);
 					lblPanel1.Text = $"{lbxObjects.Items.Count} Subscribed CDC Object";
 					break;
 			}
@@ -215,7 +218,7 @@ public partial class MainForm : Form {
 		//Console.SetOut(new NLogConsoleWriter(Logger));
 	}
 	private void ReloadSettings() {
-		chkSwitchToWebView.Checked = Properties.Settings.Default.chkSwitchToWebView;
+		//chkSwitchToWebView.Checked = Properties.Settings.Default.chkSwitchToWebView;
 	}
 	public MainForm(IMemoryCache cache,
 		ISalesforceService salesforceService,
@@ -365,9 +368,17 @@ public partial class MainForm : Form {
 			var items = savedItems.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 			cmbObjects.Items.AddRange(items);
 		}
+		splitContainer3.SplitterDistance = Properties.Settings.Default.Splitter3Distance;
+		splitContainer6.SplitterDistance = Properties.Settings.Default.Splitter6Distance;
+		splitContainer7.SplitterDistance = Properties.Settings.Default.Splitter7Distance;
+		splitContainer8.SplitterDistance = Properties.Settings.Default.Splitter8Distance;
 	}
 	private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
-		Properties.Settings.Default.SelectedTab = tabControl1.SelectedTab.Name;
+		Properties.Settings.Default.Splitter3Distance = splitContainer3.SplitterDistance;
+		Properties.Settings.Default.Splitter6Distance = splitContainer6.SplitterDistance;
+		Properties.Settings.Default.Splitter7Distance = splitContainer7.SplitterDistance;
+		Properties.Settings.Default.Splitter8Distance = splitContainer8.SplitterDistance;
+		Properties.Settings.Default.SelectedTab = tabControl1.SelectedTab!.Name;
 		Properties.Settings.Default.Save();
 	}
 	#endregion	 form	
@@ -453,7 +464,7 @@ public partial class MainForm : Form {
 		} else {
 			_destinationTable = (DataTable)dgvRegisteredCDCCandidates.DataSource;
 		}
-		List<DataRow> rowsToRemove = new ();// Create a list to store rows to remove (to avoid modifying collection during iteration)
+		List<DataRow> rowsToRemove = new();// Create a list to store rows to remove (to avoid modifying collection during iteration)
 		foreach (DataGridViewRow row in dgvCDCEnabledObjects.SelectedRows) {// Move selected rows
 			DataRow sourceRow = ((DataRowView)row.DataBoundItem!).Row;
 			try {
@@ -542,7 +553,7 @@ public partial class MainForm : Form {
 		DataTable dt = (DataTable)dgvRegisteredCDCCandidates.DataSource!;
 		DataTable dtSfoTables = _sqlServerLib.Select("select * from ftTablesOfSchema('sfo')");
 		HashSet<string> existingNames = new(dtSfoTables.AsEnumerable().Select(r => r.Field<string>("name")!));
-		HashSet<string> listToCreate = new ();
+		HashSet<string> listToCreate = new();
 		foreach (DataGridViewRow row in dgvRegisteredCDCCandidates.Rows) {
 			string name = row.Cells["name"].Value?.ToString() ?? string.Empty;
 			if (row.Cells["Initialize"].Value is true) {
@@ -907,7 +918,6 @@ public partial class MainForm : Form {
 		}
 	}
 	#endregion dgv
-
 	#region helpers
 
 	private void saveTabPageColors() {
@@ -971,7 +981,7 @@ public partial class MainForm : Form {
 		} catch (Exception ex) {
 			_logger.LogError($"Unexpected error during commit: {ex.Message}");
 
-			ShowStatus(ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem) + $" Error: {ex.Message}", 10);
+			ShowStatus(ObjectNameFromEventDeclaration((string)lbxObjects!.SelectedItem!) + $" Error: {ex.Message}", 10);
 			MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 	}
@@ -1162,7 +1172,7 @@ public partial class MainForm : Form {
 	}
 	private void cmbObjects_SelectedIndexChanged(object sender, EventArgs e) {
 		if (cmbObjects.SelectedItem == null) return;
-		lblCDCName.Text = SalesforceService.ObjectNameToChangeEvent(cmbObjects.SelectedItem.ToString());
+		lblCDCName.Text = SalesforceService.ObjectNameToChangeEvent(cmbObjects!.SelectedItem!.ToString()!);
 	}
 	private void cmbOrderTables_SelectedIndexChanged(object sender, EventArgs e) {
 		if (_dsOrder.Tables.Count < 1) return;
@@ -1355,18 +1365,15 @@ public partial class MainForm : Form {
 				_dsOpenAs2.ReadXml(x.CreateReader());
 				cmbOpenAs2ResultObjects.Items.Clear();
 				//cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables.Cast<DataTable>().Select(t => t.TableName).ToArray());
-				cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables["Root"]
+				cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables["Root"]!
 								.AsEnumerable()
-								.SelectMany(r => r["result"].ToString()
+								.SelectMany(r => r["result"].ToString()!
 								.Split(new[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries))
 								.ToArray());
 				break;
 			case "tbpmondaycom":// tbpMondayCom
-				_logger.LogDebug("Loading Monday.com data...", LogLevel.Debug);
-				var xx = Environment.GetEnvironmentVariable("Monday_com_token");
+				_logger.LogDebug($"Loading Monday.com data...");
 				_logger.LogDebug($"Monday.com data loaded. Apikey={Environment.GetEnvironmentVariable("Monday_com_token")}", LogLevel.Debug);
-
-				// Load Monday.com data
 				break;
 			//case "tbppdf":
 			//	tabControl1.SelectedIndex =(int) tbp.Pdf;
@@ -1389,7 +1396,6 @@ public partial class MainForm : Form {
 		await tabControl1_Selected(sender, e); // Call the async Task method
 	}
 	#endregion tabs
-
 	#region tooltip
 
 	#endregion tooltip
@@ -1406,13 +1412,9 @@ public partial class MainForm : Form {
 		}
 	}
 	#endregion utility classes
-
-
-
 	private void grpDocChanged(object sender, EventArgs e) {
 		//var ISA = _x12.CreateISA(1, false, "s12312", "r123123");
 	}
-
 	private void dgvSchema_CellContentClick(object sender, DataGridViewCellEventArgs e) {
 		if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
 		if (dgvSchema.Columns.Contains("Type")) {
@@ -1424,7 +1426,6 @@ public partial class MainForm : Form {
 		}
 
 	}
-
 	static async Task GetJsonDocumentAsync(string url) {
 		using HttpClient client = new HttpClient();
 		HttpResponseMessage response = await client.GetAsync(url);
@@ -1432,7 +1433,6 @@ public partial class MainForm : Form {
 		string responseBody = await response.Content.ReadAsStringAsync();
 		JsonDocument jsonDoc = JsonDocument.Parse(responseBody);
 	}
-
 	DataSet _dsOpenAs2 = new();
 	private async void btnGetPartnerList_Click(object sender, EventArgs e) {
 		try {
@@ -1447,13 +1447,9 @@ public partial class MainForm : Form {
 			MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 	}
-
 	private void cmbOpenAs2ResultObjects_SelectedIndexChanged(object sender, EventArgs e) {
-		dgvOpenAs2Results.DataSource = _dsOpenAs2.Tables[cmbOpenAs2ResultObjects.Text].Transpose();
+		dgvOpenAs2Results.DataSource = _dsOpenAs2.Tables[cmbOpenAs2ResultObjects.Text]!.Transpose();
 	}
-
-
-
 	private async void btnMcCreatePO_Click(object sender, EventArgs e) {
 		//using var client = new SalesforceCdcEdiHub. MondayComClient("YOUR_API_TOKEN_HERE");
 		//using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
@@ -1474,7 +1470,6 @@ public partial class MainForm : Form {
 		//	_logger.LogError(ex.Message);
 		//}
 	}
-
 	private async void btnRetriveMondayComPOs(object sender, EventArgs e) {
 		using var mClient = new MondayComClient(Environment.GetEnvironmentVariable("Monday_com_token") ?? string.Empty);
 		var poService = new SalesforceCdcEdiHub.PurchaseOrders.PurchaseOrderService(mClient);
@@ -1495,7 +1490,6 @@ public partial class MainForm : Form {
 		}
 
 	}
-
 	private async void dgvMondayComPOs_CellContentClick(object sender, DataGridViewCellEventArgs e) {
 		if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
 		if (dgvMondayComBuyer.Columns.Contains("Id")) {
@@ -1507,61 +1501,129 @@ public partial class MainForm : Form {
 			var po = await poService.GetPurchaseOrderByAssetIdAsync(AssetId.ToString(), _MondayComBoardId);
 		}
 	}
-
-
 	public static readonly String dest = "results/txt/parse_custom.txt";
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
+
 		try {
 			string docName = "PO 3.pdf";
 			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
 			string dest = $"C:\\temp\\testOut.pdf";
 			int pageNumber = 1;
 
+
 			// Define all rectangles
-			var rectangles = new List<(Rectangle rect, string name)>();
-								//{
-								//	(new Rectangle(36, 601, 269, 54), "Buyer"),
-								//    (new Rectangle(306, 601, 269, 54), "Supplier"),
-								//	//(new Rectangle(36,430,494,92),"items")
-								//};
+			var rectangles = new List<(Rectangle rect, string name)> { //these are always anchored 
+																	  	(new Rectangle(36, 601, 269, 54), "Buyer"),
+																	    (new Rectangle(306, 601, 269, 54), "Supplier"),
+																		//(new Rectangle(36,565,269,18),"PoNumber"),
+																		//(new Rectangle(306,565,269,54),"PoDate"),
+																	  	(new Rectangle(36,547,269,18),"DeliveryDate"),
+
+																	  };
 
 
-
-			// Extract tables
-			//DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[0].rect, "Buyer");
-			//DataTable dtSupplier = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Supplier");
-		//	DataTable dtItems = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Items");
-			//dgvMondayComBuyer.DataSource = dtBuyer;
-			//dgvMondayComSupplier.DataSource = dtSupplier;
-		//	dgvMondayComPoItems.DataSource = dtItems;
-//
-			var (tetBlocks, tables) = PdfTableExtractor.PdfTableParser.ExtractTables(src);
+				var (tetBlocks, tables) = PdfTableExtractor.PdfTableParser.ExtractTables(src);
+			var mergedRectangles = PdfTableExtractor.PdfTableParser.MergeRowsIntoTables(tables,nextIndex:rectangles.Count+1, rowTolerance: 9f);
 			
-			var mergedRectangles = PdfTableExtractor.PdfTableParser.MergeRowsIntoTables(tables,rowTolerance:10f);
-			int tableCounter = 1;
 			foreach (var table in mergedRectangles) {
-				string name =$"Table{tableCounter++}";
-				var rect=new Rectangle(table.X,table.Y, table.Width, table.Height);
+				string name = $"{table.Index}";
+				var rect = new Rectangle(table.X, table.Y, table.Width, table.Height);
 				rectangles.Add((rect, name));
 			}
+			// Extract tables
+			DataTable dtParties = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
+			DataTable dtPoHead = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "POHead");
+			DataTable dtItems = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
+			DataTable dtSummary = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
+			DataTable dtNotes = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
+
+			DataSet ds = new();
+			ds.Tables.Add(dtParties);// Buyer /supplier
+			ds.Tables.Add(dtPoHead);
+			ds.Tables.Add(dtItems);
+			ds.Tables.Add(dtSummary);
+			ds.Tables.Add(dtNotes);
+
+
+
+			string xml = ds.GetXml();
+
+
+
+			dgvMondayComBuyer.DataSource = dtParties;
+			dgvPOHeader.DataSource = dtPoHead;
+			dgvMondayComPoItems.DataSource = dtItems;
+			dgvMondayComSummary.DataSource = dtSummary;
+			dgvMondayComNotes.DataSource = dtNotes;
+
+
+
+
 
 			PdfDataExtraction.PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
-			
-			// Show in WebView
-			await pdfView.EnsureCoreWebView2Async();
+			await pdfView.EnsureCoreWebView2Async();// Show in WebView
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
-
-			
-
-			if (chkSwitchToWebView.Checked)
-				TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
+			//if (chkSwitchToWebView.Checked)
+			//	TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
 		} catch (Exception ex) {
 			_logger.LogError(ex.Message);
 			_logger.LogError(ex.StackTrace);
 			MessageBox.Show($"Error: {ex.Message}\n{ex.InnerException?.Message}");
 		}
 	}
+	private void btnExtractXml_Click(object sender, EventArgs e) {
+		string pdfPath = $"C:\\temp\\testOut.pdf";
+		int page = 1;
 
+		// The entire XML schema is defined here through the XmlPath string!
+		var fieldMaps = new List<ExtractionMap>
+		{
+        // Header Fields (based on sources)
+        new ExtractionMap { XmlPath = "Header/PONumber", BoundingBox = new Rectangle(120, 715, 100, 10), PageNumber = page },
+		new ExtractionMap { XmlPath = "Header/DeliveryDate", BoundingBox = new Rectangle(120, 695, 100, 10), PageNumber = page },
+		new ExtractionMap { XmlPath = "Header/PODate", BoundingBox = new Rectangle(390, 715, 100, 10), PageNumber = page },
+		new ExtractionMap { XmlPath = "Header/Status", BoundingBox = new Rectangle(390, 695, 100, 10), PageNumber = page },
+        
+        // Parties Fields (based on table)
+        new ExtractionMap { XmlPath = "Parties/Buyer/Name", BoundingBox = new Rectangle(36, 640, 200, 15), PageNumber = page },
+		new ExtractionMap { XmlPath = "Parties/Buyer/Address", BoundingBox = new Rectangle(36, 620, 250, 15), PageNumber = page },
+		new ExtractionMap { XmlPath = "Parties/Buyer/Contact", BoundingBox = new Rectangle(36, 600, 250, 15), PageNumber = page },
+		new ExtractionMap { XmlPath = "Parties/Supplier/Name", BoundingBox = new Rectangle(306, 640, 200, 15), PageNumber = page },
+		new ExtractionMap { XmlPath = "Parties/Supplier/Address", BoundingBox = new Rectangle(306, 620, 250, 15), PageNumber = page },
+		new ExtractionMap { XmlPath = "Parties/Supplier/Contact", BoundingBox = new Rectangle(306, 600, 250, 15), PageNumber = page },
+        
+        // Notes Field (Source)
+        new ExtractionMap { XmlPath = "Notes", BoundingBox = new Rectangle(36, 100, 500, 30), PageNumber = page },
+	};
+
+		var tableMaps = new List<TableExtractionMap>
+		{
+        // Line Items Table (Source)
+        new TableExtractionMap
+		{
+			ParentXmlTag = "LineItems",
+			ItemXmlTag = "Item",
+			ColumnTags = new List<string> { "ItemName", "ItemCode", "Quantity", "UnitPrice", "LineTotal" },
+			BoundingBox = new Rectangle(36, 400, 550, 150),
+			PageNumber = page
+		},
+        // Summary Table (Source)
+        new TableExtractionMap
+		{
+			ParentXmlTag = "Summary",
+			ColumnTags = new List<string> { "Field", "Value" }, // Custom processor handles this structure
+            BoundingBox = new Rectangle(400, 200, 200, 80),
+			PageNumber = page,
+		}
+	};
+
+		XDocument xmlResult = PdfDynamicXmlExtractor.ExtractDataToXmlDynamic(pdfPath, fieldMaps, tableMaps);
+
+		// Output the resulting XML
+		Console.WriteLine(xmlResult.ToString(SaveOptions.OmitDuplicateNamespaces));
+	}
+
+	
 }
 
 
