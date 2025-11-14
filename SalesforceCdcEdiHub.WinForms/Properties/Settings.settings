@@ -26,5 +26,8 @@
     <Setting Name="Splitter3Distance" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">100</Value>
     </Setting>
+    <Setting Name="PdfDataTemplate" Type="System.String" Scope="User">
+      <Value Profile="(Default)">D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\PdfDataMapIrisSystems.xml</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

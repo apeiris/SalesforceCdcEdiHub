@@ -1,0 +1,43 @@
+<PurchaseOrder>
+	<Header>
+		<PONumber>10345</PONumber>
+		<PODate>September 4, 2025</PODate>
+		<DeliveryDate>September 20, 2025</DeliveryDate>
+		<Status>Pending</Status>
+	</Header>
+	<Parties>
+		<Buyer>
+			<Name>NextGen Tech Corp</Name>
+			<Address>77 Bay Street, Toronto, ON M5J 2L9, Canada</Address>
+			<Contact>+1 (416) 555-7789 | finance@nextgen.com</Contact>
+		</Buyer>
+		<Supplier>
+			<Name>Metro Office Furniture Co.</Name>
+			<Address>1750 Market St, Denver, CO 80202, USA</Address>
+			<Contact>+1 (303) 555-9922 | sales@metrooffice.com</Contact>
+		</Supplier>
+	</Parties>
+	<LineItems>
+		<Item>
+			<ItemName>Workstations (Cubicle)</ItemName>
+			<ItemCode>MOF-WS600</ItemCode>
+			<Quantity>8</Quantity>
+			<UnitPrice>850.00</UnitPrice>
+			<LineTotal>6,800.00</LineTotal>
+		</Item>
+		<Item>
+			<ItemName>Storage Cabinets</ItemName>
+			<ItemCode>MOF-SC100</ItemCode>
+			<Quantity>6</Quantity>
+			<UnitPrice>295.00</UnitPrice>
+			<LineTotal>1,770.00</LineTotal>
+		</Item>
+	</LineItems>
+	<Summary>
+		<Subtotal currency="USD">12,435.00</Subtotal>
+		<Discount>-$373.05</Discount>
+		<Tax>856.34</Tax>
+		<Total currency="USD">12,918.29</Total>
+	</Summary>
+	<Notes>Please deliver to Toronto HQ dock entrance. All items must be packaged securely.</Notes>
+</PurchaseOrder>

@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		order.xml = order.xml
 		PartnertshipXml.xml = PartnertshipXml.xml
 		README.md = README.md
+		PoDataTemplate.xml = PoDataTemplate.xml
 		PdfDataMapIrisSystems.xml = PdfDataMapIrisSystems.xml
 		README_SalesforceCdcEdiHub.md = README_SalesforceCdcEdiHub.md
 		scratch.md = scratch.md

@@ -118,5 +118,17 @@ namespace SalesforceCdcEdiHub.WinForms.Properties {
                 this["Splitter3Distance"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml")]
+        public string PdfDataTemplate {
+            get {
+                return ((string)(this["PdfDataTemplate"]));
+            }
+            set {
+                this["PdfDataTemplate"] = value;
+            }
+        }
     }
 }

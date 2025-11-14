@@ -11,12 +11,19 @@
 	<ItemGroup>
 	  <None Remove="nlog-internal.log" />
 	  <None Remove="NLog.config" />
+	  <None Remove="Properties\Resources\PdfDataMapIrisSystems.xml" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Content Include="NLog.config">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Properties\Resources\PdfDataMapIrisSystems.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -65,7 +72,7 @@
 
 	<ItemGroup>
 		<EmbeddedResource Update="Properties\Resources.resx">
-			<Generator>ResXFileCodeGenerator</Generator>
+			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</EmbeddedResource>

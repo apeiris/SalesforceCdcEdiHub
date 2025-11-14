@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Net;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.Xml;
 using System.Text.Json;
@@ -1502,27 +1503,47 @@ public partial class MainForm : Form {
 		}
 	}
 	public static readonly String dest = "results/txt/parse_custom.txt";
+	public static List<(Rectangle rect, string name)> ExtractEarmarkedRectangles(string xmlFilePath) {
+		XDocument doc = XDocument.Load(xmlFilePath);
+		var earmarkedRectangles = new List<(Rectangle rect, string name)>();
+		earmarkedRectangles = doc.Descendants("earMarked")
+			.Descendants("node")
+			.Select(node => {
+				string name = (string)node.Attribute("name")!;
+				string boxData = (string)node.Attribute("rectangle")!;
+				float[] coords = boxData.Split(',').Select(s => float.Parse(s.Trim())).ToArray();
+				Rectangle rect = new Rectangle(coords[0], coords[1], coords[2], coords[3]);
+				return (rect, name);
+			}).ToList();
+		return earmarkedRectangles;
+	}
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
-
 		try {
 			string docName = "PO 3.pdf";
 			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
 			string dest = $"C:\\temp\\testOut.pdf";
+			var x =Properties.Resources.PdfDataMapIrisSystems;
 			int pageNumber = 1;
+			
+			
+			var rectangles = ExtractEarmarkedRectangles(Properties.Settings.Default.PdfDataTemplate);
+			/*
+			// 
+			//var rectangles = new List<(Rectangle rect, string name)> { //these are always anchored 
+			//														  	(new Rectangle(36, 601, 269, 54), "Buyer"),
+			//															(new Rectangle(306, 601, 269, 54), "Supplier"),
+			//															(new Rectangle(36,565,269,18),"PoNumber"),
+			//															(new Rectangle(306,565,269,18),"PoDate"),
+			//														  	(new Rectangle(36,547,269,18),"DeliveryDate"),
+			//															(new Rectangle(306,547,269,18),"DeliveryStatus")
+			//														  };
+
+			*/
+
+			var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
 
 
-			// Define all rectangles
-			var rectangles = new List<(Rectangle rect, string name)> { //these are always anchored 
-																	  	(new Rectangle(36, 601, 269, 54), "Buyer"),
-																	    (new Rectangle(306, 601, 269, 54), "Supplier"),
-																		//(new Rectangle(36,565,269,18),"PoNumber"),
-																		//(new Rectangle(306,565,269,54),"PoDate"),
-																	  	(new Rectangle(36,547,269,18),"DeliveryDate"),
-
-																	  };
-
-
-				var (tetBlocks, tables) = PdfTableExtractor.PdfTableParser.ExtractTables(src);
+			var (tetBlocks, tables) = PdfTableExtractor.PdfTableParser.ExtractTables(src,1,nextPdfScanY1,9f);
 			var mergedRectangles = PdfTableExtractor.PdfTableParser.MergeRowsIntoTables(tables,nextIndex:rectangles.Count+1, rowTolerance: 9f);
 			
 			foreach (var table in mergedRectangles) {
@@ -1531,18 +1552,13 @@ public partial class MainForm : Form {
 				rectangles.Add((rect, name));
 			}
 			// Extract tables
-			DataTable dtParties = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
-			DataTable dtPoHead = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "POHead");
+			DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
+			DataTable dtSupplier = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
 			DataTable dtItems = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
 			DataTable dtSummary = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
 			DataTable dtNotes = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
 
 			DataSet ds = new();
-			ds.Tables.Add(dtParties);// Buyer /supplier
-			ds.Tables.Add(dtPoHead);
-			ds.Tables.Add(dtItems);
-			ds.Tables.Add(dtSummary);
-			ds.Tables.Add(dtNotes);
 
 
 
@@ -1550,8 +1566,8 @@ public partial class MainForm : Form {
 
 
 
-			dgvMondayComBuyer.DataSource = dtParties;
-			dgvPOHeader.DataSource = dtPoHead;
+			dgvMondayComBuyer.DataSource = dtBuyer;
+		
 			dgvMondayComPoItems.DataSource = dtItems;
 			dgvMondayComSummary.DataSource = dtSummary;
 			dgvMondayComNotes.DataSource = dtNotes;

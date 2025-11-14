@@ -82,49 +82,111 @@ public class PdfTableParser {
 	/// <param name="pdfPath">Path to PDF</param>
 	/// <param name="rowTolerance">Vertical distance tolerance to group rows</param>
 	/// <returns>Tuple of text blocks and table rectangles</returns>
-	public static (List<TextBlock> TextBlocks, List<TableRectangle> Tables) ExtractTables(string pdfPath, float rowTolerance = 5f) {
-		if (!File.Exists(pdfPath))
-			throw new FileNotFoundException("PDF file not found", pdfPath);
+	//public static (List<TextBlock> TextBlocks, List<TableRectangle> Tables) ExtractTables(string pdfPath, float rowTolerance = 5f) {
+	//	if (!File.Exists(pdfPath))
+	//		throw new FileNotFoundException("PDF file not found", pdfPath);
 
-		var textBlocks = new List<TextBlock>();
-		var tables = new List<TableRectangle>();
+	//	var textBlocks = new List<TextBlock>();
+	//	var tables = new List<TableRectangle>();
 
-		using (var pdfDoc = new PdfDocument(new PdfReader(pdfPath))) {
-			for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++) {
-				var page = pdfDoc.GetPage(i);
-				var strategy = new MyLocationTextExtractionStrategy();
-				PdfTextExtractor.GetTextFromPage(page, strategy);
+	//	using (var pdfDoc = new PdfDocument(new PdfReader(pdfPath))) {
+	//		for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++) {
+	//			var page = pdfDoc.GetPage(i);
+	//			var strategy = new MyLocationTextExtractionStrategy();
+	//			PdfTextExtractor.GetTextFromPage(page, strategy);
 
-				textBlocks.AddRange(strategy.TextBlocks);
+	//			textBlocks.AddRange(strategy.TextBlocks);
 
-				// --- Simple Table Detection ---
-				var sorted = strategy.TextBlocks.OrderByDescending(tb => tb.Y).ToList();
-				var currentRow = new List<TextBlock>();
+	//			// --- Simple Table Detection ---
+	//			var sorted = strategy.TextBlocks.OrderByDescending(tb => tb.Y).ToList();
+	//			var currentRow = new List<TextBlock>();
 
-				foreach (var tb in sorted) {
-					if (!currentRow.Any()) {
-						currentRow.Add(tb);
-						continue;
-					}
+	//			foreach (var tb in sorted) {
+	//				if (!currentRow.Any()) {
+	//					currentRow.Add(tb);
+	//					continue;
+	//				}
 
-					var prev = currentRow.Last();
-					if (Math.Abs(prev.Y - tb.Y) <= rowTolerance) {
-						currentRow.Add(tb);
-					} else {
-						if (currentRow.Any())
-							tables.Add(GetBoundingRectangle(currentRow));
-						currentRow = new List<TextBlock> { tb };
-					}
+	//				var prev = currentRow.Last();
+	//				if (Math.Abs(prev.Y - tb.Y) <= rowTolerance) {
+	//					currentRow.Add(tb);
+	//				} else {
+	//					if (currentRow.Any())
+	//						tables.Add(GetBoundingRectangle(currentRow));
+	//					currentRow = new List<TextBlock> { tb };
+	//				}
+	//			}
+	//			if (currentRow.Any())
+	//				tables.Add(GetBoundingRectangle(currentRow));
+	//		}
+	//	}
+
+	//	return (textBlocks, tables);
+	//}
+
+
+// NOTE: You will need to define your TextBlock, TableRectangle, 
+// MyLocationTextExtractionStrategy, and GetBoundingRectangle types/methods.
+
+public static (List<TextBlock> TextBlocks, List<TableRectangle> Tables) ExtractTables(
+	string pdfPath,
+	int startPage,                  // <--- NEW: The page to start extraction on
+	float startYCoordinate,         // <--- NEW: The Y-coordinate boundary
+	float rowTolerance = 5f) {
+	if (!File.Exists(pdfPath))
+		throw new FileNotFoundException("PDF file not found", pdfPath);
+
+	var textBlocks = new List<TextBlock>();
+	var tables = new List<TableRectangle>();
+
+	using (var pdfDoc = new PdfDocument(new PdfReader(pdfPath))) {
+		// Start loop from the specified page
+		for (int i = startPage; i <= pdfDoc.GetNumberOfPages(); i++) {
+			var page = pdfDoc.GetPage(i);
+			var strategy = new MyLocationTextExtractionStrategy();
+			PdfTextExtractor.GetTextFromPage(page, strategy);
+
+			// Filter blocks based on page and Y-coordinate
+			var pageTextBlocks = strategy.TextBlocks
+				.Where(tb => {
+					// 1. Blocks on pages AFTER the start page are always included
+					if (i > startPage) return true;
+
+					// 2. Blocks on the start page must be BELOW the given Y-coordinate
+					// Assuming TextBlock.Y represents the lower-left Y-coordinate.
+					return tb.Y < startYCoordinate;
+				})
+				.ToList();
+
+			textBlocks.AddRange(pageTextBlocks);
+
+			// --- Simple Table Detection (only applied to the filtered blocks) ---
+			var sorted = pageTextBlocks.OrderByDescending(tb => tb.Y).ToList();
+			var currentRow = new List<TextBlock>();
+
+			foreach (var tb in sorted) {
+				if (!currentRow.Any()) {
+					currentRow.Add(tb);
+					continue;
 				}
-				if (currentRow.Any())
-					tables.Add(GetBoundingRectangle(currentRow));
-			}
-		}
 
-		return (textBlocks, tables);
+				var prev = currentRow.Last();
+				if (Math.Abs(prev.Y - tb.Y) <= rowTolerance) {
+					currentRow.Add(tb);
+				} else {
+					if (currentRow.Any())
+						tables.Add(GetBoundingRectangle(currentRow));
+					currentRow = new List<TextBlock> { tb };
+				}
+			}
+			if (currentRow.Any())
+				tables.Add(GetBoundingRectangle(currentRow));
+		}
 	}
 
-	private static TableRectangle GetBoundingRectangle(List<TextBlock> blocks) {
+	return (textBlocks, tables);
+}
+private static TableRectangle GetBoundingRectangle(List<TextBlock> blocks) {
 		float minX = blocks.Min(b => b.X);
 		float maxX = blocks.Max(b => b.X + b.Width);
 		float minY = blocks.Min(b => b.Y);
