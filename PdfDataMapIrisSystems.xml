@@ -1,60 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder">
-	<boundingBoxes type="container" nodeName="PurchaseOrder">
-		<earMarked>
-			<node rectangle="36,601,269,54"		name="Buyer"/>
-			<node rectangle="306,601,269,54"	name="Supplier"/>
-			<node rectangle="36,565,269,18"		name="PoNumber"/>
-			<node rectangle="306,565,269,18"	name="PoDate"/>
-			<node rectangle="36,547,269,18"		name="DeliveryDate"/>
-			<node rectangle="306,547,269,18"	name="DeliveryStatus"/>
-		</earMarked>
-		<boundingBox index="1"   action="process"   content="Parties" >
-			<table>
-				<columns type="input">
-					<column name="Buyer:">
-						<row index="1" label="name" operation="none"></row>
-						<row index="2" label="address" operation="split" seperators=","  >
-							<outputColumns>
-								<column label="streetAddress"></column>
-								<column label="city"></column>
-								<column label="postalCode"></column>
-								<column label="country"></column>
-							</outputColumns>
-						</row>
-						<row index="2" label="contact" operation="split" seperators="|"  >
-							<outputColumns>
-								<column label="phone"></column>
-								<column label="email"></column>
-							</outputColumns>
-						</row>
-					</column>
-				</columns>
-			</table>
-		</boundingBox>
-		<boundingBox index="2"   action="process"   content="Parties" >
-			<table>
-				<columns type="input">
-					<column name="Supplier">
-						<row index="1" label="name" operation="none"></row>
-						<row index="2" label="address" operation="split" seperators=","  >
-							<outputColumns>
-								<column label="streetAddress"></column>
-								<column label="city"></column>
-								<column label="postalCode"></column>
-								<column label="country"></column>
-							</outputColumns>
-						</row>
-						<row index="2" label="contact" operation="split" seperators="|"  >
-							<outputColumns>
-								<column label="phone"></column>
-								<column label="email"></column>
-							</outputColumns>
-						</row>
-					</column>
-				</columns>
-			</table>
-		</boundingBox>
-		<boundingBox index="3"   action="ignore"   content="Parties" />
-		<boundingBox index="4"   action="ignore"   content="Parties" />
-	</boundingBoxes>
+	<earMarked>
+		<!-- =========================================== -->
+		<!-- BUYER PARTY -->
+		<!-- =========================================== -->
+		<area name="Buyer" rectangle="36,601,269,72" parent="Parties">
+			<rowSet>
+				<!-- SIMPLE ROW: Direct copy from row index 0 -->
+				<row index="0" name="name" operation="copy" />
+				<!-- SCRIPT ROW: Split address on comma -->
+				<row index="1" name="address" operation="script" parent="Address">
+					<marker value="," />
+					<script language="csharp">
+						<![CDATA[ var parts = text.Split(new[] { marker }, StringSplitOptions.None);
+							return new {
+							street = parts.Length > 0 ? parts[0].Trim() : "",
+							city = parts.Length > 1 ? parts[1].Trim() : "",
+							postalCode = parts.Length > 2 ? parts[2].Trim() : "",
+							country = parts.Length > 3 ? parts[3].Trim() : ""};	]]>
+					</script>
+					<columns>
+						<street />
+						<city />
+						<postalCode />
+						<country />
+					</columns>
+				</row>
+
+				<!-- SCRIPT ROW: Split contact on pipe -->
+				<row index="2" name="contact" operation="script">
+					<input dataAttribute="Contact" />
+					<marker value="|" />
+					<script language="csharp">
+						<![CDATA[
+            var parts = text.Split(new[]{ marker }, StringSplitOptions.None);
+            return new {
+                phone = parts.Length > 0 ? parts[0].Trim() : "",
+                email = parts.Length > 1 ? parts[1].Trim() : ""
+        
+            };
+          ]]>
+					</script>
+					<columns>
+						<email />
+						<phone />
+						<mobile />
+						<other />
+					</columns>
+				</row>
+			</rowSet>
+		</area>
+		<!-- =========================================== -->
+		<!-- SUPPLIER PARTY -->
+		<!-- =========================================== -->
+		
+		<!-- =========================================== -->
+		<!-- PO NUMBER (Single Value Field) -->
+		<!-- =========================================== -->
+		<area name="PoNumber" rectangle="36,565,269,18" />
+	</earMarked>
 </pdfMap>

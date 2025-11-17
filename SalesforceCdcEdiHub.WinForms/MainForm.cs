@@ -1507,7 +1507,7 @@ public partial class MainForm : Form {
 		XDocument doc = XDocument.Load(xmlFilePath);
 		var earmarkedRectangles = new List<(Rectangle rect, string name)>();
 		earmarkedRectangles = doc.Descendants("earMarked")
-			.Descendants("node")
+			.Descendants("area")
 			.Select(node => {
 				string name = (string)node.Attribute("name")!;
 				string boxData = (string)node.Attribute("rectangle")!;
@@ -1588,55 +1588,8 @@ public partial class MainForm : Form {
 		}
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
-		string pdfPath = $"C:\\temp\\testOut.pdf";
-		int page = 1;
+		XDocument doc = PdfDataExtractor.ExtractToXml("C:\\Users\\tony\\Downloads\\PO 3.pdf",1, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
 
-		// The entire XML schema is defined here through the XmlPath string!
-		var fieldMaps = new List<ExtractionMap>
-		{
-        // Header Fields (based on sources)
-        new ExtractionMap { XmlPath = "Header/PONumber", BoundingBox = new Rectangle(120, 715, 100, 10), PageNumber = page },
-		new ExtractionMap { XmlPath = "Header/DeliveryDate", BoundingBox = new Rectangle(120, 695, 100, 10), PageNumber = page },
-		new ExtractionMap { XmlPath = "Header/PODate", BoundingBox = new Rectangle(390, 715, 100, 10), PageNumber = page },
-		new ExtractionMap { XmlPath = "Header/Status", BoundingBox = new Rectangle(390, 695, 100, 10), PageNumber = page },
-        
-        // Parties Fields (based on table)
-        new ExtractionMap { XmlPath = "Parties/Buyer/Name", BoundingBox = new Rectangle(36, 640, 200, 15), PageNumber = page },
-		new ExtractionMap { XmlPath = "Parties/Buyer/Address", BoundingBox = new Rectangle(36, 620, 250, 15), PageNumber = page },
-		new ExtractionMap { XmlPath = "Parties/Buyer/Contact", BoundingBox = new Rectangle(36, 600, 250, 15), PageNumber = page },
-		new ExtractionMap { XmlPath = "Parties/Supplier/Name", BoundingBox = new Rectangle(306, 640, 200, 15), PageNumber = page },
-		new ExtractionMap { XmlPath = "Parties/Supplier/Address", BoundingBox = new Rectangle(306, 620, 250, 15), PageNumber = page },
-		new ExtractionMap { XmlPath = "Parties/Supplier/Contact", BoundingBox = new Rectangle(306, 600, 250, 15), PageNumber = page },
-        
-        // Notes Field (Source)
-        new ExtractionMap { XmlPath = "Notes", BoundingBox = new Rectangle(36, 100, 500, 30), PageNumber = page },
-	};
-
-		var tableMaps = new List<TableExtractionMap>
-		{
-        // Line Items Table (Source)
-        new TableExtractionMap
-		{
-			ParentXmlTag = "LineItems",
-			ItemXmlTag = "Item",
-			ColumnTags = new List<string> { "ItemName", "ItemCode", "Quantity", "UnitPrice", "LineTotal" },
-			BoundingBox = new Rectangle(36, 400, 550, 150),
-			PageNumber = page
-		},
-        // Summary Table (Source)
-        new TableExtractionMap
-		{
-			ParentXmlTag = "Summary",
-			ColumnTags = new List<string> { "Field", "Value" }, // Custom processor handles this structure
-            BoundingBox = new Rectangle(400, 200, 200, 80),
-			PageNumber = page,
-		}
-	};
-
-		XDocument xmlResult = PdfDynamicXmlExtractor.ExtractDataToXmlDynamic(pdfPath, fieldMaps, tableMaps);
-
-		// Output the resulting XML
-		Console.WriteLine(xmlResult.ToString(SaveOptions.OmitDuplicateNamespaces));
 	}
 
 	
