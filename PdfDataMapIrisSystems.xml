@@ -21,7 +21,7 @@
 					</script>
 					<columns>
 						<street />
-						<city />
+						<City />
 						<postalCode />
 						<country />
 					</columns>

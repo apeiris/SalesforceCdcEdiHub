@@ -21,41 +21,36 @@ public static class PdfDataExtractor {
 	/// Respects parent="..." attribute for grouping.
 	/// </summary>
 	public static XDocument ExtractToXml(
-		string pdfPath,
-		int pageNumber,
-		string pdfMapXml) {
+string pdfPath,
+int pageNumber,
+string pdfMapXml) {
 		var mapDoc = XDocument.Load(pdfMapXml);
 		var earMarked = mapDoc.Root?.Element("earMarked")
-						?? throw new InvalidOperationException("<earMarked> element not found.");
-
+		?? throw new InvalidOperationException("<earMarked> element not found.");
 		var client = (string)mapDoc.Root?.Attribute("client") ?? "";
 		var document = (string)mapDoc.Root?.Attribute("document") ?? "";
-
 		var resultDoc = new XDocument(
-			new XDeclaration("1.0", "utf-8", "yes"),
-			new XElement("extractedData",
-				new XAttribute("client", client),
-				new XAttribute("document", document)
-			)
+		new XDeclaration("1.0", "utf-8", "yes"),
+		new XElement("extractedData",
+		new XAttribute("client", client),
+		new XAttribute("document", document)
+		)
 		);
-
 		var resultRoot = resultDoc.Root!;
 		var parentNodes = new Dictionary<string, XElement>();
-
 		foreach (var areaElem in earMarked.Elements("area")) {
 			string areaName = (string)areaElem.Attribute("name") ?? "Unknown";
 			string rectStr = (string)areaElem.Attribute("rectangle") ?? "";
 			string parent = (string)areaElem.Attribute("parent") ?? "";
 			if (string.IsNullOrWhiteSpace(rectStr)) continue;
 			var rect = ParseRectangle(rectStr);
-			var rawTable =PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(pdfPath, pageNumber, rect, areaName);
+			var rawTable = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(pdfPath, pageNumber, rect, areaName);
 			if (rawTable.Rows.Count == 0) continue;
 			var srcRow = rawTable.Rows[0];
 			var areaResult = new XElement(areaName);
 			if (areaElem.Element("rowSet") == null) {// === SIMPLE AREA (no rowSet) ===
 				areaResult.Value = srcRow[0]?.ToString() ?? "";
-			}
-			else {// === ROWSET AREA ===
+			} else {// === ROWSET AREA ===
 				var rowSet = areaElem.Element("rowSet");
 				foreach (var rowElem in rowSet.Elements("row")) {
 					int index = (int?)rowElem.Attribute("index") ?? -1;
@@ -79,7 +74,7 @@ public static class PdfDataExtractor {
 						string marker = (string)rowElem.Element("marker")?.Attribute("value") ?? "";
 						var result = RunScript(script, rawText, marker);
 						var columns = rowElem.Element("columns")?.Elements().Select(e => e.Name.LocalName)
-									  ?? Enumerable.Empty<string>();
+						?? Enumerable.Empty<string>();
 						foreach (var col in columns) {
 							string val = GetProperty(result, col);
 							areaResult.Add(new XElement(col, val));
@@ -90,7 +85,7 @@ public static class PdfDataExtractor {
 						string marker = (string)rowElem.Element("marker")?.Attribute("value") ?? "";
 						var result = CallExecutor(executor, rawText, marker);
 						var columns = rowElem.Element("columns")?.Elements().Select(e => e.Name.LocalName)
-									  ?? Enumerable.Empty<string>();
+						?? Enumerable.Empty<string>();
 						foreach (var col in columns) {
 							string val = GetProperty(result, col);
 							areaResult.Add(new XElement(col, val));
@@ -110,10 +105,8 @@ public static class PdfDataExtractor {
 			}
 			container.Add(areaResult);
 		}
-
 		return resultDoc;
 	}
-
 	// -----------------------------------------------------------------
 	// Helper: Parse rectangle "x,y,width,height"
 	// -----------------------------------------------------------------
