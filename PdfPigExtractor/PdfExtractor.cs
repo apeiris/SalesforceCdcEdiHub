@@ -22,93 +22,129 @@ public static class PdfDataExtractor {
 	/// </summary>
 
 	public static XDocument ExtractToXml(
-string pdfPath,
-int pageNumber,
-string pdfMapXml) {
+	string pdfPath,
+	int pageNumber,
+	string pdfMapXml) {
 		var mapDoc = XDocument.Load(pdfMapXml);
 		var earMarked = mapDoc.Root?.Element("earMarked")
-		?? throw new InvalidOperationException("<earMarked> element not found.");
+			?? throw new InvalidOperationException("<earMarked> element not found.");
 		var client = (string)mapDoc.Root?.Attribute("client") ?? "";
 		var document = (string)mapDoc.Root?.Attribute("document") ?? "";
+
 		var resultDoc = new XDocument(
-		new XDeclaration("1.0", "utf-8", "yes"),
-		new XElement("extractedData",
-		new XAttribute("client", client),
-		new XAttribute("document", document)
-		)
+			new XDeclaration("1.0", "utf-8", "yes"),
+			new XElement("extractedData",
+				new XAttribute("client", client),
+				new XAttribute("document", document)
+			)
 		);
 		var resultRoot = resultDoc.Root!;
-		var parentNodes = new Dictionary<string, XElement>();
+
+		// Track parent containers at root level (for <area parent="...">)
+		var areaParentNodes = new Dictionary<string, XElement>();
+
 		foreach (var areaElem in earMarked.Elements("area")) {
 			string areaName = (string)areaElem.Attribute("name") ?? "Unknown";
 			string rectStr = (string)areaElem.Attribute("rectangle") ?? "";
-			string parent = (string)areaElem.Attribute("parent") ?? "";
+			string areaParentName = (string)areaElem.Attribute("parent") ?? "";
+
 			if (string.IsNullOrWhiteSpace(rectStr)) continue;
+
 			var rect = ParseRectangle(rectStr);
 			var rawTable = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(pdfPath, pageNumber, rect, areaName);
 			if (rawTable.Rows.Count == 0) continue;
+
 			var srcRow = rawTable.Rows[0];
 			var areaResult = new XElement(areaName);
-			if (areaElem.Element("rowSet") == null) {// === SIMPLE AREA (no rowSet) ===
+
+			// Track row-level parents inside this area
+			var rowParentNodes = new Dictionary<string, XElement>();
+
+			if (areaElem.Element("rowSet") == null) {
+				// === SIMPLE AREA (no rowSet) ===
 				areaResult.Value = srcRow[0]?.ToString() ?? "";
-			} else {// === ROWSET AREA ===
+			} else {
+				// === ROWSET AREA ===
 				var rowSet = areaElem.Element("rowSet");
 				foreach (var rowElem in rowSet.Elements("row")) {
 					int index = (int?)rowElem.Attribute("index") ?? -1;
 					string name = (string)rowElem.Attribute("name") ?? "";
 					string operation = (string)rowElem.Attribute("operation") ?? "";
 					string executor = (string)rowElem.Attribute("executor") ?? "";
+					string rowParentName = (string)rowElem.Attribute("parent") ?? "";
 					string inputAttr = (string)rowElem.Element("input")?.Attribute("dataAttribute") ?? "";
-					//string rawText = "";
-					string rawText = rawTable.Rows[index][0]?.ToString() ?? "";
+
+					string rawText = "";
+					if (index >= 0 && index < rawTable.Rows.Count)
+						rawText = rawTable.Rows[index][0]?.ToString() ?? "";
 					if (!string.IsNullOrEmpty(inputAttr) && rawTable.Columns.Contains(inputAttr))
 						rawText = srcRow[inputAttr]?.ToString() ?? "";
 					else if (index >= 0 && index < rawTable.Columns.Count)
 						rawText = srcRow[index]?.ToString() ?? "";
+
+					XElement rowContainer = areaResult; // default: add to area
+
+					// === DETERMINE ROW PARENT ===
+					if (!string.IsNullOrEmpty(rowParentName)) {
+						if (!rowParentNodes.TryGetValue(rowParentName, out var parentNode)) {
+							parentNode = new XElement(rowParentName);
+							rowParentNodes[rowParentName] = parentNode;
+							areaResult.Add(parentNode);
+						}
+						rowContainer = parentNode;
+					}
+
 					if (string.IsNullOrEmpty(operation) || operation == "copy") {
 						if (!string.IsNullOrEmpty(name))
-							areaResult.Add(new XElement(name, rawText));
+							rowContainer.Add(new XElement(name, rawText));
 						continue;
 					}
+
 					if (operation == "script") {
 						string script = rowElem.Element("script")?.Value ?? "";
 						string marker = (string)rowElem.Element("marker")?.Attribute("value") ?? "";
 						var result = RunScript(script, rawText, marker);
 						var columns = rowElem.Element("columns")?.Elements().Select(e => e.Name.LocalName)
-						?? Enumerable.Empty<string>();
+							?? Enumerable.Empty<string>();
+
 						foreach (var col in columns) {
 							string val = GetProperty(result, col);
-							areaResult.Add(new XElement(col, val));
+							rowContainer.Add(new XElement(col, val));
 						}
 						continue;
 					}
+
 					if (operation == "transform" && !string.IsNullOrEmpty(executor)) {
 						string marker = (string)rowElem.Element("marker")?.Attribute("value") ?? "";
 						var result = CallExecutor(executor, rawText, marker);
 						var columns = rowElem.Element("columns")?.Elements().Select(e => e.Name.LocalName)
-						?? Enumerable.Empty<string>();
+							?? Enumerable.Empty<string>();
+
 						foreach (var col in columns) {
 							string val = GetProperty(result, col);
-							areaResult.Add(new XElement(col, val));
+							rowContainer.Add(new XElement(col, val));
 						}
 					}
 				}
 			}
-			XElement container;// === ADD TO PARENT OR ROOT ===
-			if (!string.IsNullOrEmpty(parent)) {
-				if (!parentNodes.TryGetValue(parent, out container)) {
-					container = new XElement(parent);
-					parentNodes[parent] = container;
-					resultRoot.Add(container);
+
+			// === ADD AREA UNDER ITS PARENT (or root) ===
+			XElement areaContainer;
+			if (!string.IsNullOrEmpty(areaParentName)) {
+				if (!areaParentNodes.TryGetValue(areaParentName, out areaContainer)) {
+					areaContainer = new XElement(areaParentName);
+					areaParentNodes[areaParentName] = areaContainer;
+					resultRoot.Add(areaContainer);
 				}
 			} else {
-				container = resultRoot;
+				areaContainer = resultRoot;
 			}
-			container.Add(areaResult);
+
+			areaContainer.Add(areaResult);
 		}
+
 		return resultDoc;
 	}
-
 
 	// -----------------------------------------------------------------
 	// Helper: Parse rectangle "x,y,width,height"

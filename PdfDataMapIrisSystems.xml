@@ -9,7 +9,7 @@
 				<!-- SIMPLE ROW: Direct copy from row index 0 -->
 				<row index="0" name="name" operation="copy" />
 				<!-- SCRIPT ROW: Split address on comma -->
-				<row index="1" name="address" operation="script" parent="Address">
+				<row index="1" name="address" operation="script" parent="address">
 					<marker value="," />
 					<script language="csharp">
 						<![CDATA[ var parts = text.Split(new[] { marker }, StringSplitOptions.None);
@@ -28,7 +28,7 @@
 				</row>
 
 				<!-- SCRIPT ROW: Split contact on pipe -->
-				<row index="2" name="contact" operation="script">
+				<row index="2" name="contact" operation="script" parent="contact" >
 					<input dataAttribute="Contact" />
 					<marker value="|" />
 					<script language="csharp">
