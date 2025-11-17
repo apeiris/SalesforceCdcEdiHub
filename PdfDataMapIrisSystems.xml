@@ -57,6 +57,6 @@
 		<!-- =========================================== -->
 		<!-- PO NUMBER (Single Value Field) -->
 		<!-- =========================================== -->
-		<area name="PoNumber" rectangle="36,565,269,18" />
+		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" />
 	</earMarked>
 </pdfMap>

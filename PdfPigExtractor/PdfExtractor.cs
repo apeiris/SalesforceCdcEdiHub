@@ -20,6 +20,7 @@ public static class PdfDataExtractor {
 	/// Extracts data from PDF using the <pdfMap> XML and returns structured XDocument.
 	/// Respects parent="..." attribute for grouping.
 	/// </summary>
+
 	public static XDocument ExtractToXml(
 string pdfPath,
 int pageNumber,
@@ -107,6 +108,8 @@ string pdfMapXml) {
 		}
 		return resultDoc;
 	}
+
+
 	// -----------------------------------------------------------------
 	// Helper: Parse rectangle "x,y,width,height"
 	// -----------------------------------------------------------------
