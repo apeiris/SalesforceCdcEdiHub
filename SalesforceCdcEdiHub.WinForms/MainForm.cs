@@ -1517,6 +1517,43 @@ public partial class MainForm : Form {
 			}).ToList();
 		return earmarkedRectangles;
 	}
+	private async void DisplayXmlInWebView(XDocument extractedDoc) {
+		if (extractedDoc == null) {
+			MessageBox.Show("No XML document to display.");
+			return;
+		}
+
+		// Serialize XDocument to indented XML string
+		string xmlString=extractedDoc.ToString();
+	
+
+		// Escape XML for safe HTML display
+		string escapedXml = System.Web.HttpUtility.HtmlEncode(xmlString);
+
+		// Wrap in basic HTML for rendering (add CSS for better styling if needed)
+		string htmlContent = $@"
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: monospace; background-color: #f5f5f5; padding: 20px; }}
+                    pre {{ background-color: white; padding: 10px; border: 1px solid #ccc; overflow: auto; }}
+                </style>
+            </head>
+            <body>
+                <h2>Extracted Purchase Order XML</h2>
+                <pre>{escapedXml}</pre>
+            </body>
+            </html>";
+
+		// Ensure WebView2 is initialized and navigate to the HTML string
+		try {
+			
+			await webView21.EnsureCoreWebView2Async(null);
+			webView21.CoreWebView2.NavigateToString(htmlContent);
+		} catch (Exception ex) {
+			MessageBox.Show($"Error displaying XML: {ex.Message}");
+		}
+	}
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
 		try {
 			string docName = "PO 3.pdf";
@@ -1588,11 +1625,12 @@ public partial class MainForm : Form {
 		}
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
-		XDocument doc = PdfDataExtractor.ExtractToXml("C:\\Users\\tony\\Downloads\\PO 3.pdf",1, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-
+//		XDocument doc = PdfDataExtractor.ExtractToXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		XDocument doc = PdfExtractor.ExtractToXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		DisplayXmlInWebView(doc);
 	}
 
-	
+
 }
 
 

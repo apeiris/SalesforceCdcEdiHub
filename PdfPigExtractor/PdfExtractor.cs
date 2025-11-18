@@ -1,216 +1,152 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-
-//namespace PdfDataExtraction; 
-using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using iText.Kernel.Geom;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf.Canvas.Parser.Filter;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
+public class ScriptGlobals {
+	public string text { get; set; }
+	public string marker { get; set; }
+}
 
-public static class PdfDataExtractor {
-	/// <summary>
-	/// Extracts data from PDF using the <pdfMap> XML and returns structured XDocument.
-	/// Respects parent="..." attribute for grouping.
-	/// </summary>
-
-	public static XDocument ExtractToXml(
-	string pdfPath,
-	int pageNumber,
-	string pdfMapXml) {
-		var mapDoc = XDocument.Load(pdfMapXml);
-		var earMarked = mapDoc.Root?.Element("earMarked")
-			?? throw new InvalidOperationException("<earMarked> element not found.");
-		var client = (string)mapDoc.Root?.Attribute("client") ?? "";
-		var document = (string)mapDoc.Root?.Attribute("document") ?? "";
-
-		var resultDoc = new XDocument(
-			new XDeclaration("1.0", "utf-8", "yes"),
-			new XElement("extractedData",
-				new XAttribute("client", client),
-				new XAttribute("document", document)
-			)
-		);
-		var resultRoot = resultDoc.Root!;
-
-		// Track parent containers at root level (for <area parent="...">)
-		var areaParentNodes = new Dictionary<string, XElement>();
-
-		foreach (var areaElem in earMarked.Elements("area")) {
-			string areaName = (string)areaElem.Attribute("name") ?? "Unknown";
-			string rectStr = (string)areaElem.Attribute("rectangle") ?? "";
-			string areaParentName = (string)areaElem.Attribute("parent") ?? "";
-
-			if (string.IsNullOrWhiteSpace(rectStr)) continue;
-
-			var rect = ParseRectangle(rectStr);
-			var rawTable = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(pdfPath, pageNumber, rect, areaName);
-			if (rawTable.Rows.Count == 0) continue;
-
-			var srcRow = rawTable.Rows[0];
-			var areaResult = new XElement(areaName);
-
-			// Track row-level parents inside this area
-			var rowParentNodes = new Dictionary<string, XElement>();
-
-			if (areaElem.Element("rowSet") == null) {
-				// === SIMPLE AREA (no rowSet) ===
-				areaResult.Value = srcRow[0]?.ToString() ?? "";
-			} else {
-				// === ROWSET AREA ===
-				var rowSet = areaElem.Element("rowSet");
-				foreach (var rowElem in rowSet.Elements("row")) {
-					int index = (int?)rowElem.Attribute("index") ?? -1;
-					string name = (string)rowElem.Attribute("name") ?? "";
-					string operation = (string)rowElem.Attribute("operation") ?? "";
-					string executor = (string)rowElem.Attribute("executor") ?? "";
-					string rowParentName = (string)rowElem.Attribute("parent") ?? "";
-					string inputAttr = (string)rowElem.Element("input")?.Attribute("dataAttribute") ?? "";
-
-					string rawText = "";
-					if (index >= 0 && index < rawTable.Rows.Count)
-						rawText = rawTable.Rows[index][0]?.ToString() ?? "";
-					if (!string.IsNullOrEmpty(inputAttr) && rawTable.Columns.Contains(inputAttr))
-						rawText = srcRow[inputAttr]?.ToString() ?? "";
-					else if (index >= 0 && index < rawTable.Columns.Count)
-						rawText = srcRow[index]?.ToString() ?? "";
-
-					XElement rowContainer = areaResult; // default: add to area
-
-					// === DETERMINE ROW PARENT ===
-					if (!string.IsNullOrEmpty(rowParentName)) {
-						if (!rowParentNodes.TryGetValue(rowParentName, out var parentNode)) {
-							parentNode = new XElement(rowParentName);
-							rowParentNodes[rowParentName] = parentNode;
-							areaResult.Add(parentNode);
+public static class PdfExtractor {
+	public static XDocument ExtractToXml(string pdfPath, string xmlMap, int pageNumber = 1) {
+		XDocument mapDoc = XDocument.Load(xmlMap);
+		string documentType = mapDoc.Root?.Attribute("document")?.Value ?? "Document";
+		XDocument extractedDoc = new XDocument(new XElement(documentType));
+		XElement root = extractedDoc.Root!;
+		using (PdfReader reader = new PdfReader(pdfPath))
+		using (PdfDocument pdf = new PdfDocument(reader)) {
+			PdfPage page = pdf.GetPage(pageNumber);
+			float pageHeight = page.GetPageSizeWithRotation().GetHeight();
+			float pageWidth = page.GetPageSizeWithRotation().GetWidth();
+			string fullText = PdfTextExtractor.GetTextFromPage(page);
+			Console.WriteLine($"Full page text length: {fullText.Length}");
+			Console.WriteLine($"Full page text snippet: {fullText.Substring(0, Math.Min(200, fullText.Length))}...");
+			var earMarked = mapDoc.Root?.Element("earMarked");
+			if (earMarked == null) return extractedDoc;
+			foreach (var area in earMarked.Elements("area")) {
+				string? areaName = area.Attribute("name")?.Value;
+				string? rectStr = area.Attribute("rectangle")?.Value;
+				string? parentName = area.Attribute("parent")?.Value;
+				if (string.IsNullOrEmpty(areaName) || string.IsNullOrEmpty(rectStr) || string.IsNullOrEmpty(parentName))
+					continue;
+				XElement? parentElem;
+				if (parentName == root.Name.LocalName) {
+					parentElem = root;
+				} else {
+					parentElem = root.Element(parentName);
+					if (parentElem == null) {
+						parentElem = new XElement(parentName);
+						root.Add(parentElem);
+					}
+				}
+				XElement areaElem = new XElement(areaName);
+				parentElem.Add(areaElem);
+				string[] parts = rectStr.Split(',');
+				if (parts.Length != 4) continue;
+				float x = float.Parse(parts[0]);
+				float y = float.Parse(parts[1]);
+				float w = float.Parse(parts[2]);
+				float h = float.Parse(parts[3]);
+				Rectangle rect = new Rectangle(x, y, w, h);
+				Console.WriteLine($"Rectangle for {areaName}: x={x}, y={y}, width={w}, height={h} (page height={pageHeight}, width={pageWidth})");
+				TextRegionEventFilter regionFilter = new TextRegionEventFilter(rect);
+				FilteredTextEventListener strategy = new FilteredTextEventListener(new LocationTextExtractionStrategy(), regionFilter);
+				string extractedText = PdfTextExtractor.GetTextFromPage(page, strategy).Trim();
+				Console.WriteLine($"Extracted text for area {areaName}: '{extractedText}'");
+				var rowSet = area.Element("rowSet");
+				if (rowSet == null) {
+					string value = extractedText;
+					if (value.Contains(':')) {
+						value = value.Split(':').Last().Trim();
+					}
+					areaElem.Value = value;
+				} else {
+					string[] lines = extractedText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+						.Select(l => l.Trim())
+						.Where(l => !string.IsNullOrEmpty(l))
+						.ToArray();
+					if (lines.Length > 0 && lines[0].EndsWith(":")) {
+						lines = lines.Skip(1).ToArray();
+					}
+					Console.WriteLine($"Lines for area {areaName}: {lines.Length}");
+					for (int i = 0; i < lines.Length; i++) {
+						Console.WriteLine($"Line {i}: '{lines[i]}'");
+					}
+					foreach (var row in rowSet.Elements("row")) {
+						string? indexStr = row.Attribute("index")?.Value;
+						if (!int.TryParse(indexStr, out int index) || index >= lines.Length || index < 0) continue;
+						string text = lines[index];
+						string? operation = row.Attribute("operation")?.Value;
+						string? rowName = row.Attribute("name")?.Value;
+						string? parentAttr = row.Attribute("parent")?.Value;
+						if (string.IsNullOrEmpty(operation) || string.IsNullOrEmpty(rowName))
+							continue;
+						XElement targetElem = areaElem;
+						if (!string.IsNullOrEmpty(parentAttr)) {
+							XElement? existing = areaElem.Element(parentAttr);
+							if (existing == null) {
+								existing = new XElement(parentAttr);
+								areaElem.Add(existing);
+							}
+							targetElem = existing;
 						}
-						rowContainer = parentNode;
-					}
-
-					if (string.IsNullOrEmpty(operation) || operation == "copy") {
-						if (!string.IsNullOrEmpty(name))
-							rowContainer.Add(new XElement(name, rawText));
-						continue;
-					}
-
-					if (operation == "script") {
-						string script = rowElem.Element("script")?.Value ?? "";
-						string marker = (string)rowElem.Element("marker")?.Attribute("value") ?? "";
-						var result = RunScript(script, rawText, marker);
-						var columns = rowElem.Element("columns")?.Elements().Select(e => e.Name.LocalName)
-							?? Enumerable.Empty<string>();
-
-						foreach (var col in columns) {
-							string val = GetProperty(result, col);
-							rowContainer.Add(new XElement(col, val));
-						}
-						continue;
-					}
-
-					if (operation == "transform" && !string.IsNullOrEmpty(executor)) {
-						string marker = (string)rowElem.Element("marker")?.Attribute("value") ?? "";
-						var result = CallExecutor(executor, rawText, marker);
-						var columns = rowElem.Element("columns")?.Elements().Select(e => e.Name.LocalName)
-							?? Enumerable.Empty<string>();
-
-						foreach (var col in columns) {
-							string val = GetProperty(result, col);
-							rowContainer.Add(new XElement(col, val));
+						if (operation == "copy") {
+							targetElem.Add(new XElement(rowName, text));
+						} else if (operation == "script") {
+							string markerVal = row.Element("marker")?.Attribute("value")?.Value ?? string.Empty;
+							XElement? scriptElem = row.Element("script");
+							if (scriptElem == null) continue;
+							string? lang = scriptElem.Attribute("language")?.Value;
+							if (lang != "csharp") continue;
+							string code = scriptElem.Value.Trim();
+							code = code.Replace("StringSplitOptions", "System.StringSplitOptions");
+							var scriptOptions = ScriptOptions.Default
+								.WithImports("System")
+								.WithImports("System.Linq")
+								.WithReferences(
+									typeof(string).Assembly,
+									typeof(Enumerable).Assembly
+								);
+							var globals = new ScriptGlobals { text = text, marker = markerVal };
+							object? result = null;
+							try {
+								result = CSharpScript.EvaluateAsync(code, scriptOptions, globals).Result;
+							} catch (Exception ex) {
+								Console.WriteLine($"Script execution error for row {rowName}: {ex.Message}");
+							}
+							if (result == null) continue;
+							PropertyInfo[] props = result.GetType().GetProperties();
+							XElement? columns = row.Element("columns");
+							if (columns != null) {
+								foreach (var col in columns.Elements()) {
+									string colName = col.Name.LocalName;
+									object? val = null;
+									PropertyInfo? prop = props.FirstOrDefault(p => p.Name == colName);
+									if (prop != null) {
+										val = prop.GetValue(result);
+									} else {
+										prop = props.FirstOrDefault(p => string.Equals(p.Name, colName, StringComparison.OrdinalIgnoreCase));
+										if (prop != null) {
+											val = prop.GetValue(result);
+										}
+									}
+									targetElem.Add(new XElement(colName, val?.ToString() ?? string.Empty));
+								}
+							}
 						}
 					}
 				}
 			}
-
-			// === ADD AREA UNDER ITS PARENT (or root) ===
-			XElement areaContainer;
-			if (!string.IsNullOrEmpty(areaParentName)) {
-				if (!areaParentNodes.TryGetValue(areaParentName, out areaContainer)) {
-					areaContainer = new XElement(areaParentName);
-					areaParentNodes[areaParentName] = areaContainer;
-					resultRoot.Add(areaContainer);
-				}
-			} else {
-				areaContainer = resultRoot;
-			}
-
-			areaContainer.Add(areaResult);
 		}
 
-		return resultDoc;
-	}
-
-	// -----------------------------------------------------------------
-	// Helper: Parse rectangle "x,y,width,height"
-	// -----------------------------------------------------------------
-	private static iText.Kernel.Geom.Rectangle ParseRectangle(string rect) {
-		var parts = rect.Split(',');
-		if (parts.Length != 4) throw new FormatException($"Invalid rectangle format: {rect}");
-		float x = float.Parse(parts[0].Trim());
-		float y = float.Parse(parts[1].Trim());
-		float w = float.Parse(parts[2].Trim());
-		float h = float.Parse(parts[3].Trim());
-		return new iText.Kernel.Geom.Rectangle(x, y, w, h);
-	}
-
-	// -----------------------------------------------------------------
-	// Helper: Run embedded C# script
-	// -----------------------------------------------------------------
-	private static object RunScript(string body, string text, string marker) {
-		// Escape quotes properly
-		text = text?.Replace("\\", "\\\\").Replace("\"", "\\\"") ?? "";
-		marker = marker?.Replace("\\", "\\\\").Replace("\"", "\\\"") ?? "";
-
-		// Full script: text and marker are injected as local variables
-		var code = $@"
-        using System;
-        using System.Linq;
-
-        var text = ""{text}"";
-        var marker = ""{marker}"";
-        {body}
-    ";
-
-		var options = ScriptOptions.Default
-			.AddReferences(typeof(object).Assembly)
-			.AddReferences(typeof(Enumerable).Assembly);
-
-		return CSharpScript.EvaluateAsync(code, options).Result;
-	}
-
-	// -----------------------------------------------------------------
-	// Helper: Call static transform method
-	// -----------------------------------------------------------------
-	private static object CallExecutor(string methodName, string text, string delimiter) {
-		var mi = typeof(PdfDataExtractor).GetMethod(methodName,
-			BindingFlags.Static | BindingFlags.NonPublic);
-		if (mi == null) throw new MissingMethodException($"Executor '{methodName}' not found.");
-		return mi.Invoke(null, new object[] { text, delimiter });
-	}
-
-	private static object SplitAddressAndContact(string text, string delimiter) {
-		var p = text.Split(new[] { delimiter }, StringSplitOptions.None);
-		return new {
-			street = p.Length > 0 ? p[0].Trim() : "",
-			city = p.Length > 1 ? p[1].Trim() : "",
-			postalCode = p.Length > 2 ? p[2].Trim() : "",
-			country = p.Length > 3 ? p[3].Trim() : ""
-		};
-	}
-
-	// -----------------------------------------------------------------
-	// Helper: Get property from anonymous object
-	// -----------------------------------------------------------------
-	private static string GetProperty(object obj, string name) {
-		if (obj == null) return "";
-		var pi = obj.GetType().GetProperty(name,
-			BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-		return pi?.GetValue(obj)?.ToString() ?? "";
+		return extractedDoc;
 	}
 }
