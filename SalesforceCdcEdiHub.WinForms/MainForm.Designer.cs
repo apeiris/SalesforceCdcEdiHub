@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -179,6 +179,8 @@ partial class MainForm {
 		btnMcCreatePO = new Button();
 		button27 = new Button();
 		tableLayoutPanel22 = new TableLayoutPanel();
+		btnN1ExtractTextBlocks = new Button();
+		button28 = new Button();
 		btnExtractXml = new Button();
 		btnExtractPdf = new Button();
 		cmbMondayPOs = new ComboBox();
@@ -1105,14 +1107,14 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle2.BackColor = SystemColors.Control;
-		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
+		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle1.BackColor = SystemColors.Control;
+		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
 		dgvOrderList.Size = new Size(392, 166);
 		dgvOrderList.TabIndex = 11;
 		// 
@@ -2239,16 +2241,16 @@ partial class MainForm {
 		tableLayoutPanel21.Location = new Point(1150, 63);
 		tableLayoutPanel21.Name = "tableLayoutPanel21";
 		tableLayoutPanel21.RowCount = 2;
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 24.0740738F));
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 75.92593F));
-		tableLayoutPanel21.Size = new Size(200, 162);
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 25.6410255F));
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 74.35897F));
+		tableLayoutPanel21.Size = new Size(200, 234);
 		tableLayoutPanel21.TabIndex = 0;
 		// 
 		// btnMcCreatePO
 		// 
 		btnMcCreatePO.Location = new Point(104, 3);
 		btnMcCreatePO.Name = "btnMcCreatePO";
-		btnMcCreatePO.Size = new Size(93, 32);
+		btnMcCreatePO.Size = new Size(93, 45);
 		btnMcCreatePO.TabIndex = 0;
 		btnMcCreatePO.Text = "Create PO";
 		btnMcCreatePO.UseVisualStyleBackColor = true;
@@ -2258,7 +2260,7 @@ partial class MainForm {
 		// 
 		button27.Location = new Point(3, 3);
 		button27.Name = "button27";
-		button27.Size = new Size(93, 32);
+		button27.Size = new Size(93, 45);
 		button27.TabIndex = 1;
 		button27.Text = "Retrive POs";
 		button27.UseVisualStyleBackColor = true;
@@ -2266,24 +2268,48 @@ partial class MainForm {
 		// 
 		// tableLayoutPanel22
 		// 
-		tableLayoutPanel22.ColumnCount = 1;
+		tableLayoutPanel22.ColumnCount = 2;
 		tableLayoutPanel21.SetColumnSpan(tableLayoutPanel22, 2);
 		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+		tableLayoutPanel22.Controls.Add(btnN1ExtractTextBlocks, 1, 0);
+		tableLayoutPanel22.Controls.Add(button28, 0, 2);
 		tableLayoutPanel22.Controls.Add(btnExtractXml, 0, 1);
 		tableLayoutPanel22.Controls.Add(btnExtractPdf, 0, 0);
-		tableLayoutPanel22.Location = new Point(3, 42);
+		tableLayoutPanel22.Location = new Point(3, 63);
 		tableLayoutPanel22.Name = "tableLayoutPanel22";
-		tableLayoutPanel22.RowCount = 2;
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 45.78313F));
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 54.21687F));
-		tableLayoutPanel22.Size = new Size(114, 83);
+		tableLayoutPanel22.RowCount = 3;
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 52.0408173F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 47.9591827F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+		tableLayoutPanel22.Size = new Size(194, 168);
 		tableLayoutPanel22.TabIndex = 4;
+		// 
+		// btnN1ExtractTextBlocks
+		// 
+		btnN1ExtractTextBlocks.Location = new Point(97, 3);
+		btnN1ExtractTextBlocks.Name = "btnN1ExtractTextBlocks";
+		btnN1ExtractTextBlocks.Size = new Size(88, 45);
+		btnN1ExtractTextBlocks.TabIndex = 5;
+		btnN1ExtractTextBlocks.Text = "n2.Extract TextBlocks";
+		btnN1ExtractTextBlocks.UseVisualStyleBackColor = true;
+		btnN1ExtractTextBlocks.Click += btnN2ExtractPoLinesAsXml_Click;
+		// 
+		// button28
+		// 
+		button28.Location = new Point(3, 112);
+		button28.Name = "button28";
+		button28.Size = new Size(88, 45);
+		button28.TabIndex = 4;
+		button28.Text = "Dump PDF Coords";
+		button28.UseVisualStyleBackColor = true;
+		button28.Click += DumpPdfCoords_Click;
 		// 
 		// btnExtractXml
 		// 
-		btnExtractXml.Location = new Point(3, 40);
+		btnExtractXml.Location = new Point(3, 60);
 		btnExtractXml.Name = "btnExtractXml";
-		btnExtractXml.Size = new Size(88, 32);
+		btnExtractXml.Size = new Size(88, 45);
 		btnExtractXml.TabIndex = 3;
 		btnExtractXml.Text = "Extract XML";
 		btnExtractXml.UseVisualStyleBackColor = true;
@@ -2293,7 +2319,7 @@ partial class MainForm {
 		// 
 		btnExtractPdf.Location = new Point(3, 3);
 		btnExtractPdf.Name = "btnExtractPdf";
-		btnExtractPdf.Size = new Size(88, 31);
+		btnExtractPdf.Size = new Size(88, 45);
 		btnExtractPdf.TabIndex = 2;
 		btnExtractPdf.Text = "Extract Pdf";
 		btnExtractPdf.UseVisualStyleBackColor = true;
@@ -2431,7 +2457,6 @@ partial class MainForm {
 		dgvMondayComSummary.Name = "dgvMondayComSummary";
 		dgvMondayComSummary.Size = new Size(1141, 160);
 		dgvMondayComSummary.TabIndex = 3;
-		
 		// 
 		// dgvMondayComNotes
 		// 
@@ -2885,4 +2910,6 @@ partial class MainForm {
 	private SplitContainer splitContainer7;
 	private SplitContainer splitContainer8;
 	private DataGridView dgvMondayComNotes;
+	private Button button28;
+	private Button btnN1ExtractTextBlocks;
 }

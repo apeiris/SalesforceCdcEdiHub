@@ -16,7 +16,7 @@ public class ScriptGlobals {
 }
 
 public static class PdfExtractor {
-	public static XDocument ExtractToXml(string pdfPath, string xmlMap, int pageNumber = 1) {
+	public static XDocument ExtractPdfContentAsXml(string pdfPath, string xmlMap, int pageNumber = 1) {
 		XDocument mapDoc = XDocument.Load(xmlMap);
 		string documentType = mapDoc.Root?.Attribute("document")?.Value ?? "Document";
 		XDocument extractedDoc = new XDocument(new XElement(documentType));

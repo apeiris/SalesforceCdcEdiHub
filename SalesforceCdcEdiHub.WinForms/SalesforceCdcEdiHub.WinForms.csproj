@@ -51,7 +51,7 @@
 		<ProjectReference Include="..\JsonExtensions\JsonExtensions.csproj" />
 		<ProjectReference Include="..\LoggerEmailExtensions\LoggerEmailExtensions.csproj" />
 		<ProjectReference Include="..\MondayCom\MondayCom.csproj" />
-		<ProjectReference Include="..\PdfPigExtractor\PdfPigExtractor.csproj" />
+		<ProjectReference Include="..\PdfPigExtractor\PDFServices.csproj" />
 	<!--	<ProjectReference Include="..\PdfFieldExtractor\PdfFieldExtractor.csproj" /> -->
 		<ProjectReference Include="..\SqlServerLib\SqlServerLib.csproj" />
 		<ProjectReference Include="..\WebhookListener\WebHookListener.csproj" />

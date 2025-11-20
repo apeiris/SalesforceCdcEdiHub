@@ -1,10 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder">
 	<earMarked>
-		<!-- =========================================== -->
-		<!-- BUYER PARTY -->
-		<!-- =========================================== -->
+		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" />
 		<area name="Buyer" rectangle="36,601,269,72" parent="Parties">
+			<rowSet>
+				<!-- SIMPLE ROW: Direct copy from row index 0 -->
+				<row index="0" name="name" operation="copy" />
+				<!-- SCRIPT ROW: Split address on comma -->
+				<row index="1" name="address" operation="script" parent="address">
+					<marker value="," />
+					<script language="csharp">
+						<![CDATA[ var parts = text.Split(new[] { marker }, StringSplitOptions.None);
+							return new {
+							street = parts.Length > 0 ? parts[0].Trim() : "",
+							city = parts.Length > 1 ? parts[1].Trim() : "",
+							postalCode = parts.Length > 2 ? parts[2].Trim() : "",
+							country = parts.Length > 3 ? parts[3].Trim() : ""};	]]>
+					</script>
+					<columns>
+						<street />
+						<City />
+						<postalCode />
+						<country />
+					</columns>
+				</row>
+				<row index="2" name="contact" operation="script" parent="contact" >
+					<input dataAttribute="Contact" />
+					<marker value="|" />
+					<script language="csharp">
+						<![CDATA[
+            var parts = text.Split(new[]{ marker }, StringSplitOptions.None);
+            return new {
+                phone = parts.Length > 0 ? parts[0].Trim() : "",
+                email = parts.Length > 1 ? parts[1].Trim() : ""
+        
+            };
+          ]]>
+					</script>
+					<columns>
+						<email />
+						<phone />
+						<mobile />
+						<other />
+					</columns>
+				</row>
+			</rowSet>
+		</area>
+		<area name="Supplier" rectangle="306,601,269,72" parent="Parties">
 			<rowSet>
 				<!-- SIMPLE ROW: Direct copy from row index 0 -->
 				<row index="0" name="name" operation="copy" />
@@ -50,13 +92,40 @@
 				</row>
 			</rowSet>
 		</area>
-		<!-- =========================================== -->
-		<!-- SUPPLIER PARTY -->
-		<!-- =========================================== -->
-		
-		<!-- =========================================== -->
-		<!-- PO NUMBER (Single Value Field) -->
-		<!-- =========================================== -->
-		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" />
+
+
+		<area name="Items" rectangle="36,439,495,200" parent="PurchaseOrder">
+			<rowSet type="variable">
+
+				<!-- Row template that repeats once for every extracted line -->
+				<row repeat="true" name="Item"  operation="script">
+					<script language="csharp">
+						<![CDATA[
+          // Split into parts based on whitespace
+          var parts = text.Split(
+              new[] { ' ' }, 
+              StringSplitOptions.RemoveEmptyEntries
+          );
+
+          // Adjust this according to the actual format of your PDF lines
+          return new {
+              Item = parts.Length > 0 ? parts[0] : "",
+              Code = parts.Length > 1 ? parts[1] : "",
+              Qty = parts.Length > 2 ? parts[2] : "",
+              UnitPrice = parts.Length > 3 ? parts[3] : "",
+              LineTotal = parts.Length > 4 ? parts[4] : ""
+          };
+      ]]>
+					</script>
+					<columns>
+						<Item />
+						<Code />
+						<Qty />
+						<UnitPrice />
+						<LineTotal />
+					</columns>
+				</row>
+			</rowSet>
+		</area>
 	</earMarked>
 </pdfMap>

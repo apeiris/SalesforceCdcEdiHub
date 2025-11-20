@@ -1,28 +1,22 @@
 ﻿using System.Data;
 using System.Net;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.Xml;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using n1;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Windows.Forms;
 //using iText.Layout;
-using PdfDataExtraction;
-using PdfTableExtractor;
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
 using SalesforceCdcEdiHub.MondayCom;
@@ -32,7 +26,7 @@ using Control = System.Windows.Forms.Control;
 using enmRetrievedFrom = WinForms.MainForm.enmObjectSource;
 using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
-using Rectangle=iText.Kernel.Geom.Rectangle;
+using Rectangle = iText.Kernel.Geom.Rectangle;
 using ToolTip = System.Windows.Forms.ToolTip;
 
 
@@ -1524,8 +1518,8 @@ public partial class MainForm : Form {
 		}
 
 		// Serialize XDocument to indented XML string
-		string xmlString=extractedDoc.ToString();
-	
+		string xmlString = extractedDoc.ToString();
+
 
 		// Escape XML for safe HTML display
 		string escapedXml = System.Web.HttpUtility.HtmlEncode(xmlString);
@@ -1547,7 +1541,7 @@ public partial class MainForm : Form {
 
 		// Ensure WebView2 is initialized and navigate to the HTML string
 		try {
-			
+
 			await webView21.EnsureCoreWebView2Async(null);
 			webView21.CoreWebView2.NavigateToString(htmlContent);
 		} catch (Exception ex) {
@@ -1559,10 +1553,10 @@ public partial class MainForm : Form {
 			string docName = "PO 3.pdf";
 			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
 			string dest = $"C:\\temp\\testOut.pdf";
-			var x =Properties.Resources.PdfDataMapIrisSystems;
+			var x = Properties.Resources.PdfDataMapIrisSystems;
 			int pageNumber = 1;
-			
-			
+
+
 			var rectangles = ExtractEarmarkedRectangles(Properties.Settings.Default.PdfDataTemplate);
 			/*
 			// 
@@ -1577,12 +1571,19 @@ public partial class MainForm : Form {
 
 			*/
 
-			var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
 
 
-			var (tetBlocks, tables) = PdfTableExtractor.PdfTableParser.ExtractTables(src,1,nextPdfScanY1,9f);
-			var mergedRectangles = PdfTableExtractor.PdfTableParser.MergeRowsIntoTables(tables,nextIndex:rectangles.Count+1, rowTolerance: 9f);
-			
+			//var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
+
+			var nextPdfScanY1 = rectangles.Select(r => {float bottom = r.rect.GetBottom();
+													    float top = r.rect.GetTop();	
+															Console.WriteLine($"Bottom = {bottom} , Top={top}");
+															return bottom;}).Min();
+			Console.WriteLine($"\n\n\n\t\t y2={nextPdfScanY1}");
+
+			var (textBlocks, tables) = PdfTableParser.ExtractTables(src, pageNumber, nextPdfScanY1, rowTolerance: 9f);
+			var mergedRectangles = PdfTableParser.MergeRowsIntoTables(tables, nextIndex: rectangles.Count + 1, rowTolerance: 9f);
+
 			foreach (var table in mergedRectangles) {
 				string name = $"{table.Index}";
 				var rect = new Rectangle(table.X, table.Y, table.Width, table.Height);
@@ -1604,7 +1605,7 @@ public partial class MainForm : Form {
 
 
 			dgvMondayComBuyer.DataSource = dtBuyer;
-		
+
 			dgvMondayComPoItems.DataSource = dtItems;
 			dgvMondayComSummary.DataSource = dtSummary;
 			dgvMondayComNotes.DataSource = dtNotes;
@@ -1625,12 +1626,47 @@ public partial class MainForm : Form {
 		}
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
-//		XDocument doc = PdfDataExtractor.ExtractToXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-		XDocument doc = PdfExtractor.ExtractToXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		//		XDocument doc = PdfDataExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		XDocument doc = PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
 		DisplayXmlInWebView(doc);
 	}
 
+	private void DumpPdfCoords_Click(object sender, EventArgs e) {
+		//using (PdfReader reader = new("C:\\Users\\tony\\Downloads\\PO 3.pdf"))
+		//using (PdfDocument pdf = new(reader)) {
+		//	PdfPage page = pdf.GetPage(1);
 
+		//	var listener = new TextWithPosListener();
+		//	var processor = new PdfCanvasProcessor(listener);
+
+
+		//	processor.ProcessPageContent(page);
+
+		//	foreach (var c in listener.Chunks.OrderByDescending(x => x.Y)) {
+		//		Console.WriteLine($"{c.Text,-40}  X={c.X:0.0}  Y={c.Y:0.0}");
+		//	}
+		//	//}
+
+		}
+
+	private void btnN2ExtractPoLinesAsXml_Click(object sender, EventArgs e) {
+		//var blocks = new List<TextBlock>();
+		//var tables = new List<TableRectangle>();
+		string src = "C:\\Users\\tony\\Downloads\\PO 3.pdf";
+		//		var (blocks, rectangles) = n1.PdfTableParser.ExtractTables("C:\\Users\\tony\\Downloads\\PO 3.pdf", 1, 400, 9f);
+		PdfDocument pdfdoc=new PdfDocument(new PdfReader(src));
+		n2.TableRowByYStrategy strategy = new(20f,513.0f);
+		
+		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), strategy);
+		var tableLines = strategy.GetTableRows();
+		tableLines[0]=new List<string> { "Description","ItemCode","Quantity","UnitPrice","LineTotal" };
+
+		XDocument xx = strategy.ConvertToXDocument(tableLines, "PurchaseOrderItems");
+		DisplayXmlInWebView(xx);
+		DataSet ds = new();ds.ReadXml(xx.CreateReader(),XmlReadMode.InferTypedSchema);
+		dgvMondayComPoItems.DataSource = ds.Tables[0];
+		
+	}
 }
 
 

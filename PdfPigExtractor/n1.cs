@@ -18,7 +18,7 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 
-namespace PdfTableExtractor;
+namespace n1;
 
 public class TextBlock {
 	public string Text { get; set; }
@@ -75,59 +75,9 @@ public class MyLocationTextExtractionStrategy : ITextExtractionStrategy {
 	}
 }
 
+
 public class PdfTableParser {
-	/// <summary>
-	/// Extract text blocks and table rectangles from a PDF file
-	/// </summary>
-	/// <param name="pdfPath">Path to PDF</param>
-	/// <param name="rowTolerance">Vertical distance tolerance to group rows</param>
-	/// <returns>Tuple of text blocks and table rectangles</returns>
-	//public static (List<TextBlock> TextBlocks, List<TableRectangle> Tables) ExtractTables(string pdfPath, float rowTolerance = 5f) {
-	//	if (!File.Exists(pdfPath))
-	//		throw new FileNotFoundException("PDF file not found", pdfPath);
-
-	//	var textBlocks = new List<TextBlock>();
-	//	var tables = new List<TableRectangle>();
-
-	//	using (var pdfDoc = new PdfDocument(new PdfReader(pdfPath))) {
-	//		for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++) {
-	//			var page = pdfDoc.GetPage(i);
-	//			var strategy = new MyLocationTextExtractionStrategy();
-	//			PdfTextExtractor.GetTextFromPage(page, strategy);
-
-	//			textBlocks.AddRange(strategy.TextBlocks);
-
-	//			// --- Simple Table Detection ---
-	//			var sorted = strategy.TextBlocks.OrderByDescending(tb => tb.Y).ToList();
-	//			var currentRow = new List<TextBlock>();
-
-	//			foreach (var tb in sorted) {
-	//				if (!currentRow.Any()) {
-	//					currentRow.Add(tb);
-	//					continue;
-	//				}
-
-	//				var prev = currentRow.Last();
-	//				if (Math.Abs(prev.Y - tb.Y) <= rowTolerance) {
-	//					currentRow.Add(tb);
-	//				} else {
-	//					if (currentRow.Any())
-	//						tables.Add(GetBoundingRectangle(currentRow));
-	//					currentRow = new List<TextBlock> { tb };
-	//				}
-	//			}
-	//			if (currentRow.Any())
-	//				tables.Add(GetBoundingRectangle(currentRow));
-	//		}
-	//	}
-
-	//	return (textBlocks, tables);
-	//}
-
-
-// NOTE: You will need to define your TextBlock, TableRectangle, 
-// MyLocationTextExtractionStrategy, and GetBoundingRectangle types/methods.
-
+	
 public static (List<TextBlock> TextBlocks, List<TableRectangle> Tables) ExtractTables(
 	string pdfPath,
 	int startPage,                  // <--- NEW: The page to start extraction on
