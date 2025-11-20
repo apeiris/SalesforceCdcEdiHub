@@ -6,10 +6,10 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 
-namespace n2;
+namespace PdfSevices;
 public class TableRowByYStrategy : LocationTextExtractionStrategy {
 	private float _heightThreshold;
-	private float _startY;
+	private float _scanBelowY;
 	private float? _lastBaselineY = null;
 	private bool _collecting = false;
 	private bool _finished = false;
@@ -17,9 +17,9 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 	private List<List<string>> _tableRows = new List<List<string>>();
 	private List<string> _currentRow = new List<string>();
 
-	public TableRowByYStrategy(float heightThreshold, float startY) {
+	public TableRowByYStrategy(float heightThreshold, float scanBelowY) {
 		_heightThreshold = heightThreshold;
-		_startY = startY;
+		_scanBelowY = scanBelowY;
 	}
 
 	public override void EventOccurred(IEventData data, EventType type) {
@@ -29,7 +29,7 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 		float currentBaselineY = renderInfo.GetBaseline().GetStartPoint().Get(1);
 
 		if (!_collecting) {
-			if (currentBaselineY <= _startY) {
+			if (currentBaselineY <= _scanBelowY) {
 				_collecting = true;
 				_lastBaselineY = currentBaselineY;
 			} else {
@@ -65,13 +65,10 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 		}
 		return _tableRows;
 	}
-
 	public XDocument ConvertToXDocument(List<List<string>> tableRows, string tableName = "rows") {
 		if (tableRows == null || tableRows.Count == 0)
 			throw new ArgumentException("Input table must not be empty");
-
 		var headers = tableRows[0];
-
 		var rowsElement = new XElement(tableName,
 			tableRows.Skip(1).Select((row, rowIndex) => {
 				var rowElement = new XElement("row", new XAttribute("index", rowIndex));
@@ -83,12 +80,6 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 				return rowElement;
 			})
 		);
-
 		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), rowsElement);
 	}
-
 }
-
-
-
-
