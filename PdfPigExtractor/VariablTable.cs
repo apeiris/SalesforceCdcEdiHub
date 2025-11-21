@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Xml;
 using System.Xml.Linq;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using Rectangle=iText.Kernel.Geom.Rectangle;
 
 namespace PdfSevices;
 public class TableRowByYStrategy : LocationTextExtractionStrategy {
@@ -14,9 +16,9 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 	private bool _collecting = false;
 	private bool _finished = false;
 
-	private List<List<string>> _tableRows = new List<List<string>>();
-	private List<string> _currentRow = new List<string>();
-
+	private List<List<string>> _tableRows = new();
+	private List<string> _currentRow = new ();
+	private List<Rectangle> _bbox = new(); 
 	public TableRowByYStrategy(float heightThreshold, float scanBelowY) {
 		_heightThreshold = heightThreshold;
 		_scanBelowY = scanBelowY;
@@ -53,7 +55,13 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 				}
 			}
 		}
-
+	 //	renderInfo.GetDescentLine().GetBoundingRectangle();
+		_bbox.Add(new Rectangle(
+			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetX(),
+			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetY(),
+			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetWidth(),
+			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetHeight()
+		));
 		_currentRow.Add(renderInfo.GetText());
 		_lastBaselineY = currentBaselineY;
 	}
@@ -64,6 +72,9 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 			_currentRow.Clear();
 		}
 		return _tableRows;
+	}
+	public List<Rectangle> GetBBoxes() {
+		return _bbox;
 	}
 	public XDocument ConvertToXDocument(List<List<string>> tableRows, string tableName = "rows") {
 		if (tableRows == null || tableRows.Count == 0)

@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -28,6 +29,8 @@ using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using Rectangle = iText.Kernel.Geom.Rectangle;
 using ToolTip = System.Windows.Forms.ToolTip;
+using PdfSevices;
+using iText.Kernel.Pdf.Filespec;
 
 
 namespace WinForms;
@@ -1575,10 +1578,12 @@ public partial class MainForm : Form {
 
 			//var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
 
-			var nextPdfScanY1 = rectangles.Select(r => {float bottom = r.rect.GetBottom();
-													    float top = r.rect.GetTop();	
-															Console.WriteLine($"Bottom = {bottom} , Top={top}");
-															return bottom;}).Min();
+			var nextPdfScanY1 = rectangles.Select(r => {
+				float bottom = r.rect.GetBottom();
+				float top = r.rect.GetTop();
+				Console.WriteLine($"Bottom = {bottom} , Top={top}");
+				return bottom;
+			}).Min();
 			Console.WriteLine($"\n\n\n\t\t y2={nextPdfScanY1}");
 
 			var (textBlocks, tables) = PdfTableParser.ExtractTables(src, pageNumber, nextPdfScanY1, rowTolerance: 9f);
@@ -1646,30 +1651,31 @@ public partial class MainForm : Form {
 		//		Console.WriteLine($"{c.Text,-40}  X={c.X:0.0}  Y={c.Y:0.0}");
 		//	}
 		//	//}
-
-		}
-
-	private void btnN2ExtractPoLinesAsXml_Click(object sender, EventArgs e) {
-
-		string src = "C:\\Users\\tony\\Downloads\\PO 3.pdf";
-		PdfDocument pdfdoc = new PdfDocument(new PdfReader(src));
-		PdfSevices.TableRowByYStrategy strategy;
-	    //  PdfSevices.TableRowByYStrategy
-		List<List<string>> tableLines;
-		ExtractTextBelowY(pdfdoc, out strategy, out tableLines);
-		tableLines[0] = new List<string> { "Description", "ItemCode", "Quantity", "UnitPrice", "LineTotal" };
-
-		XDocument xx = strategy.ConvertToXDocument(tableLines, "PurchaseOrderItems");
-		DisplayXmlInWebView(xx);
-		DataSet ds = new(); ds.ReadXml(xx.CreateReader(), XmlReadMode.InferTypedSchema);
-		dgvMondayComPoItems.DataSource = ds.Tables[0];
-
 	}
 
+	private void btnN2ExtractPoLinesAsXml_Click(object sender, EventArgs e) {
+		string src = "C:\\Users\\tony\\Downloads\\PO 3.pdf";
+		using PdfWriter writer = new PdfWriter("C:/temp/po_lines_extracted.pdf");
+		using (PdfDocument pdfdoc = new PdfDocument(new PdfReader(src), writer)) {
+			TableRowByYStrategy strategy;
+			List<List<string>> tableOut;
+			ExtractTextBelowY(pdfdoc, out strategy, out tableOut);
+			tableOut[0] = new List<string> { "Description", "ItemCode", "Quantity", "UnitPrice", "LineTotal" };
+			var bb = strategy.GetBBoxes();
+			Rectangle boundingRect = new(bb.Min(r => r.GetLeft()), bb.Min(r => r.GetBottom()), bb.Max(r => r.GetRight()) - bb.Min(r => r.GetLeft()), bb.Max(r => r.GetTop()) - bb.Min(r => r.GetBottom()));
+			Render.DrawBorder(pdfdoc, boundingRect);
+		    Render.DrawCornerLabel(pdfdoc, boundingRect,LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
+			XDocument xx = strategy.ConvertToXDocument(tableOut, "PurchaseOrderItems");
+			DisplayXmlInWebView(xx);
+			DataSet ds = new(); ds.ReadXml(xx.CreateReader(), XmlReadMode.InferTypedSchema);
+			dgvMondayComPoItems.DataSource = ds.Tables[0];
+		}
+	}
 	private static void ExtractTextBelowY(PdfDocument pdfdoc, out PdfSevices.TableRowByYStrategy strategy, out List<List<string>> tableLines) {
-		strategy = new(heightThreshold:20f,scanBelowY:513.0f);
+		strategy = new(heightThreshold: 20f, scanBelowY: 513.0f);
 		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), strategy);
 		tableLines = strategy.GetTableRows();
+		var bb = strategy.GetBBoxes();
 	}
 }
 
