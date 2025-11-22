@@ -1,11 +1,55 @@
-<xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <pdfMap client="IrisSystems" document="PurchaseOrder">
 	<earMarked>
-
+		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" />
+		<area name="Buyer" rectangle="36,601,269,72" parent="Parties">
+			<rowSet>
+				<!-- SIMPLE ROW: Direct copy from row index 0 -->
+				<row index="0" name="name" operation="copy" />
+				<!-- SCRIPT ROW: Split address on comma -->
+				<row index="1" name="address" operation="script" parent="address">
+					<marker value="," />
+					<script language="csharp">
+						<![CDATA[ var parts = text.Split(new[] { marker }, StringSplitOptions.None);
+							return new {
+							street = parts.Length > 0 ? parts[0].Trim() : "",
+							city = parts.Length > 1 ? parts[1].Trim() : "",
+							postalCode = parts.Length > 2 ? parts[2].Trim() : "",
+							country = parts.Length > 3 ? parts[3].Trim() : ""};	]]>
+					</script>
+					<columns>
+						<street />
+						<City />
+						<postalCode />
+						<country />
+					</columns>
+				</row>
+				<row index="2" name="contact" operation="script" parent="contact" >
+					<input dataAttribute="Contact" />
+					<marker value="|" />
+					<script language="csharp">
+						<![CDATA[
+            var parts = text.Split(new[]{ marker }, StringSplitOptions.None);
+            return new {
+                phone = parts.Length > 0 ? parts[0].Trim() : "",
+                email = parts.Length > 1 ? parts[1].Trim() : ""
+        
+            };
+          ]]>
+					</script>
+					<columns>
+						<email />
+						<phone />
+						<mobile />
+						<other />
+					</columns>
+				</row>
+			</rowSet>
+		</area>
 		<area name="PurchaseOrderItems" types="variable" parent="PurchaseOrder" scanBelowY="513.0" lineHeight="20.0">
 			<rowSet rowCount="variable" source="ExtractTableBelowY" sourceMethod="ExtractTableBelowY" >
-			
-		     <row repeat="true" name="PurchaseOrderItem" operation="script">
+
+				<row repeat="true" name="PurchaseOrderItem" operation="script">
 					<script language="csharp">
 						<![CDATA[
             // Your script to parse each line text content from the extracted table lines

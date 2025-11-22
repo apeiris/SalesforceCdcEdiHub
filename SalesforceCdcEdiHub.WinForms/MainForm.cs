@@ -1658,7 +1658,7 @@ public partial class MainForm : Form {
 		tableLines = ContentBelowY.GetTableRows();
 		tableLines[0] = TableHeader; // override header
 		BoundingBox  = ContentBelowY.GetTableBoundingBox();	
-	    xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "PurchaseOrderItems");
+	    xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "OrderItems");
 		Console.WriteLine($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={	BoundingBox.GetHeight()}");
 	}
 }
