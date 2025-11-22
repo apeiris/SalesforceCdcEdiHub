@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-namespace PdfTableExtractor;
+namespace PDF;
 public struct ExtractionMap {// 1. Map for single, non-repeating fields (Header, Parties, Notes)
 	public string XmlPath { get; set; }// Full XML Path: e.g., "Header/PONumber"
 	public Rectangle BoundingBox { get; set; } // The area on the PDF
@@ -22,7 +22,7 @@ public struct TableExtractionMap {
 public class RawTableData {
 	public List<List<string>> Rows { get; set; } = new List<List<string>>();
 }// Placeholder for raw data retrieved from a PDF table extraction utility
-public class PdfDynamicXmlExtractor {
+public class xPdfDynamicXmlExtractor {
 	// =========================================================================
 	// Orchestration: Main entry point to combine all extractions
 	// =========================================================================

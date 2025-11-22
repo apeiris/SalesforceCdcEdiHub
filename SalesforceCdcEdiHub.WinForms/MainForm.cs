@@ -29,7 +29,7 @@ using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using Rectangle = iText.Kernel.Geom.Rectangle;
 using ToolTip = System.Windows.Forms.ToolTip;
-using PdfSevices;
+using PDF;
 using iText.Kernel.Pdf.Filespec;
 using iText.Layout.Properties;
 
@@ -75,14 +75,14 @@ public partial class MainForm : Form {
 	static bool _cdcObjectsLoaded = false;
 	static bool _soqlLoaded = false;
 	static bool _hasUnInitDbArtefacts = false;
-	private readonly List<string> _sfoTables = new List<string>(); // List of Salesforce objects from SQL Server
-	private readonly List<string> _qTypeSelecter = new List<string>();
+	//private readonly List<string> _sfoTables = new List<string>(); // List of Salesforce objects from SQL Server
+	//private readonly List<string> _qTypeSelecter = new List<string>();
 	private DataTable _sourceTable; // Data source for dgvCDCEnabledObjects
 	private DataTable _destinationTable; // Data source for dgvRegisteredCDCCandidates
 	private DataTable _dtRegisteredCDCCandidates; // Data source for registered tables
 	private DataTable _dtSoqlResults = new DataTable();
 
-	//private  List<DataRow> _rowsToMove = new List<DataRow>(); // Temp storage for rows to move
+	
 	private readonly SqlServerLib _sqlServerLib;
 	private readonly object _lock = new object();
 	private static enmObjectSource _retrieveFrom = enmObjectSource.SalesForce;
@@ -1567,11 +1567,11 @@ public partial class MainForm : Form {
 				rectangles.Add((rect, name));
 			}
 			// Extract tables
-			DataTable dtBuyer = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
-			DataTable dtSupplier = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
-			DataTable dtItems = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
-			DataTable dtSummary = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
-			DataTable dtNotes = PdfDataExtraction.PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
+			DataTable dtBuyer = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
+			DataTable dtSupplier = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
+			DataTable dtItems = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
+			DataTable dtSummary = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
+			DataTable dtNotes = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
 
 			DataSet ds = new();
 
@@ -1591,7 +1591,7 @@ public partial class MainForm : Form {
 
 
 
-			PdfDataExtraction.PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
+				PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
 			await pdfView.EnsureCoreWebView2Async();// Show in WebView
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
 			//if (chkSwitchToWebView.Checked)
@@ -1604,7 +1604,7 @@ public partial class MainForm : Form {
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
 		//		XDocument doc = PdfDataExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-		XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystemsN2.xml");
 		DisplayXmlInWebView(doc);
 	}
 
@@ -1631,25 +1631,27 @@ public partial class MainForm : Form {
 		using (PdfDocument pdfdoc = new PdfDocument(new PdfReader(src), writer)) {
 			List<List<string>> tableOut;
 			Rectangle boundingRect;
-			ExtractTextBelowY(pdfdoc, out boundingRect, out tableOut);
-			tableOut[0] = new List<string> { "Description", "ItemCode", "Quantity", "UnitPrice", "LineTotal" };
-			XDocument XDoc = ExtractPdfTableBelowY.ConvertToXDocument(tableOut, "PurchaseOrderItems");
+			XDocument xD;
+
+			List<string> Header= ["Item", "Code", "Qty", "UnitPrice", "LineTotal" ];
+		ExtractTableBelowY(pdfdoc,Header, out boundingRect, out tableOut,out xD);
 
 
-
-			DisplayXmlInWebView(XDoc);
+			DisplayXmlInWebView(xD);
 			Render.DrawBorder(pdfdoc, boundingRect);
 			Render.DrawCornerLabel(pdfdoc, boundingRect, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
-			DataSet ds = new(); ds.ReadXml(XDoc.CreateReader(), XmlReadMode.InferTypedSchema);
+			DataSet ds = new(); ds.ReadXml(xD.CreateReader(), XmlReadMode.InferTypedSchema);
 			dgvMondayComPoItems.DataSource = ds.Tables[0];
 		}
 	}
 
-	private static void ExtractTextBelowY(PdfDocument pdfdoc, out Rectangle BoundingBox, out List<List<string>> tableLines) {
-		ExtractPdfTableBelowY  ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
+	private static void ExtractTableBelowY(PdfDocument pdfdoc,List<string>TableHeader, out Rectangle BoundingBox, out List<List<string>> tableLines,out XDocument xdContent) {
+		PDF.ExtractPdfTableBelowY  ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
 		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), ContentBelowY);
 		tableLines = ContentBelowY.GetTableRows();
-		BoundingBox  = ContentBelowY.GetTableBoundingBox();
+		tableLines[0] = TableHeader; // override header
+		BoundingBox  = ContentBelowY.GetTableBoundingBox();	
+	    xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "PurchaseOrderItems");
 		Console.WriteLine($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={	BoundingBox.GetHeight()}");
 	}
 }

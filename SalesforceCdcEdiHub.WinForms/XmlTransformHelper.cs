@@ -9,7 +9,6 @@ using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
-using PdfDataExtraction;
 using Rectangle= iText.Kernel.Geom.Rectangle;
 
 // NOTE: CustomTransformers, TextChunkInfo, and CustomLocationTextExtractionStrategy must be defined in your environment.
@@ -137,11 +136,11 @@ public static class XmlTransformHelper {
 				throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number is out of range.");
 
 			PdfPage page = pdfDocument.GetPage(pageNumber);
-			CustomLocationTextExtractionStrategy strategy = new();
+			PDF.CustomLocationTextExtractionStrategy strategy = new();
 			PdfTextExtractor.GetTextFromPage(page, strategy);
 
 			// 2. Filter chunks to only those within the specified bounding box
-			List<TextChunkInfo> filteredChunks = strategy.GetTextContent()
+			List<PDF.TextChunkInfo> filteredChunks = strategy.GetTextContent()
 				.Where(chunk =>
 					chunk.Location!.GetLeft() >= rectangle.GetLeft() &&
 					chunk.Location.GetRight() <= rectangle.GetRight() &&

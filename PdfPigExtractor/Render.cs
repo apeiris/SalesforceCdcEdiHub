@@ -5,8 +5,8 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
 using NLog;
 using Rectangle = iText.Kernel.Geom.Rectangle;
-namespace PdfSevices {
-	public enum LabelLocation {
+namespace PDF;
+public enum LabelLocation {
 		TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,
 		LOWER_LEFT_CORNER, LOWER_RIGHT_CORNER,
 		UPPER_LEFT_CORNER, UPPER_RIGHT_CORNER,
@@ -85,7 +85,6 @@ namespace PdfSevices {
 
 		}
 	}
-}
 
 //public static class ColorExtensions {
 //	public static iText.Kernel.Colors.Color ToITextColor(this System.Drawing.Color c) {

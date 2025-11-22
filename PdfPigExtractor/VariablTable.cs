@@ -8,7 +8,7 @@ using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Rectangle=iText.Kernel.Geom.Rectangle;
 
-namespace PdfSevices;
+namespace PDF;
 public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 	private readonly float _heightThreshold;
 	private readonly float _scanBelowY;
@@ -94,6 +94,22 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 		return boundingRect;
 	}
 
+	private static string ToXmlSafeName(string s) {
+		if (string.IsNullOrWhiteSpace(s))
+			return "Unknown";
+
+		// Replace invalid chars with underscore
+		var cleaned = new string(s.Select(ch =>
+			char.IsLetterOrDigit(ch) ? ch : '_'
+		).ToArray());
+
+		// XML names cannot start with a digit
+		if (char.IsDigit(cleaned[0]))
+			cleaned = "_" + cleaned;
+
+		return cleaned;
+	}
+
 	public static XDocument ConvertToXDocument(List<List<string>> tableRows, string tableName = "rows") {
 		if (tableRows == null || tableRows.Count == 0)
 			throw new ArgumentException("Input table must not be empty");
@@ -102,7 +118,7 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 			tableRows.Skip(1).Select((row, rowIndex) => {
 				var rowElement = new XElement("row", new XAttribute("index", rowIndex));
 				for (int i = 0; i < headers.Count; i++) {
-					var header = headers[i];
+					var header = ToXmlSafeName(headers[i]);
 					var value = i < row.Count ? row[i] : string.Empty;
 					rowElement.SetAttributeValue(header, value);
 				}

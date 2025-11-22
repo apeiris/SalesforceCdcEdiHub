@@ -93,9 +93,9 @@
 			</rowSet>
 		</area>
 
-
-		<area name="Items" rectangle="36,439,495,200" parent="PurchaseOrder">
-			<rowSet type="variable">
+		<!--scanBelowY is scan below the specified Y axis and all line height less that given lineHeight considered belonging to the table.  -->
+		<area name="PurchaseOrderItems" type="variable"  parent="PurchaseOrder" scanBelowY="513.0f" lineHeight="20.0f">
+			<rowSet rowCount="variable">
 
 				<!-- Row template that repeats once for every extracted line -->
 				<row repeat="true" name="Item"  operation="script">

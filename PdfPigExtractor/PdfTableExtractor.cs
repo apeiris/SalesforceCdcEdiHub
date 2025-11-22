@@ -17,7 +17,7 @@ using Org.BouncyCastle.Asn1.X509;
 using Rectangle = iText.Kernel.Geom.Rectangle;
 
 
-namespace PdfDataExtraction;
+namespace PDF;
 public class PdfTableExtractor {
 	public static void AddMultipleRedBorders(string inputPath, string outputPath, List<(Rectangle rect, string name)> rectangles) {
 		using var reader = new PdfReader(inputPath);
