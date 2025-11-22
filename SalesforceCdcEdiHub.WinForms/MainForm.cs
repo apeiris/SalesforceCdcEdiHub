@@ -31,6 +31,7 @@ using Rectangle = iText.Kernel.Geom.Rectangle;
 using ToolTip = System.Windows.Forms.ToolTip;
 using PdfSevices;
 using iText.Kernel.Pdf.Filespec;
+using iText.Layout.Properties;
 
 
 namespace WinForms;
@@ -60,14 +61,13 @@ public partial class MainForm : Form {
 	#region fields
 	private readonly IMemoryCache _cache;
 	private const string CacheKey = "SFToken";
-	private readonly IHost _host;
 	private readonly ISalesforceService _salesforceService;
 	private readonly PubSubService _pubSubService;
 	private readonly SalesforceConfig _config;
 	private readonly ILogger<MainForm> _logger;
 	private readonly X12 _x12;
 	private readonly HashSet<int> _higlightTabs = new();
-	static readonly string _token = "";
+	private DataSet _dsOpenAs2=new();
 	static string _instanceUrl = "";
 	static string _tenantId = "";
 	private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
@@ -81,14 +81,14 @@ public partial class MainForm : Form {
 	private DataTable _destinationTable; // Data source for dgvRegisteredCDCCandidates
 	private DataTable _dtRegisteredCDCCandidates; // Data source for registered tables
 	private DataTable _dtSoqlResults = new DataTable();
-	private readonly static int _lbxLogMw = 0;
-	private List<DataRow> _rowsToMove = new List<DataRow>(); // Temp storage for rows to move
+
+	//private  List<DataRow> _rowsToMove = new List<DataRow>(); // Temp storage for rows to move
 	private readonly SqlServerLib _sqlServerLib;
 	private readonly object _lock = new object();
 	private static enmObjectSource _retrieveFrom = enmObjectSource.SalesForce;
 	private static enmRetrievedFrom _retrievedFrom = _retrieveFrom;
-	private readonly System.Drawing.Color _dfBColor;
-	private Color _dfFColor;
+
+
 	private Dictionary<TabPage, (Color bcolor, Color fcolor)> _tabColors = new Dictionary<TabPage, (Color, Color)>();
 	private static readonly List<string> orderStates = new List<string> { "Revision Required", "In Production", "Completed" };
 	private IConfiguration _cfg;
@@ -163,8 +163,8 @@ public partial class MainForm : Form {
 			_logger.LogDebug($"_sqlServerLib_SqlTableEvent-  hello ***+++ here:{result}");
 			switch (e.table.TableName) {
 				case "Order__c":
-					string state = e.table.Rows[0]["Status__c"].ToString();
-					string oname = e.table.Rows[0]["name"].ToString();
+					string state = e.table.Rows[0]["Status__c"].ToString()!;
+					string oname = e.table.Rows[0]["name"].ToString()!;
 					switch (state) {
 						case "Submitted to Manufacturing":
 							_logger.LogDebug($"Handling chage state :[{state}] for order [{oname}]");
@@ -303,46 +303,33 @@ public partial class MainForm : Form {
 		await Task.Delay(10); // Simulate async processing
 
 		if (InvokeRequired) {
-			// Use InvokeAsync to support await inside
-			await InvokeAsync(async () => {
+			await InvokeAsync(async () => {// Use InvokeAsync to support await inside
 				using JsonDocument d = JsonDocument.Parse(e.Message);
 				string eventType = d.RootElement.GetProperty("event").GetString()!.ToUpper();
 				string resource = d.RootElement.GetProperty("resource").GetString()!.ToUpper();
-
 				if (eventType == "SAVE") {
 					switch (resource) {
 						case "PARTNERSHIP":
 							JsonElement data = d.RootElement.GetProperty("data");
-
-							// Convert to DataTable -> DataSet -> XML
-							DataTable? dt = JsonExtensions.JsonExtensions.ToDataTable(data, resource).Transpose();
+							DataTable? dt = JsonExtensions.JsonExtensions.ToDataTable(data, resource).Transpose();	// Convert to DataTable -> DataSet -> XML
 							DataSet ds = new DataSet();
 							ds.Tables.Add(dt);
 							dt = null;
 							string xml = ds.GetXml();
-
-							// Extract IDs
-							string receiverId = data.GetProperty("receiverIDs").GetString()!;
+							string receiverId = data.GetProperty("receiverIDs").GetString()!;// Extract IDs
 							string senderId = data.GetProperty("senderIDs").GetString()!;
 							string partnershipName = data.GetProperty("name").GetString()!;
-							// Build OpenAS2 URL safely
-							string baseUrl = _cfg["OpenAs2:Url"]!.TrimEnd('/');
+							string baseUrl = _cfg["OpenAs2:Url"]!.TrimEnd('/');// Build OpenAS2 URL safely
 							string url = $"{baseUrl}/api/partnership/view/{partnershipName}";
-
 							_logger.LogInformation("Fetching OpenAS2 partnership: {Url}", url);
-
-							// ✅ Await the async HTTP call
-							XmlDocument xmlDoc = await Axios.GetXmlDocumentAsync(url, _cfg["OpenAs2:Username"], _cfg["OpenAs2:Password"]);
-
+							XmlDocument xmlDoc = await Axios.GetXmlDocumentAsync(url, _cfg["OpenAs2:Username"]!, _cfg["OpenAs2:Password"]!);	// ✅ Await the async HTTP call
 							_logger.LogDebug("✅ OpenAS2 Response:\n{Xml}", xmlDoc.OuterXml);
 							break;
-
 						default:
 							_logger.LogWarning("Unhandled resource type: {Resource}", resource);
 							break;
 					}
 				}
-
 				_logger.LogDebug($"✅ Invoked WebHookEvent message:\n{e.Message}\n");
 			});
 		} else {
@@ -352,8 +339,6 @@ public partial class MainForm : Form {
 	private void Form1_Load(object sender, EventArgs e) {
 		string savedTab = string.IsNullOrEmpty(Properties.Settings.Default.SelectedTab) ? "tbpSfObjects" : Properties.Settings.Default.SelectedTab;
 		if (!string.IsNullOrEmpty(savedTab) && tabControl1.TabPages.ContainsKey(savedTab)) {
-			//TabPage tbp = tabControl1.TabPages[savedTab]!;
-			//tabControl1_Selected(sender, new TabControlEventArgs(tbp, tabControl1.SelectedIndex, TabControlAction.Selected));
 			tabControl1.SelectedTab = tabControl1.TabPages[savedTab];
 		}
 		lblPanel1.Parent = splitContainer1.Panel1;
@@ -434,14 +419,12 @@ public partial class MainForm : Form {
 			}
 			string oN = ObjectNameFromEventDeclaration((string)lbxObjects.SelectedItem!);
 			DataSet ds = await _salesforceService.GetObjectSchemaAsDataSetAsync(oN);
-			DataTable dt = ds.Tables[oN];// Now synchronize access to the UI with lock
+			DataTable dt = ds.Tables[oN]!;// Now synchronize access to the UI with lock
 			lock (_dgvLock) {
 				this.Invoke((Action)(() => {
 					dgvObject.DataSource = dt;
 					dgvObject.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-					//toolStripStatusLabel1.Text = $"Schema for {dt.TableName} having {dt.Rows.Count} rows loaded successfully.";
-					ShowStatus(oN + $" schema having {dt.Rows.Count} rows loaded successfully.", 5);
-
+					ShowStatus(oN + $" schema having {dt!.Rows.Count} rows loaded successfully.", 5);//toolStripStatusLabel1.Text = $"Schema for {dt.TableName} having {dt.Rows.Count} rows loaded successfully.";
 				}));
 			}
 		} catch (Exception ex) {
@@ -490,7 +473,6 @@ public partial class MainForm : Form {
 		lblSourceList.Text = $"{dgvCDCEnabledObjects.Rows.Count} Salesforce objects";
 		Log($"Source count = {_sourceTable.Rows.Count} Destination={_destinationTable.Rows.Count}", LogLevel.Debug);
 	}
-
 	private async void btnMoveLeft_Click(object sender, EventArgs e) {
 		if (dgvRegisteredCDCCandidates.SelectedRows.Count == 0) return;
 		_sourceTable = (DataTable)dgvCDCEnabledObjects.DataSource!;
@@ -503,7 +485,6 @@ public partial class MainForm : Form {
 		foreach (DataGridViewRow row in dgvRegisteredCDCCandidates.SelectedRows) {
 			DataRow deletedRow = ((DataRowView)row.DataBoundItem!).Row;
 			DataRow sourceRow = _sourceTable.NewRow();
-
 			sourceRow["name"] = deletedRow["name"].ToString();
 			sourceRow["QualifiedApiName"] = SalesforceService.ObjectNameToChangeEvent(deletedRow["name"].ToString()!);
 			_sourceTable.Rows.Add(sourceRow);
@@ -513,7 +494,6 @@ public partial class MainForm : Form {
 			string name = row["name"].ToString()!;
 			MessageBox.Show($"object name: {name}:{SalesforceService.ObjectNameToChangeEvent(name)} ");
 			string recordId = await _salesforceService.IdOfPlatformEventChannelMember(name);
-
 			bool x = await _salesforceService.DeleteToolingRecord("PlatformEventChannelMember", recordId);
 			btnSubscribe_Click(null!, null!);
 			_destinationTable!.Rows.Remove(row);
@@ -522,7 +502,6 @@ public partial class MainForm : Form {
 		dgvCDCEnabledObjects.DataSource = _sourceTable;
 		dgvCDCEnabledObjects.Refresh();
 		dgvCDCEnabledObjects.Columns[0].HeaderText = "Salesforce Objects";
-
 		dgvRegisteredCDCCandidates.DataSource = null;
 		dgvRegisteredCDCCandidates.DataSource = _destinationTable;
 		dgvRegisteredCDCCandidates.Refresh();
@@ -545,7 +524,7 @@ public partial class MainForm : Form {
 		string s = $"SELECT {string.Join(",", je.GetProperty("fields").EnumerateArray().Select(f => f.GetProperty("name")))} FROM {objectName}";
 		DataTable dt = await _salesforceService.ExecSoqlToTable(s, false);
 		_sqlServerLib.UpdateServerTable(dt, s);
-		return null; // Return null or appropriate value if needed
+		return null!; // Return null or appropriate value if needed
 	}
 	private async void btnRegisterCDCCandidate(object sender, EventArgs e) {
 		DataTable dt = (DataTable)dgvRegisteredCDCCandidates.DataSource!;
@@ -557,7 +536,6 @@ public partial class MainForm : Form {
 			if (row.Cells["Initialize"].Value is true) {
 				listToCreate.Add(name);
 				row.Cells["Create"].Value = Properties.Resources.CacheOk; // Set warning icon for non-existing names
-
 			}
 		}
 		if (listToCreate.Count > 0) {
@@ -577,24 +555,21 @@ public partial class MainForm : Form {
 		string json = string.Empty;
 		try {
 			int rowId = dgvOrderList.SelectedCells[0].RowIndex;
-			string orderId = dgvOrderList.Rows[rowId].Cells["Id"].Value?.ToString() ?? null;
-			string status = selectedRadio?.Text;
+			string orderId = dgvOrderList.Rows[rowId].Cells["Id"].Value?.ToString() ?? null!;
+			string status = selectedRadio?.Text!;
 			json = $"{{\"status__c\":\"{status}\",\"Order_Id__c\":\"{orderId}\"}}";
 			_salesforceService.UpsertSobject(lbxObjects.Text, null!, json, useTooling: false);
 			ShowStatus($"Order {dgvOrderList.Rows[rowId].Cells["name"].Value?.ToString()} State is now set to {status} ", 10);
 		} catch (Exception ex) {
 			ShowStatus("Please select a Order and the Status");
+			ex.Data.Clear();
 		}
 	}
 	private async void btnGetPickList_Click(object sender, EventArgs e) {
 		ShowStatus("btnGetPickList_Click...");
-
 		string oname = cmbObjects.Text;
 		string pickList = cmbField.Text;
-
-		//	DataTable dt = await _salesforceService.GetPicklistValuesAsync("Order__c", "Status__c");
 		DataTable dt = await _salesforceService.GetPicklistValuesAsync(oname, pickList);
-
 		List<string?> plistValues = dt.AsEnumerable().Select(r => r.Field<string>("Value")).ToList();
 		dgvSchema.DataSource = dt;
 		_logger.LogInformation($"{dt.Rows.Count} : rows");
@@ -709,15 +684,12 @@ public partial class MainForm : Form {
 		splitcSoql.Panel2.ClientSize = sw;
 		splitcSoql.Panel1Collapsed = true;
 		tableLayoutPanel13.Width = sw.Width;
-
 		dgvSOQLResult.DataSource = null;
-
 		_dtSoqlResults = await _salesforceService.ExecSoqlToTable(rtSoqlQuery.Text, chkUseTooling.Checked);
 		if (_dtSoqlResults.Columns.Contains("Id")) _dtSoqlResults.Columns["Id"]!.ReadOnly = true;
 		_dtSoqlResults.AcceptChanges();
 		dgvSOQLResult.DataSource = _dtSoqlResults;
 		lblSOQLRowCount.Text = $"Rows: {_dtSoqlResults.Rows.Count}";
-
 	}
 	private async void btnSObjectSave(object sender, EventArgs e) {// saves Edited Soql Object 	
 		dgvSOQLResult.EndEdit();
@@ -755,9 +727,9 @@ public partial class MainForm : Form {
 			return;
 		}
 		DataGridViewRow selectedRow = dgvSOQLResult.SelectedRows[0];
-		DataRowView rowView = selectedRow.DataBoundItem as DataRowView;
+		DataRowView rowView = selectedRow.DataBoundItem! as DataRowView;
 
-		DataRow row = rowView.Row;
+		DataRow row = rowView!.Row;
 		string tableName = row.Table.TableName;
 		switch (row.Table.TableName) {
 			case "PlatformEventChannelMember":
@@ -999,7 +971,7 @@ public partial class MainForm : Form {
 		if (_statusTimer != null) {
 			_statusTimer.Stop();
 			_statusTimer.Dispose();
-			_statusTimer = null;
+			_statusTimer = null!;
 		}
 
 		_statusTimer = new System.Windows.Forms.Timer();
@@ -1359,7 +1331,7 @@ public partial class MainForm : Form {
 				break;
 			case "tbpopenas2":
 				var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/list", "userID", "pWd");
-				_dsOpenAs2.Clear();
+				if (_dsOpenAs2!=null)_dsOpenAs2.Clear();
 				_dsOpenAs2.ReadXml(x.CreateReader());
 				cmbOpenAs2ResultObjects.Items.Clear();
 				//cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables.Cast<DataTable>().Select(t => t.TableName).ToArray());
@@ -1431,7 +1403,7 @@ public partial class MainForm : Form {
 		string responseBody = await response.Content.ReadAsStringAsync();
 		JsonDocument jsonDoc = JsonDocument.Parse(responseBody);
 	}
-	DataSet _dsOpenAs2 = new();
+	DataSet dsOpenAs2 = new();
 	private async void btnGetPartnerList_Click(object sender, EventArgs e) {
 		try {
 			var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/view/MyCompany-to-PartnerA", "userID", "pWd");
@@ -1632,7 +1604,7 @@ public partial class MainForm : Form {
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
 		//		XDocument doc = PdfDataExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-		XDocument doc = PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
 		DisplayXmlInWebView(doc);
 	}
 
@@ -1657,25 +1629,28 @@ public partial class MainForm : Form {
 		string src = "C:\\Users\\tony\\Downloads\\PO 3.pdf";
 		using PdfWriter writer = new PdfWriter("C:/temp/po_lines_extracted.pdf");
 		using (PdfDocument pdfdoc = new PdfDocument(new PdfReader(src), writer)) {
-			TableRowByYStrategy strategy;
 			List<List<string>> tableOut;
-			ExtractTextBelowY(pdfdoc, out strategy, out tableOut);
+			Rectangle boundingRect;
+			ExtractTextBelowY(pdfdoc, out boundingRect, out tableOut);
 			tableOut[0] = new List<string> { "Description", "ItemCode", "Quantity", "UnitPrice", "LineTotal" };
-			var bb = strategy.GetBBoxes();
-			Rectangle boundingRect = new(bb.Min(r => r.GetLeft()), bb.Min(r => r.GetBottom()), bb.Max(r => r.GetRight()) - bb.Min(r => r.GetLeft()), bb.Max(r => r.GetTop()) - bb.Min(r => r.GetBottom()));
+			XDocument XDoc = ExtractPdfTableBelowY.ConvertToXDocument(tableOut, "PurchaseOrderItems");
+
+
+
+			DisplayXmlInWebView(XDoc);
 			Render.DrawBorder(pdfdoc, boundingRect);
-		    Render.DrawCornerLabel(pdfdoc, boundingRect,LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
-			XDocument xx = strategy.ConvertToXDocument(tableOut, "PurchaseOrderItems");
-			DisplayXmlInWebView(xx);
-			DataSet ds = new(); ds.ReadXml(xx.CreateReader(), XmlReadMode.InferTypedSchema);
+			Render.DrawCornerLabel(pdfdoc, boundingRect, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
+			DataSet ds = new(); ds.ReadXml(XDoc.CreateReader(), XmlReadMode.InferTypedSchema);
 			dgvMondayComPoItems.DataSource = ds.Tables[0];
 		}
 	}
-	private static void ExtractTextBelowY(PdfDocument pdfdoc, out PdfSevices.TableRowByYStrategy strategy, out List<List<string>> tableLines) {
-		strategy = new(heightThreshold: 20f, scanBelowY: 513.0f);
-		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), strategy);
-		tableLines = strategy.GetTableRows();
-		var bb = strategy.GetBBoxes();
+
+	private static void ExtractTextBelowY(PdfDocument pdfdoc, out Rectangle BoundingBox, out List<List<string>> tableLines) {
+		ExtractPdfTableBelowY  ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
+		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), ContentBelowY);
+		tableLines = ContentBelowY.GetTableRows();
+		BoundingBox  = ContentBelowY.GetTableBoundingBox();
+		Console.WriteLine($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={	BoundingBox.GetHeight()}");
 	}
 }
 

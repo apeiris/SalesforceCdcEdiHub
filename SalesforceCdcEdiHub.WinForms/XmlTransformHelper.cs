@@ -62,8 +62,8 @@ public static class XmlTransformHelper {
 									   .ToList();
 
 		foreach (var area in processingAreas) {
-			string areaName = (string)area.Attribute("name");
-			string rectangleStr = (string)area.Attribute("rectangle");
+			string areaName = (string)area.Attribute("name")!;
+			string rectangleStr = (string)area.Attribute("rectangle")!;
 
 			// Parse rectangle string into iText Rectangle
 			string[] coords = rectangleStr.Split(',');

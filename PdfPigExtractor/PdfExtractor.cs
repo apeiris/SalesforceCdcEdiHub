@@ -10,25 +10,26 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
+namespace PDF;
 public class ScriptGlobals {
-	public string text { get; set; }
-	public string marker { get; set; }
+	public string? text { get; set; }
+	public string? marker { get; set; }
 }
 
 public static class PdfExtractor {
 	public static XDocument ExtractPdfContentAsXml(string pdfPath, string xmlMap, int pageNumber = 1) {
 		XDocument mapDoc = XDocument.Load(xmlMap);
 		string documentType = mapDoc.Root?.Attribute("document")?.Value ?? "Document";
-		XDocument extractedDoc = new XDocument(new XElement(documentType));
+		XDocument extractedDoc = new(new XElement(documentType));
 		XElement root = extractedDoc.Root!;
-		using (PdfReader reader = new PdfReader(pdfPath))
-		using (PdfDocument pdf = new PdfDocument(reader)) {
+		using (PdfReader reader = new(pdfPath))
+		using (PdfDocument pdf = new (reader)) {
 			PdfPage page = pdf.GetPage(pageNumber);
 			float pageHeight = page.GetPageSizeWithRotation().GetHeight();
 			float pageWidth = page.GetPageSizeWithRotation().GetWidth();
 			string fullText = PdfTextExtractor.GetTextFromPage(page);
 			Console.WriteLine($"Full page text length: {fullText.Length}");
-			Console.WriteLine($"Full page text snippet: {fullText.Substring(0, Math.Min(200, fullText.Length))}...");
+			Console.WriteLine($"Full page text snippet: {fullText.Substring(startIndex: 0, Math.Min(200, fullText.Length))}...");
 			var earMarked = mapDoc.Root?.Element("earMarked");
 			if (earMarked == null) return extractedDoc;
 			foreach (var area in earMarked.Elements("area")) {
@@ -43,11 +44,11 @@ public static class PdfExtractor {
 				} else {
 					parentElem = root.Element(parentName);
 					if (parentElem == null) {
-						parentElem = new XElement(parentName);
+						parentElem = new (parentName);
 						root.Add(parentElem);
 					}
 				}
-				XElement areaElem = new XElement(areaName);
+				XElement areaElem = new (areaName);
 				parentElem.Add(areaElem);
 				string[] parts = rectStr.Split(',');
 				if (parts.Length != 4) continue;
@@ -55,10 +56,10 @@ public static class PdfExtractor {
 				float y = float.Parse(parts[1]);
 				float w = float.Parse(parts[2]);
 				float h = float.Parse(parts[3]);
-				Rectangle rect = new Rectangle(x, y, w, h);
+				Rectangle rect = new(x, y, w, h);
 				Console.WriteLine($"Rectangle for {areaName}: x={x}, y={y}, width={w}, height={h} (page height={pageHeight}, width={pageWidth})");
-				TextRegionEventFilter regionFilter = new TextRegionEventFilter(rect);
-				FilteredTextEventListener strategy = new FilteredTextEventListener(new LocationTextExtractionStrategy(), regionFilter);
+				TextRegionEventFilter regionFilter = new (rect);
+				FilteredTextEventListener strategy = new (new LocationTextExtractionStrategy(), regionFilter);
 				string extractedText = PdfTextExtractor.GetTextFromPage(page, strategy).Trim();
 				Console.WriteLine($"Extracted text for area {areaName}: '{extractedText}'");
 				var rowSet = area.Element("rowSet");
@@ -73,7 +74,7 @@ public static class PdfExtractor {
 						.Select(l => l.Trim())
 						.Where(l => !string.IsNullOrEmpty(l))
 						.ToArray();
-					if (lines.Length > 0 && lines[0].EndsWith(":")) {
+					if (lines.Length > 0 && lines[0].EndsWith(':')) {
 						lines = lines.Skip(1).ToArray();
 					}
 					Console.WriteLine($"Lines for area {areaName}: {lines.Length}");

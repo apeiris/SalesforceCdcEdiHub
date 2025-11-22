@@ -1,7 +1,74 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="BuyerTransform.xslt"?>
-<BuyerData>
-	<Name>NextGen Tech Corp</Name>
-	<Address>77 Bay Street, Toronto, ON M5J 2L9, Canada</Address>
-	<Contact>+1 (416) 555-7789 | finance@nextgen.com</Contact>
-</BuyerData>
+﻿Extracted Purchase Order XML
+<PurchaseOrder>
+  <PoNumber>10345</PoNumber>
+  <Parties>
+    <Buyer>
+      <name>Buyer:</name>
+      <address>
+        <address>
+          <street>NextGen Tech Corp</street>
+          <City></City>
+          <postalCode></postalCode>
+          <country></country>
+        </address>
+      </address>
+      <contact>
+        <contact>
+          <email></email>
+          <phone>77 Bay Street, Toronto, ON M5J 2L9, Canada</phone>
+          <mobile></mobile>
+          <other></other>
+        </contact>
+      </contact>
+    </Buyer>
+    <Supplier>
+      <name>Supplier:</name>
+      <address>
+        <address>
+          <street>Metro Office Furniture Co.</street>
+          <City></City>
+          <postalCode></postalCode>
+          <country></country>
+        </address>
+      </address>
+      <contact>
+        <contact>
+          <email></email>
+          <phone>1750 Market St, Denver, CO 80202, USA</phone>
+          <mobile></mobile>
+          <other></other>
+        </contact>
+      </contact>
+    </Supplier>
+  </Parties>
+  <PoLines>
+    <Item>
+      <Item>Workstations</Item>
+      <Code>(Cubicle)</Code>
+      <Qty>MOF-WS600</Qty>
+      <UnitPrice>8</UnitPrice>
+      <LineTotal>850.00</LineTotal>
+    </Item>
+    <Item>
+      <Item>Storage</Item>
+      <Code>Cabinets</Code>
+      <Qty>MOF-SC100</Qty>
+      <UnitPrice>6</UnitPrice>
+      <LineTotal>295.00</LineTotal>
+    </Item>
+    <Item>
+      <Item>Task</Item>
+      <Code>Chairs</Code>
+      <Qty>MOF-TC210</Qty>
+      <UnitPrice>15</UnitPrice>
+      <LineTotal>175.00</LineTotal>
+    </Item>
+    <Item>
+      <Item>Breakroom</Item>
+      <Code>Tables</Code>
+      <Qty>MOF-BT50</Qty>
+      <UnitPrice>4</UnitPrice>
+      <LineTotal>310.00</LineTotal>
+    </Item>
+  </PoLines>
+</PurchaseOrder>

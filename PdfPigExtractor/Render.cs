@@ -18,7 +18,7 @@ namespace PdfSevices {
 		public static void DrawBorder(PdfDocument document, Rectangle rectangle, int pageNumber = 1) {
 
 			Logger.Debug($"Drawing border on page {pageNumber} at rect x={rectangle.GetX()}:y={rectangle.GetY()} w={rectangle.GetWidth()}:h={rectangle.GetHeight()}");
-			PdfCanvas canvas = new PdfCanvas(document.GetPage(pageNumber));
+			PdfCanvas canvas = new(document.GetPage(pageNumber));
 			canvas.SetStrokeColor(DeviceRgb.RED)
 				.SetLineWidth(1f)
 				.Rectangle(rectangle.GetX(), rectangle.GetY(), rectangle.GetWidth(), rectangle.GetHeight())
@@ -48,7 +48,7 @@ namespace PdfSevices {
 			canvas.EndText();
 		}*/
 		public static void DrawCornerLabel(PdfDocument document, Rectangle rect, LabelLocation location, int pageNumber = 1) {
-			PdfCanvas canvas = new PdfCanvas(document.GetPage(pageNumber));
+			PdfCanvas canvas = new (document.GetPage(pageNumber));
 			PdfFont font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
 			float fontSize = 8f;
 			void DrawLabel(string text, float x, float y) {// Helper to draw label with white text on black background at given position

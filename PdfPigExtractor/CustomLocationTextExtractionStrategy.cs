@@ -75,7 +75,7 @@ namespace PdfDataExtraction {
 
 
 		public string GetResultantText() {
-			return null;
+			return null!;
 		}
 
 		public ICollection<TextChunkInfo> GetTextContent() {

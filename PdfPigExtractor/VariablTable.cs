@@ -9,17 +9,17 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Rectangle=iText.Kernel.Geom.Rectangle;
 
 namespace PdfSevices;
-public class TableRowByYStrategy : LocationTextExtractionStrategy {
-	private float _heightThreshold;
-	private float _scanBelowY;
+public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
+	private readonly float _heightThreshold;
+	private readonly float _scanBelowY;
 	private float? _lastBaselineY = null;
 	private bool _collecting = false;
 	private bool _finished = false;
 
-	private List<List<string>> _tableRows = new();
-	private List<string> _currentRow = new ();
-	private List<Rectangle> _bbox = new(); 
-	public TableRowByYStrategy(float heightThreshold, float scanBelowY) {
+	private readonly List<List<string>> _tableRows = new();
+	private readonly List<string> _currentRow = new ();
+	private readonly List<Rectangle> _bbox = new(); 
+	public ExtractPdfTableBelowY(float heightThreshold, float scanBelowY) {
 		_heightThreshold = heightThreshold;
 		_scanBelowY = scanBelowY;
 	}
@@ -41,7 +41,7 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 			// If row gap exceeds threshold, stop collecting
 			if (_lastBaselineY != null && (_lastBaselineY.Value - currentBaselineY) > _heightThreshold) {
 				if (_currentRow.Count > 0) {
-					_tableRows.Add(new List<string>(_currentRow));
+					_tableRows.Add(new(_currentRow));
 					_currentRow.Clear();
 				}
 				_finished = true;
@@ -50,7 +50,7 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 			// If Y changes (within row group, tolerating small float differences)
 			if (_lastBaselineY != null && Math.Abs(_lastBaselineY.Value - currentBaselineY) > 0.1f) {
 				if (_currentRow.Count > 0) {
-					_tableRows.Add(new List<string>(_currentRow));
+					_tableRows.Add(new(_currentRow));
 					_currentRow.Clear();
 				}
 			}
@@ -66,9 +66,9 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 		_lastBaselineY = currentBaselineY;
 	}
 
-	public List<List<string>> GetTableRows() {
+	public  List<List<string>> GetTableRows() {
 		if (_currentRow.Count > 0 && !_finished) {
-			_tableRows.Add(new List<string>(_currentRow));
+			_tableRows.Add(new(_currentRow));
 			_currentRow.Clear();
 		}
 		return _tableRows;
@@ -76,7 +76,25 @@ public class TableRowByYStrategy : LocationTextExtractionStrategy {
 	public List<Rectangle> GetBBoxes() {
 		return _bbox;
 	}
-	public XDocument ConvertToXDocument(List<List<string>> tableRows, string tableName = "rows") {
+	public Rectangle GetTableBoundingBox() {
+		if (_bbox.Count == 0) return null;
+		//float minX = float.MaxValue;
+		//float minY = float.MaxValue;
+		//float maxX = float.MinValue;
+		//float maxY = float.MinValue;
+		//foreach (var rect in _bbox) {
+		//	if (rect.GetX() < minX) minX = rect.GetX();
+		//	if (rect.GetY() < minY) minY = rect.GetY();
+		//	if (rect.GetRight() > maxX) maxX = rect.GetRight();
+		//	if (rect.GetTop() > maxY) maxY = rect.GetTop();
+		//}
+		//return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+		Rectangle boundingRect = new(_bbox.Min(r => r.GetLeft()), _bbox.Min(r => r.GetBottom()), _bbox.Max(r => r.GetRight()) - _bbox.Min(r => r.GetLeft()), _bbox.Max(r => r.GetTop()) - _bbox.Min(r => r.GetBottom()));
+		return boundingRect;
+	}
+
+	public static XDocument ConvertToXDocument(List<List<string>> tableRows, string tableName = "rows") {
 		if (tableRows == null || tableRows.Count == 0)
 			throw new ArgumentException("Input table must not be empty");
 		var headers = tableRows[0];
