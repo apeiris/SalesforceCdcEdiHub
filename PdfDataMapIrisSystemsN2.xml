@@ -1,17 +1,11 @@
+<xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder">
 	<earMarked>
-		<!-- Other defined areas -->
 
-		<area name="PurchaseOrderItems" type="variable" parent="PurchaseOrder" scanBelowY="513.0" lineHeight="20.0">
+		<area name="PurchaseOrderItems" types="variable" parent="PurchaseOrder" scanBelowY="513.0" lineHeight="20.0">
 			<rowSet rowCount="variable" source="ExtractTableBelowY" sourceMethod="ExtractTableBelowY" >
-				<!--
-          The 'source' and 'sourceMethod' attributes are conceptual here to indicate
-          that your system should call 'ExtractTableBelowY' method to fill data dynamically.
-          Your processing engine needs to interpret this and bind results accordingly.
-        -->
-
-				<!-- Template rows for each extracted line -->
-				<row repeat="true" name="PurchaseOrderItem" operation="script">
+			
+		     <row repeat="true" name="PurchaseOrderItem" operation="script">
 					<script language="csharp">
 						<![CDATA[
             // Your script to parse each line text content from the extracted table lines
@@ -36,6 +30,6 @@
 				</row>
 			</rowSet>
 		</area>
-
 	</earMarked>
+
 </pdfMap>

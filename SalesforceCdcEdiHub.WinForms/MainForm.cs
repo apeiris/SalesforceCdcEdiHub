@@ -1603,9 +1603,16 @@ public partial class MainForm : Form {
 		}
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
-		//		XDocument doc = PdfDataExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-		XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystemsN2.xml");
-		DisplayXmlInWebView(doc);
+		
+		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
+		
+		
+		List<string>hdr= ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
+		XmlMapProcessor pdfMapper = new();
+		pdfMapper.ProcessPdfAndMap("C:\\Users\\tony\\Downloads\\PO 3.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystemsN2.xml");
+
+
+	//	DisplayXmlInWebView(doc);
 	}
 
 	private void DumpPdfCoords_Click(object sender, EventArgs e) {
