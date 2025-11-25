@@ -2,7 +2,7 @@
 <pdfMap client="IrisSystems" document="PurchaseOrder">
 	<earMarked>
 		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" returns="scalar" />
-		<area name="Buyer" rectangle="36,601,269,72" parent="Parties" returns="rowSet" >
+		<area name="buyer" rectangle="36,601,269,72" parent="parties" returns="rowSet" >
 			<rowSet>
 				<!-- SIMPLE ROW: Direct copy from row index 0 -->
 				<row index="0" name="name" operation="copy" />

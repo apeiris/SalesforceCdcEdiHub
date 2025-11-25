@@ -10,6 +10,10 @@ using Rectangle=iText.Kernel.Geom.Rectangle;
 
 namespace PDF;
 public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
+	public enum extractionConstraints {
+		BelowY,
+		WithinRectangle
+	}
 	private readonly float _heightThreshold;
 	private readonly float _scanBelowY;
 	private float? _lastBaselineY = null;
@@ -18,18 +22,15 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 
 	private readonly List<List<string>> _tableRows = new();
 	private readonly List<string> _currentRow = new ();
-	private readonly List<Rectangle> _bbox = new(); 
-	public ExtractPdfTableBelowY(float heightThreshold, float scanBelowY) {
+	private readonly List<Rectangle> _bbox = new();
+	public ExtractPdfTableBelowY(float heightThreshold, float scanBelowY, Rectangle? Bounds=null) {
 		_heightThreshold = heightThreshold;
 		_scanBelowY = scanBelowY;
 	}
-
 	public override void EventOccurred(IEventData data, EventType type) {
 		if (!type.Equals(EventType.RENDER_TEXT) || _finished) return;
-
 		TextRenderInfo renderInfo = (TextRenderInfo)data;
 		float currentBaselineY = renderInfo.GetBaseline().GetStartPoint().Get(1);
-
 		if (!_collecting) {
 			if (currentBaselineY <= _scanBelowY) {
 				_collecting = true;
@@ -38,8 +39,7 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 				return;
 			}
 		} else {
-			// If row gap exceeds threshold, stop collecting
-			if (_lastBaselineY != null && (_lastBaselineY.Value - currentBaselineY) > _heightThreshold) {
+			if (_lastBaselineY != null && (_lastBaselineY.Value - currentBaselineY) > _heightThreshold) {// If row gap exceeds threshold, stop collecting
 				if (_currentRow.Count > 0) {
 					_tableRows.Add(new(_currentRow));
 					_currentRow.Clear();
@@ -47,16 +47,14 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 				_finished = true;
 				return;
 			}
-			// If Y changes (within row group, tolerating small float differences)
-			if (_lastBaselineY != null && Math.Abs(_lastBaselineY.Value - currentBaselineY) > 0.1f) {
+			if (_lastBaselineY != null && Math.Abs(_lastBaselineY.Value - currentBaselineY) > 0.1f) {// If Y changes (within row group, tolerating small float differences)
 				if (_currentRow.Count > 0) {
 					_tableRows.Add(new(_currentRow));
 					_currentRow.Clear();
 				}
 			}
 		}
-	 //	renderInfo.GetDescentLine().GetBoundingRectangle();
-		_bbox.Add(new Rectangle(
+		_bbox.Add(new Rectangle(//	renderInfo.GetDescentLine().GetBoundingRectangle();
 			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetX(),
 			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetY(),
 			(int)renderInfo.GetDescentLine().GetBoundingRectangle().GetWidth(),
@@ -65,7 +63,6 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 		_currentRow.Add(renderInfo.GetText());
 		_lastBaselineY = currentBaselineY;
 	}
-
 	public  List<List<string>> GetTableRows() {
 		if (_currentRow.Count > 0 && !_finished) {
 			_tableRows.Add(new(_currentRow));
@@ -78,38 +75,19 @@ public class ExtractPdfTableBelowY : LocationTextExtractionStrategy {
 	}
 	public Rectangle GetTableBoundingBox() {
 		if (_bbox.Count == 0) return null;
-		//float minX = float.MaxValue;
-		//float minY = float.MaxValue;
-		//float maxX = float.MinValue;
-		//float maxY = float.MinValue;
-		//foreach (var rect in _bbox) {
-		//	if (rect.GetX() < minX) minX = rect.GetX();
-		//	if (rect.GetY() < minY) minY = rect.GetY();
-		//	if (rect.GetRight() > maxX) maxX = rect.GetRight();
-		//	if (rect.GetTop() > maxY) maxY = rect.GetTop();
-		//}
-		//return new Rectangle(minX, minY, maxX - minX, maxY - minY);
-
 		Rectangle boundingRect = new(_bbox.Min(r => r.GetLeft()), _bbox.Min(r => r.GetBottom()), _bbox.Max(r => r.GetRight()) - _bbox.Min(r => r.GetLeft()), _bbox.Max(r => r.GetTop()) - _bbox.Min(r => r.GetBottom()));
 		return boundingRect;
 	}
-
 	private static string ToXmlSafeName(string s) {
 		if (string.IsNullOrWhiteSpace(s))
 			return "Unknown";
-
-		// Replace invalid chars with underscore
 		var cleaned = new string(s.Select(ch =>
 			char.IsLetterOrDigit(ch) ? ch : '_'
 		).ToArray());
-
-		// XML names cannot start with a digit
 		if (char.IsDigit(cleaned[0]))
 			cleaned = "_" + cleaned;
-
 		return cleaned;
 	}
-
 	public static XDocument ConvertToXDocument(List<List<string>> tableRows, string tableName = "rows") {
 		if (tableRows == null || tableRows.Count == 0)
 			throw new ArgumentException("Input table must not be empty");
