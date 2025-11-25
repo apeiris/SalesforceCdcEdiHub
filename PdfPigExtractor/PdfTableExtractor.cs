@@ -18,7 +18,7 @@ using Rectangle = iText.Kernel.Geom.Rectangle;
 
 
 namespace PDF;
-public class PdfTableExtractor {
+public class PdfTableExtractorxxx {
 	public static void AddMultipleRedBorders(string inputPath, string outputPath, List<(Rectangle rect, string name)> rectangles) {
 		using var reader = new PdfReader(inputPath);
 		using var writer = new PdfWriter(outputPath);

@@ -1567,31 +1567,31 @@ public partial class MainForm : Form {
 				rectangles.Add((rect, name));
 			}
 			// Extract tables
-			DataTable dtBuyer = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
-			DataTable dtSupplier = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
-			DataTable dtItems = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
-			DataTable dtSummary = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
-			DataTable dtNotes = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
+			//DataTable dtBuyer = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
+			//DataTable dtSupplier = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
+			//DataTable dtItems = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
+			//DataTable dtSummary = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
+			//DataTable dtNotes = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
 
-			DataSet ds = new();
-
-
-
-			string xml = ds.GetXml();
+			//DataSet ds = new();
 
 
 
-			dgvMondayComBuyer.DataSource = dtBuyer;
-
-			dgvMondayComPoItems.DataSource = dtItems;
-			dgvMondayComSummary.DataSource = dtSummary;
-			dgvMondayComNotes.DataSource = dtNotes;
+			//string xml = ds.GetXml();
 
 
 
+			//dgvMondayComBuyer.DataSource = dtBuyer;
+
+			//dgvMondayComPoItems.DataSource = dtItems;
+			//dgvMondayComSummary.DataSource = dtSummary;
+			//dgvMondayComNotes.DataSource = dtNotes;
 
 
-				PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
+
+
+
+			//	PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
 			await pdfView.EnsureCoreWebView2Async();// Show in WebView
 			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
 			//if (chkSwitchToWebView.Checked)
