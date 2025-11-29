@@ -1609,7 +1609,7 @@ public partial class MainForm : Form {
 		
 		List<string>hdr= ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
-		pdfMapper.ProcessPdfAndMap("C:\\Users\\tony\\Downloads\\PO 3.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystemsN2.xml");
+		pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystemsN2.xml");
 
 
 	//	DisplayXmlInWebView(doc);

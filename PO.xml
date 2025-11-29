@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PurchaseOrder>
+	<Header>
+		<Type>PURCHASE ORDER</Type>
+		<PONumber>10345</PONumber>
+		<PODate>September 4, 2025</PODate>
+		<Status>Pending</Status>
+		<DeliveryDate>September 20, 2025</DeliveryDate>
+	</Header>
+	<Parties>
+		<Buyer>
+			<Name>NextGen Tech Corp</Name>
+			<Address>77 Bay Street, Toronto, ON M5J 2L9, Canada</Address>
+			<Contact>+1 (416) 555-7789</Contact>
+			<Email>finance@nextgen.com</Email>
+		</Buyer>
+		<Supplier>
+			<Name>Metro Office Furniture Co.</Name>
+			<Address>1750 Market St, Denver, CO 80202, USA</Address>
+			<Contact>+1 (303) 555-9922</Contact>
+			<Email>sales@metrooffice.com</Email>
+		</Supplier>
+	</Parties>
+	<Items>
+		<Headers item="Item" code ="Code" qty="Qty" unitPrice="Unit Price" lineTotal="Line Total" />
+		<LineItem>
+			<Item>Storage Cabinets</Item>
+			<Code>MOF-SC100</Code>
+			<Quantity>6</Quantity>
+			<UnitPrice currency="USD">295.00</UnitPrice>
+			<LineTotal currency="USD">1,770.00</LineTotal>
+		</LineItem>
+		<LineItem>
+			<Item>Task Chairs</Item>
+			<Code>MOF-TC210</Code>
+			<Quantity>15</Quantity>
+			<UnitPrice currency="USD">175.00</UnitPrice>
+			<LineTotal currency="USD">2,625.00</LineTotal>
+		</LineItem>
+		<LineItem>
+			<Item>Breakroom Tables</Item>
+			<Code>MOF-BT50</Code>
+			<Quantity>4</Quantity>
+			<UnitPrice currency="USD">310.00</UnitPrice>
+			<LineTotal currency="USD">1,240.00</LineTotal>
+		</LineItem>
+	</Items>
+	<Summary>
+		<Subtotal currency="USD">12,435.00</Subtotal>
+		<Discount rate="3%" currency="USD">-373.05</Discount>
+		<Tax rate="7%" currency="USD">856.34</Tax>
+		<Total currency="USD">12,918.29</Total>
+	</Summary>
+	<Notes>
+		<Note>Please deliver to Toronto HQ dock entrance.</Note>
+		<Note>All items must be packaged securely.</Note>
+	</Notes>
+</PurchaseOrder>
