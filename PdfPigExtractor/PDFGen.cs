@@ -8,12 +8,13 @@ using iText.Kernel.Font;
 using iText.IO.Font.Constants;
 using iText.Kernel.Pdf;
 using iText.Layout;
+using iText.Barcodes;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using System.Xml.Serialization;
 using System.Drawing;
-using Color=iText.Kernel.Colors.Color;
+using Color = iText.Kernel.Colors.Color;
 namespace PDF;
 
 #region data classes
@@ -78,12 +79,12 @@ public class Notes {
 }
 #endregion
 public class PDFGen {
- 
+
 	private PdfFont regularFont = PdfFontFactory.CreateFont(StandardFontFamilies.HELVETICA);
-	private PdfFont boldFont =  PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+	private PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
 	private Color headerBgColor = new DeviceRgb(220, 220, 220); // Light Gray
 	private readonly CultureInfo invariantCulture = CultureInfo.InvariantCulture;
-
+	Border customBorder = new DashedBorder(new DeviceRgb(50, 200, 50), 2f);
 	public void CreatePdf(string xmlFilePath, string pdfOutputPath) {
 		// 1. Parse XML using XDocument and LINQ
 		PurchaseOrder poData = ParseXmlWithXDocument(xmlFilePath);
@@ -102,6 +103,29 @@ public class PDFGen {
 
 			document.Close();
 		}
+	}
+
+
+
+	public Image GenerateBarcodeImage(PdfDocument pdf, string poNumber) {
+		// 1. Choose a Barcode Symbology (e.g., Code 128 is versatile)
+		Barcode128 barcode = new Barcode128(pdf);
+		BarcodeEAN barcodeEAN = new BarcodeEAN(pdf);
+
+		// Set the data to encode
+		barcode.SetCode(poNumber);
+
+		// Optional: Customize visual properties
+		barcode.SetCodeSet(Barcode128.Barcode128CodeSet.AUTO);
+		barcode.SetBarHeight(10);        // Height of the bars
+		barcode.SetX(1.0f);              // Width of the narrowest bar (module width)
+		barcode.SetTextAlignment((int)iText.Layout.Properties.TextAlignment.CENTER); // Center the human-readable text
+
+		// 2. Create the iText Image element from the Barcode object
+		Image barcodeImage = new Image(barcode.CreateFormXObject(ColorConstants.BLACK, ColorConstants.BLACK, pdf))
+			.ScaleToFit(150f, 60f); // Scale to a suitable size for the document
+
+		return barcodeImage;
 	}
 
 	private PurchaseOrder ParseXmlWithXDocument(string xmlFilePath) {
@@ -189,18 +213,43 @@ public class PDFGen {
 			.SetTextAlignment(TextAlignment.CENTER)
 			.SetUnderline());
 
-		// PO Details Table (2 columns: Label | Value)
-		var poDetails = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3 }))
-			.SetWidth(UnitValue.CreatePercentValue(50))
+		// --- Wrapper Table for Details and Barcode ---
+		// Column 1: PO Details (e.g., PO Number, Date, Status)
+		// Column 2: Barcode Image
+		var headerWrapper = new Table(UnitValue.CreatePercentArray(new float[] { 2, 1 }))
+			.UseAllAvailableWidth()
 			.SetMarginTop(10)
-			.SetMarginBottom(10);
+			.SetMarginBottom(20);
 
-		AddHeaderCell(poDetails, "PO Number:", poData.Header.PONumber);
-		AddHeaderCell(poDetails, "PO Date:", poData.Header.PODate);
-		AddHeaderCell(poDetails, "Delivery Date:", poData.Header.DeliveryDate);
-		AddHeaderCell(poDetails, "Status:", poData.Header.Status);
+		// --- A. PO Details Cell (Left) ---
+		var poDetailsTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3 }))
+			.SetWidth(UnitValue.CreatePercentValue(100)) // Use full cell width
+			.SetBorder(Border.NO_BORDER);
 
-		document.Add(poDetails);
+		AddHeaderCell(poDetailsTable, "PO Number:", poData.Header.PONumber);
+		AddHeaderCell(poDetailsTable, "PO Date:", poData.Header.PODate);
+		AddHeaderCell(poDetailsTable, "Delivery Date:", poData.Header.DeliveryDate);
+		AddHeaderCell(poDetailsTable, "Status:", poData.Header.Status);
+
+		headerWrapper.AddCell(new Cell().SetBorder(Border.NO_BORDER).Add(poDetailsTable));
+
+		// --- B. Barcode Cell (Right) ---
+		Image barcodeImage = GenerateBarcodeImage(document.GetPdfDocument(), poData.Header.PONumber);
+	
+		headerWrapper.AddCell(new Cell()
+			.SetBorder(Border.NO_BORDER)
+			.SetVerticalAlignment(VerticalAlignment.MIDDLE)
+			.SetTextAlignment(TextAlignment.RIGHT) // Ensure image is right-aligned in the cell
+			.Add(barcodeImage));
+
+
+		barcodeImage = GenerateBarcodeImage(document.GetPdfDocument(), poData.Parties.Buyer.Name);
+		headerWrapper.AddCell(new Cell()
+		.SetBorder(Border.NO_BORDER)
+		.SetVerticalAlignment(VerticalAlignment.MIDDLE)
+		.SetTextAlignment(TextAlignment.RIGHT) // Ensure image is right-aligned in the cell
+		.Add(barcodeImage));
+		document.Add(headerWrapper);
 		document.Add(new Paragraph("\n"));
 	}
 
@@ -271,7 +320,7 @@ public class PDFGen {
 
 
 		// 1. Notes Cell (Left)
-		var notesCell = new Cell().SetBorder(Border.NO_BORDER).SetPadding(0);
+		var notesCell = new Cell().SetBorder(customBorder).SetPadding(0);
 		notesCell.Add(new Paragraph("Notes:").SetFont(boldFont).SetFontSize(12).SetMarginBottom(5));
 
 		if (poData.Notes != null && poData.Notes.Note != null) {
@@ -319,18 +368,6 @@ public class PDFGen {
 
 
 
-	//private void AddSummaryRow(Table table, string label, string value, PdfFont font, Color bgColor = null) {
-	//	var labelCell = new Cell().Add(new Paragraph(label).SetFont(font).SetFontSize(10))
-	//		.SetBorder(Border.NO_BORDER).SetPadding(2).SetBackgroundColor(bgColor);
-	//	var valueCell = new Cell().Add(new Paragraph(value).SetFont(font).SetFontSize(10))
-	//		.SetBorder(Border.NO_BORDER).SetTextAlignment(TextAlignment.RIGHT).SetPadding(2).SetBackgroundColor(bgColor);
 
-	//	table.AddCell(labelCell);
-	//	table.AddCell(valueCell);
-	//}
 }
 
-// Data classes (PurchaseOrder, Header, Parties, etc.) remain the same for structure
-// but no longer need XmlSerialization attributes.
-// You can remove the [XmlRoot] and other [Xml...] attributes from the original data classes
-// if they are *only* being used with this XDocument approach.
