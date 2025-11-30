@@ -32,6 +32,7 @@ using ToolTip = System.Windows.Forms.ToolTip;
 using PDF;
 using iText.Kernel.Pdf.Filespec;
 using iText.Layout.Properties;
+using DocumentFormat.OpenXml;
 
 
 namespace WinForms;
@@ -1614,22 +1615,15 @@ public partial class MainForm : Form {
 
 	//	DisplayXmlInWebView(doc);
 	}
+	//btnGenPDF
+	private void btnGenPDF_Click(object sender, EventArgs e) {
 
-	private void DumpPdfCoords_Click(object sender, EventArgs e) {
-		//using (PdfReader reader = new("C:\\Users\\tony\\Downloads\\PO 3.pdf"))
-		//using (PdfDocument pdf = new(reader)) {
-		//	PdfPage page = pdf.GetPage(1);
+		string xmlPath = "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PO.xml";
+		string pdfOutPath ="C:\\temp\\GeneratedPO.pdf";
 
-		//	var listener = new TextWithPosListener();
-		//	var processor = new PdfCanvasProcessor(listener);
-
-
-		//	processor.ProcessPageContent(page);
-
-		//	foreach (var c in listener.Chunks.OrderByDescending(x => x.Y)) {
-		//		Console.WriteLine($"{c.Text,-40}  X={c.X:0.0}  Y={c.Y:0.0}");
-		//	}
-		//	//}
+		PDF.PDFGen pdfGen = new();
+		pdfGen.CreatePdf(xmlPath, pdfOutPath);
+	
 	}
 
 	private void btnN2ExtractPoLinesAsXml_Click(object sender, EventArgs e) {

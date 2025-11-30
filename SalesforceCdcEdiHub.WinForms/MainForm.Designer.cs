@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -180,7 +180,7 @@ partial class MainForm {
 		button27 = new Button();
 		tableLayoutPanel22 = new TableLayoutPanel();
 		btnN1ExtractTextBlocks = new Button();
-		button28 = new Button();
+		btnGenPDF = new Button();
 		btnExtractXml = new Button();
 		btnExtractPdf = new Button();
 		cmbMondayPOs = new ComboBox();
@@ -1107,14 +1107,14 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle1.BackColor = SystemColors.Control;
-		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
+		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle2.BackColor = SystemColors.Control;
+		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
 		dgvOrderList.Size = new Size(392, 166);
 		dgvOrderList.TabIndex = 11;
 		// 
@@ -2273,7 +2273,7 @@ partial class MainForm {
 		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
 		tableLayoutPanel22.Controls.Add(btnN1ExtractTextBlocks, 1, 0);
-		tableLayoutPanel22.Controls.Add(button28, 0, 2);
+		tableLayoutPanel22.Controls.Add(btnGenPDF, 0, 2);
 		tableLayoutPanel22.Controls.Add(btnExtractXml, 0, 1);
 		tableLayoutPanel22.Controls.Add(btnExtractPdf, 0, 0);
 		tableLayoutPanel22.Location = new Point(3, 63);
@@ -2295,15 +2295,16 @@ partial class MainForm {
 		btnN1ExtractTextBlocks.UseVisualStyleBackColor = true;
 		btnN1ExtractTextBlocks.Click += btnN2ExtractPoLinesAsXml_Click;
 		// 
-		// button28
+		// btnGenPDF
 		// 
-		button28.Location = new Point(3, 112);
-		button28.Name = "button28";
-		button28.Size = new Size(88, 45);
-		button28.TabIndex = 4;
-		button28.Text = "Dump PDF Coords";
-		button28.UseVisualStyleBackColor = true;
-		button28.Click += DumpPdfCoords_Click;
+		btnGenPDF.Location = new Point(3, 112);
+		btnGenPDF.Name = "btnGenPDF";
+		btnGenPDF.Size = new Size(88, 45);
+		btnGenPDF.TabIndex = 4;
+		btnGenPDF.Text = "Generate PDF";
+		btnGenPDF.UseVisualStyleBackColor = true;
+		btnGenPDF.Click += btnGenPDF_Click;
+
 		// 
 		// btnExtractXml
 		// 
@@ -2910,6 +2911,7 @@ partial class MainForm {
 	private SplitContainer splitContainer7;
 	private SplitContainer splitContainer8;
 	private DataGridView dgvMondayComNotes;
-	private Button button28;
+
 	private Button btnN1ExtractTextBlocks;
+	private Button btnGenPDF;
 }
