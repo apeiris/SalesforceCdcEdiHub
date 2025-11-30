@@ -1,0 +1,76 @@
+<PurchaseOrderTemplate>
+	<Styles>
+		<Color name="HeaderBackground" value="#DCDCDC" />
+		<Font name="Body" family="Helvetica" style="Regular" size="10" />
+		<Font name="Title" family="Helvetica" style="Bold" size="24" underline="true" />
+		<Font name="Header" family="Helvetica" style="Bold" size="12" />
+		<Font name="Label" family="Helvetica" style="Bold" size="10" />
+	</Styles>
+
+	<Layout>
+		<PageMargins top="30" right="30" bottom="30" left="30" />
+
+		<Section name="HeaderDetails" placement="Top">
+			<Element type="Paragraph" style="Title" dataField="Header/Type" alignment="Center" />
+			<Element type="Table" columns="2" relativeWidth="50" alignment="Left" marginY="10">
+				<Row>
+					<Cell label="PO Number:" dataField="Header/PONumber" style="Label" />
+				</Row>
+				<Row>
+					<Cell label="PO Date:" dataField="Header/PODate" style="Label" />
+				</Row>
+				<Row>
+					<Cell label="Delivery Date:" dataField="Header/DeliveryDate" style="Label" />
+				</Row>
+				<Row>
+					<Cell label="Status:" dataField="Header/Status" style="Label" />
+				</Row>
+			</Element>
+			<Element type="Barcode" dataField="Header/PONumber" symbology="Code128" barHeight="40" scaleX="150" scaleY="60" alignment="Right" placement="Alongside" />
+		</Section>
+
+		<Section name="Parties" placement="BelowHeader">
+			<Element type="Table" columns="2" relativeWidth="100">
+				<Column headerText="Buyer:" dataPath="Parties/Buyer" backgroundColor="HeaderBackground">
+					<Field dataField="Name" style="Header" />
+					<Field dataField="Address" style="Body" />
+					<Field dataField="Contact" style="Body" prefix="Contact: " />
+					<Field dataField="Email" style="Body" prefix="Email: " />
+				</Column>
+				<Column headerText="Supplier:" dataPath="Parties/Supplier" backgroundColor="HeaderBackground">
+					<Field dataField="Name" style="Header" />
+					<Field dataField="Address" style="Body" />
+					<Field dataField="Contact" style="Body" prefix="Contact: " />
+					<Field dataField="Email" style="Body" prefix="Email: " />
+				</Column>
+			</Element>
+		</Section>
+
+		<Section name="LineItems" placement="BelowParties">
+			<Element type="Table" dataPath="Items/LineItem" relativeWidth="100" headerColor="HeaderBackground">
+				<Column label="Item" dataField="Item" widthWeight="3" alignment="Left" />
+				<Column label="Code" dataField="Code" widthWeight="1" alignment="Left" />
+				<Column label="Qty" dataField="Quantity" widthWeight="1" alignment="Right" />
+				<Column label="Unit Price (USD)" dataField="UnitPrice" widthWeight="1" alignment="Right" format="Currency:N2" />
+				<Column label="Line Total (USD)" dataField="LineTotal" widthWeight="1" alignment="Right" format="Currency:N2" />
+			</Element>
+		</Section>
+
+		<Section name="SummaryAndNotes" placement="Bottom">
+			<Element type="Table" columns="2" relativeWidth="100" border="None">
+				<Column widthWeight="2" alignment="Left" verticalAlignment="Top">
+					<Label text="Notes:" style="Header" />
+					<List dataPath="Notes/Note" style="Body" prefix="- " />
+				</Column>
+				<Column widthWeight="1" alignment="Right">
+					<Element type="Table" columns="2" relativeWidth="100" alignment="Right" border="None" >
+						<SummaryRow label="Subtotal:" dataField="Summary/Subtotal" format="Currency:C2" style="Body" />
+						<SummaryRow label="Discount (3%):" dataField="Summary/Discount" format="Currency:N2" style="Body" prefix="-" />
+						<SummaryRow label="Tax (7%):" dataField="Summary/Tax" format="Currency:N2" style="Body" />
+						<SummaryRow label="Total:" dataField="Summary/Total" format="Currency:C2" style="Header" suffix=" USD" backgroundColor="HeaderBackground" />
+					</Element>
+				</Column>
+			</Element>
+		</Section>
+	</Layout>
+</PurchaseOrderTemplate>

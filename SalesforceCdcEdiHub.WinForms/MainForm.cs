@@ -1617,12 +1617,13 @@ public partial class MainForm : Form {
 	}
 	//btnGenPDF
 	private void btnGenPDF_Click(object sender, EventArgs e) {
-
-		string xmlPath = "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PO.xml";
+		string dataFile =@"D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\POData.xml";
+		string templatePath= "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PurchaceOrderTemplate.xml";
 		string pdfOutPath ="C:\\temp\\GeneratedPO.pdf";
-
-		PDF.PDFGen pdfGen = new();
-		pdfGen.CreatePdf(xmlPath, pdfOutPath);
+		
+		//PDF.PDFGen pdfGen = new();
+	PDF.PDFGen pdfGen = new();
+		pdfGen.CreatePdf(dataFile, templatePath, pdfOutPath);
 	
 	}
 

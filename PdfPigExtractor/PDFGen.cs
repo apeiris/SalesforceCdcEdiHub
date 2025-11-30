@@ -1,362 +1,354 @@
-﻿using System.Globalization; // For parsing currency/decimals
-using System.IO;
-using System.Linq;
-using System.Xml.Linq; // Key namespace for XDocument
-using iText.IO.Font.Constants;
+﻿using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.IO.Font.Constants;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Barcodes;
 using iText.Layout.Borders;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using System.Xml.Serialization;
-using System.Drawing;
-using Color = iText.Kernel.Colors.Color;
+using iText.Barcodes;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
+using System.Xml.XPath; // Crucial for using dataField paths like "Header/Type"
+using System.Globalization;
+using System.Collections.Generic;
 namespace PDF;
-
-#region data classes
-[XmlRoot("PurchaseOrder")]
-public class PurchaseOrder {
-	public Header Header { get; set; }
-	public Parties Parties { get; set; }
-
-	[XmlArray("Items")]
-	[XmlArrayItem("LineItem")]
-	public List<LineItem> Items { get; set; }
-
-	public Summary Summary { get; set; }
-	public Notes Notes { get; set; }
-}
-
-public class Header {
-	public string Type { get; set; }
-	public string PONumber { get; set; }
-	public string PODate { get; set; }
-	public string Status { get; set; }
-	public string DeliveryDate { get; set; }
-}
-
-public class Parties {
-	public Party Buyer { get; set; }
-	public Party Supplier { get; set; }
-}
-
-public class Party {
-	public string Name { get; set; }
-	public string Address { get; set; }
-	public string Contact { get; set; }
-	public string Email { get; set; }
-}
-
-public class LineItem {
-	public string Item { get; set; }
-	public string Code { get; set; }
-	public int Quantity { get; set; }
-
-	[XmlElement("UnitPrice")]
-	public decimal UnitPrice { get; set; }
-	// Add 'currency' attribute to LineItem class if you want to capture it from XML
-	// For simplicity, we'll assume USD as per the PDF.
-
-	[XmlElement("LineTotal")]
-	public decimal LineTotal { get; set; }
-}
-
-public class Summary {
-	public decimal Subtotal { get; set; }
-	public decimal Discount { get; set; } // Note: This should be the actual amount, not the rate
-	public decimal Tax { get; set; }
-	public decimal Total { get; set; }
-	// You may add properties for the attributes like 'rate' and 'currency' if needed
-}
-
-public class Notes {
-	[XmlElement("Note")]
-	public List<string> Note { get; set; }
-}
-#endregion
 public class PDFGen {
-
-	private PdfFont regularFont = PdfFontFactory.CreateFont(StandardFontFamilies.HELVETICA);
-	private PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
-	private Color headerBgColor = new DeviceRgb(220, 220, 220); // Light Gray
+	private Dictionary<string, PdfFont> fontCache = new Dictionary<string, PdfFont>();
+	private Dictionary<string, Color> colorCache = new Dictionary<string, Color>();
 	private readonly CultureInfo invariantCulture = CultureInfo.InvariantCulture;
-	Border customBorder = new DashedBorder(new DeviceRgb(50, 200, 50), 2f);
-	public void CreatePdf(string xmlFilePath, string pdfOutputPath) {
-		// 1. Parse XML using XDocument and LINQ
-		PurchaseOrder poData = ParseXmlWithXDocument(xmlFilePath);
 
-		// 2. Initialize PDF Document
+	// --- Core PDF Generation Method ---
+
+	/// <summary>
+	/// Creates a PDF document by combining data from the PO XML file and layout rules from the Template XML file.
+	/// </summary>
+	/// <param name="dataFilePath">Path to the PO data XML (e.g., POData.xml).</param>
+	/// <param name="templateFilePath">Path to the template configuration XML (e.g., PurchaceOrderTemplate.xml).</param>
+	/// <param name="pdfOutputPath">Path where the final PDF will be saved.</param>
+	public void CreatePdf(string dataFilePath, string templateFilePath, string pdfOutputPath) {
+		// 1. Load Data and Template
+		XDocument dataDoc = XDocument.Load(dataFilePath);
+		XDocument templateDoc = XDocument.Load(templateFilePath);
+
+		XElement layoutXml = templateDoc.Root.Element("Layout");
+		XElement stylesXml = templateDoc.Root.Element("Styles");
+
+		// 2. Initialize Styles and Fonts
+		InitializeStyles(stylesXml);
+
+		// 3. Initialize PDF Document
 		using (var writer = new PdfWriter(pdfOutputPath))
 		using (var pdf = new PdfDocument(writer)) {
 			var document = new Document(pdf);
-			document.SetMargins(30, 30, 30, 30);
 
-			// 3. Add Content
-			AddHeaderSection(document, poData);
-			AddPartiesTable(document, poData.Parties);
-			AddLineItemsTable(document, poData.Items);
-			AddSummaryAndNotes(document, poData);
+			// Set margins based on template
+			SetPageMargins(document, layoutXml.Element("PageMargins"));
+
+			// 4. Iterate through Sections and build content dynamically
+			foreach (var sectionXml in layoutXml.Elements("Section")) {
+				string sectionName = sectionXml.Attribute("name")?.Value;
+
+				switch (sectionName) {
+					case "HeaderDetails":
+						BuildHeaderDetails(document, dataDoc.Root, sectionXml);
+						break;
+					case "Parties":
+						BuildPartiesTable(document, dataDoc.Root, sectionXml);
+						break;
+					case "LineItems":
+						BuildLineItemsTable(document, dataDoc.Root, sectionXml);
+						break;
+					case "SummaryAndNotes":
+						BuildSummaryAndNotes(document, dataDoc.Root, sectionXml);
+						break;
+					default:
+						// Log unknown section
+						break;
+				}
+			}
 
 			document.Close();
 		}
 	}
 
 
+	// --- TEMPLATE & STYLE HELPER METHODS ---
 
-	public Image GenerateBarcodeImage(PdfDocument pdf, string poNumber) {
-		// 1. Choose a Barcode Symbology (e.g., Code 128 is versatile)
-		Barcode128 barcode = new Barcode128(pdf);
-		BarcodeEAN barcodeEAN = new BarcodeEAN(pdf);
+	private void InitializeStyles(XElement stylesXml) {
+		// Initialize Fonts
+		foreach (var fontElement in stylesXml.Elements("Font")) {
+			string family = fontElement.Attribute("family").Value;
+			string style = fontElement.Attribute("style").Value;
+			string key = $"{family}-{style}";
 
-		// Set the data to encode
-		barcode.SetCode(poNumber);
+			if (style.Contains("Bold")) {
+				fontCache[key] = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+			} else {
+				fontCache[key] = PdfFontFactory.CreateFont(StandardFontFamilies.HELVETICA);
+			}
+		}
 
-		// Optional: Customize visual properties
-		barcode.SetCodeSet(Barcode128.Barcode128CodeSet.AUTO);
-		barcode.SetBarHeight(10);        // Height of the bars
-		barcode.SetX(1.0f);              // Width of the narrowest bar (module width)
-		barcode.SetTextAlignment((int)iText.Layout.Properties.TextAlignment.CENTER); // Center the human-readable text
-
-		// 2. Create the iText Image element from the Barcode object
-		Image barcodeImage = new Image(barcode.CreateFormXObject(ColorConstants.BLACK, ColorConstants.BLACK, pdf))
-			.ScaleToFit(150f, 60f); // Scale to a suitable size for the document
-
-		return barcodeImage;
+		// Initialize Colors
+		foreach (var colorElement in stylesXml.Elements("Color")) {
+			string name = colorElement.Attribute("name").Value;
+			string hexValue = colorElement.Attribute("value").Value.TrimStart('#');
+			if (hexValue.Length == 6) {
+				int r = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
+				int g = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
+				int b = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+				colorCache[name] = new DeviceRgb(r, g, b);
+			}
+		}
 	}
 
-	private PurchaseOrder ParseXmlWithXDocument(string xmlFilePath) {
-		XDocument doc = XDocument.Load(xmlFilePath);
-		XElement root = doc.Root;
-
-		// Helper to safely get element value
-		string GetValue(XElement parent, string elementName) => parent.Element(elementName)?.Value ?? string.Empty;
-
-		// --- Parsing Header ---
-		XElement headerXml = root.Element("Header");
-		Header header = new Header {
-			Type = GetValue(headerXml, "Type"),
-			PONumber = GetValue(headerXml, "PONumber"),
-			PODate = GetValue(headerXml, "PODate"),
-			Status = GetValue(headerXml, "Status"),
-			DeliveryDate = GetValue(headerXml, "DeliveryDate")
-		};
-
-		// --- Parsing Parties ---
-		XElement partiesXml = root.Element("Parties");
-		Parties parties = new Parties {
-			Buyer = ParseParty(partiesXml.Element("Buyer")),
-			Supplier = ParseParty(partiesXml.Element("Supplier"))
-		};
-
-		// --- Parsing Line Items ---
-		IEnumerable<LineItem> items = root.Element("Items")
-			.Elements("LineItem")
-			.Select(itemXml => new LineItem {
-				Item = GetValue(itemXml, "Item"),
-				Code = GetValue(itemXml, "Code"),
-				Quantity = int.Parse(GetValue(itemXml, "Quantity")),
-				// Use decimal.Parse with InvariantCulture to handle standard numeric formats
-				UnitPrice = decimal.Parse(GetValue(itemXml, "UnitPrice"), NumberStyles.Currency | NumberStyles.AllowDecimalPoint, invariantCulture),
-				LineTotal = decimal.Parse(GetValue(itemXml, "LineTotal"), NumberStyles.Currency | NumberStyles.AllowDecimalPoint, invariantCulture)
-			}).ToList();
-
-		// --- Parsing Summary ---
-		XElement summaryXml = root.Element("Summary");
-		Summary summary = new Summary {
-			Subtotal = decimal.Parse(GetValue(summaryXml, "Subtotal"), NumberStyles.Currency | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, invariantCulture),
-			Discount = decimal.Parse(GetValue(summaryXml, "Discount"), NumberStyles.Currency | NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, invariantCulture),
-			Tax = decimal.Parse(GetValue(summaryXml, "Tax"), NumberStyles.Currency | NumberStyles.AllowDecimalPoint, invariantCulture),
-			Total = decimal.Parse(GetValue(summaryXml, "Total"), NumberStyles.Currency | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, invariantCulture)
-		};
-
-		// --- Parsing Notes ---
-		Notes notes = new Notes {
-			Note = root.Element("Notes").Elements("Note").Select(n => n.Value).ToList()
-		};
-
-
-		return new PurchaseOrder {
-			Header = header,
-			Parties = parties,
-			Items = items.ToList(),
-			Summary = summary,
-			Notes = notes
-		};
+	private void SetPageMargins(Document document, XElement marginsXml) {
+		if (marginsXml != null) {
+			document.SetMargins(
+				float.Parse(marginsXml.Attribute("top")?.Value ?? "30"),
+				float.Parse(marginsXml.Attribute("right")?.Value ?? "30"),
+				float.Parse(marginsXml.Attribute("bottom")?.Value ?? "30"),
+				float.Parse(marginsXml.Attribute("left")?.Value ?? "30")
+			);
+		}
 	}
 
-	private Party ParseParty(XElement partyXml) {
-		if (partyXml == null) return new Party();
-
-		// Helper to safely get element value
-		string GetValue(XElement parent, string elementName) => parent.Element(elementName)?.Value ?? string.Empty;
-
-		return new Party {
-			Name = GetValue(partyXml, "Name"),
-			Address = GetValue(partyXml, "Address"),
-			Contact = GetValue(partyXml, "Contact"),
-			Email = GetValue(partyXml, "Email")
-		};
+	// Helper to get font from cache based on style name
+	private PdfFont GetFont(string styleName) {
+		return fontCache.TryGetValue(styleName, out var font) ? font : fontCache.First().Value;
 	}
 
-	// --- PDF Content Building Methods (Unchanged from previous version) ---
-	// (AddHeaderSection, AddHeaderCell, AddPartiesTable, AddPartyCell, 
-	// AddLineItemsTable, AddSummaryAndNotes, AddSummaryRow remain the same)
+	// Helper to get color from cache based on name
+	private Color GetColor(string colorName) {
+		if (string.IsNullOrEmpty(colorName)) return null;
+		return colorCache.TryGetValue(colorName, out var color) ? color : null;
+	}
 
-	private void AddHeaderSection(Document document, PurchaseOrder poData) {
-		// Title
-		document.Add(new Paragraph(poData.Header.Type)
-			.SetFont(boldFont).SetFontSize(24)
-			.SetTextAlignment(TextAlignment.CENTER)
-			.SetUnderline());
+	// --- PDF BUILDER METHODS (Dynamic Layout) ---
 
-		// --- Wrapper Table for Details and Barcode ---
-		// Column 1: PO Details (e.g., PO Number, Date, Status)
-		// Column 2: Barcode Image
+	private void BuildHeaderDetails(Document document, XElement dataRoot, XElement sectionXml) {
+		var poNumber = dataRoot.XPathSelectElement("Header/PONumber")?.Value;
+
+		// 1. Title
+		var titleConfig = sectionXml.Elements("Element").FirstOrDefault(e => e.Attribute("type")?.Value == "Paragraph");
+		if (titleConfig != null) {
+			string titleText = dataRoot.XPathSelectElement(titleConfig.Attribute("dataField").Value)?.Value ?? string.Empty;
+			string styleName = titleConfig.Attribute("style").Value;
+
+			//document.Add(new Paragraph(titleText)
+			//	.SetFont(GetFont(styleName))
+			//	.SetFontSize(24)
+			//	.SetTextAlignment(TextAlignment.CENTER)
+			//	.SetUnderline(titleConfig.Attribute("underline")?.Value == "true"));
+		
+			document.Add(new Paragraph(titleText)
+				.SetFont(GetFont(styleName))
+				.SetFontSize(24)
+				.SetTextAlignment(TextAlignment.CENTER)
+				.SetUnderline());
+		}
+
+		// 2. Wrapper Table for Details and Barcode (2 columns, 2:1 width)
 		var headerWrapper = new Table(UnitValue.CreatePercentArray(new float[] { 2, 1 }))
 			.UseAllAvailableWidth()
 			.SetMarginTop(10)
 			.SetMarginBottom(20);
 
-		// --- A. PO Details Cell (Left) ---
+		// --- A. PO Details Table (Left Cell) ---
+		var tableConfig = sectionXml.Elements("Element").FirstOrDefault(e => e.Attribute("type")?.Value == "Table");
 		var poDetailsTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3 }))
-			.SetWidth(UnitValue.CreatePercentValue(100)) // Use full cell width
+			.SetWidth(UnitValue.CreatePercentValue(100))
 			.SetBorder(Border.NO_BORDER);
 
-		AddHeaderCell(poDetailsTable, "PO Number:", poData.Header.PONumber);
-		AddHeaderCell(poDetailsTable, "PO Date:", poData.Header.PODate);
-		AddHeaderCell(poDetailsTable, "Delivery Date:", poData.Header.DeliveryDate);
-		AddHeaderCell(poDetailsTable, "Status:", poData.Header.Status);
+		if (tableConfig != null) {
+			foreach (var rowConfig in tableConfig.Elements("Row")) {
+				var cellConfig = rowConfig.Element("Cell");
+				string label = cellConfig.Attribute("label").Value;
+				string dataField = cellConfig.Attribute("dataField").Value;
+				string styleName = cellConfig.Attribute("style").Value;
+				string value = dataRoot.XPathSelectElement(dataField)?.Value ?? string.Empty;
 
+				poDetailsTable.AddCell(new Cell().Add(new Paragraph(label).SetFont(GetFont(styleName)).SetFontSize(10))
+					.SetPadding(2).SetBorder(Border.NO_BORDER));
+				poDetailsTable.AddCell(new Cell().Add(new Paragraph(value).SetFont(GetFont("Helvetica-Regular")).SetFontSize(10))
+					.SetPadding(2).SetBorder(Border.NO_BORDER));
+			}
+		}
 		headerWrapper.AddCell(new Cell().SetBorder(Border.NO_BORDER).Add(poDetailsTable));
 
-		// --- B. Barcode Cell (Right) ---
-		Image barcodeImage = GenerateBarcodeImage(document.GetPdfDocument(), poData.Header.PONumber);
-	
-		headerWrapper.AddCell(new Cell()
-			.SetBorder(Border.NO_BORDER)
-			.SetVerticalAlignment(VerticalAlignment.MIDDLE)
-			.SetTextAlignment(TextAlignment.RIGHT) // Ensure image is right-aligned in the cell
-			.Add(barcodeImage));
+		// --- B. Barcode Cell (Right Cell) ---
+		var barcodeConfig = sectionXml.Elements("Element").FirstOrDefault(e => e.Attribute("type")?.Value == "Barcode");
+		if (barcodeConfig != null && !string.IsNullOrEmpty(poNumber)) {
+			Image barcodeImage = GenerateBarcodeImage(document.GetPdfDocument(), poNumber, barcodeConfig);
 
+			headerWrapper.AddCell(new Cell()
+				.SetBorder(Border.NO_BORDER)
+				.SetVerticalAlignment(VerticalAlignment.MIDDLE)
+				.SetTextAlignment(TextAlignment.RIGHT)
+				.Add(barcodeImage));
+		}
 
-		barcodeImage = GenerateBarcodeImage(document.GetPdfDocument(), poData.Parties.Buyer.Name);
-		headerWrapper.AddCell(new Cell()
-		.SetBorder(Border.NO_BORDER)
-		.SetVerticalAlignment(VerticalAlignment.MIDDLE)
-		.SetTextAlignment(TextAlignment.RIGHT) // Ensure image is right-aligned in the cell
-		.Add(barcodeImage));
 		document.Add(headerWrapper);
-		document.Add(new Paragraph("\n"));
 	}
 
-	private void AddHeaderCell(Table table, string label, string value) {
-		table.AddCell(new Cell().Add(new Paragraph(label).SetFont(boldFont).SetFontSize(10))
-			.SetPadding(2).SetBorder(Border.NO_BORDER));
-		table.AddCell(new Cell().Add(new Paragraph(value).SetFont(regularFont).SetFontSize(10))
-			.SetPadding(2).SetBorder(Border.NO_BORDER));
-	}
+	private void BuildPartiesTable(Document document, XElement dataRoot, XElement sectionXml) {
+		var tableConfig = sectionXml.Elements("Element").FirstOrDefault(e => e.Attribute("type")?.Value == "Table");
+		if (tableConfig == null) return;
 
-	private void AddPartiesTable(Document document, Parties parties) {
-		// Buyer/Supplier Table (2 columns: Buyer | Supplier)
+		// Create the Parties Table
 		var partiesTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1 }))
 			.UseAllAvailableWidth();
 
-		AddPartyCell(partiesTable, "Buyer:", parties.Buyer);
-		AddPartyCell(partiesTable, "Supplier:", parties.Supplier);
+		// Iterate over columns (Buyer and Supplier)
+		foreach (var columnConfig in tableConfig.Elements("Column")) {
+			string headerText = columnConfig.Attribute("headerText").Value;
+			string dataPath = columnConfig.Attribute("dataPath").Value;
+			Color bgColor = GetColor(columnConfig.Attribute("backgroundColor")?.Value);
+
+			XElement partyData = dataRoot.XPathSelectElement(dataPath);
+
+			var cell = new Cell().SetBackgroundColor(bgColor).SetBorder(Border.NO_BORDER).SetPadding(5);
+
+			// Add Title (Buyer/Supplier)
+			cell.Add(new Paragraph(headerText).SetFont(GetFont("Helvetica-Bold")).SetFontSize(12));
+
+			// Add Fields (Name, Address, Contact, Email)
+			foreach (var fieldConfig in columnConfig.Elements("Field")) {
+				string dataField = fieldConfig.Attribute("dataField").Value;
+				string styleName = fieldConfig.Attribute("style").Value;
+				string prefix = fieldConfig.Attribute("prefix")?.Value ?? string.Empty;
+				string value = partyData.Element(dataField)?.Value ?? string.Empty;
+
+				PdfFont font = GetFont(styleName);
+				if (dataField == "Name") font = GetFont("Header"); // Use header style for Name
+
+				cell.Add(new Paragraph(prefix + value).SetFont(font).SetFontSize(10));
+			}
+
+			partiesTable.AddCell(cell);
+		}
 
 		document.Add(partiesTable);
 		document.Add(new Paragraph("\n"));
 	}
 
-	private void AddPartyCell(Table table, string title, Party party) {
-		var cell = new Cell().SetBackgroundColor(headerBgColor).SetBorder(Border.NO_BORDER).SetPadding(5);
+	private void BuildLineItemsTable(Document document, XElement dataRoot, XElement sectionXml) {
+		var tableConfig = sectionXml.Elements("Element").FirstOrDefault(e => e.Attribute("type")?.Value == "Table");
+		if (tableConfig == null) return;
 
-		cell.Add(new Paragraph(title).SetFont(boldFont).SetFontSize(12));
-		cell.Add(new Paragraph(party.Name).SetFont(boldFont).SetFontSize(11));
-		cell.Add(new Paragraph(party.Address).SetFont(regularFont).SetFontSize(10));
-		cell.Add(new Paragraph($"Contact: {party.Contact}").SetFont(regularFont).SetFontSize(10));
-		cell.Add(new Paragraph($"Email: {party.Email}").SetFont(regularFont).SetFontSize(10));
+		string dataPath = tableConfig.Attribute("dataPath").Value; // Items/LineItem
 
-		table.AddCell(cell);
-	}
+		// Get column definitions for width calculation
+		var columnConfigs = tableConfig.Elements("Column").ToList();
+		float[] columnWidths = columnConfigs.Select(c => float.Parse(c.Attribute("widthWeight").Value)).ToArray();
 
-	private void AddLineItemsTable(Document document, List<LineItem> items) {
-		// Line Items Table
-		var lineItemsTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1, 1, 1, 1 }))
+		var lineItemsTable = new Table(UnitValue.CreatePercentArray(columnWidths))
 			.UseAllAvailableWidth()
 			.SetMarginBottom(20);
 
+		Color headerBgColor = GetColor(tableConfig.Attribute("headerColor")?.Value);
+
 		// Header Row
-		string[] headers = { "Item", "Code", "Qty", "Unit Price (USD)", "Line Total (USD)" };
-		foreach (var header in headers) {
-			lineItemsTable.AddHeaderCell(new Cell().Add(new Paragraph(header).SetFont(boldFont).SetFontSize(10))
+		foreach (var columnConfig in columnConfigs) {
+			lineItemsTable.AddHeaderCell(new Cell().Add(new Paragraph(columnConfig.Attribute("label").Value).SetFont(GetFont("Label")).SetFontSize(10))
 				.SetBackgroundColor(headerBgColor).SetTextAlignment(TextAlignment.CENTER).SetPadding(5));
 		}
 
 		// Data Rows
-		foreach (var item in items) {
-			lineItemsTable.AddCell(new Cell().Add(new Paragraph(item.Item).SetFont(regularFont).SetFontSize(10)).SetPadding(5));
-			lineItemsTable.AddCell(new Cell().Add(new Paragraph(item.Code).SetFont(regularFont).SetFontSize(10)).SetPadding(5));
-			lineItemsTable.AddCell(new Cell().Add(new Paragraph(item.Quantity.ToString()).SetFont(regularFont).SetFontSize(10)).SetTextAlignment(TextAlignment.RIGHT).SetPadding(5));
-			// Format UnitPrice as currency
-			lineItemsTable.AddCell(new Cell().Add(new Paragraph(item.UnitPrice.ToString("N2")).SetFont(regularFont).SetFontSize(10)).SetTextAlignment(TextAlignment.RIGHT).SetPadding(5));
-			// Format LineTotal as currency
-			lineItemsTable.AddCell(new Cell().Add(new Paragraph(item.LineTotal.ToString("N2")).SetFont(regularFont).SetFontSize(10)).SetTextAlignment(TextAlignment.RIGHT).SetPadding(5));
+		var itemsData = dataRoot.XPathSelectElements(dataPath);
+		foreach (var itemXml in itemsData) {
+			foreach (var columnConfig in columnConfigs) {
+				string dataField = columnConfig.Attribute("dataField").Value;
+				string alignment = columnConfig.Attribute("alignment").Value;
+				string format = columnConfig.Attribute("format")?.Value;
+
+				string rawValue = itemXml.Element(dataField)?.Value ?? string.Empty;
+				string displayValue = rawValue;
+				TextAlignment textAlignment = alignment == "Right" ? TextAlignment.RIGHT : TextAlignment.LEFT;
+
+				if (format != null && decimal.TryParse(rawValue.Replace(",", ""), NumberStyles.Currency | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, invariantCulture, out decimal dValue)) {
+					// Format currency/number if specified
+					string formatString = format.Split(':')[1];
+					displayValue = dValue.ToString(formatString, invariantCulture);
+				}
+
+				lineItemsTable.AddCell(new Cell().Add(new Paragraph(displayValue).SetFont(GetFont("Body")).SetFontSize(10))
+					.SetTextAlignment(textAlignment).SetPadding(5));
+			}
 		}
 
 		document.Add(lineItemsTable);
 	}
 
-	private void AddSummaryAndNotes(Document document, PurchaseOrder poData) {
-		// Create a reliable wrapper table to align Notes (left) and Summary (right)
-		// Column 1 is for Notes (wider), Column 2 is for Summary (narrower)
+	private void BuildSummaryAndNotes(Document document, XElement dataRoot, XElement sectionXml) {
+		var wrapperConfig = sectionXml.Elements("Element").FirstOrDefault(e => e.Attribute("type")?.Value == "Table");
+		if (wrapperConfig == null) return;
+
+		// Initialize wrapper table for Notes (left) and Summary (right)
 		var wrapperTable = new Table(UnitValue.CreatePercentArray(new float[] { 2, 1 }))
 			.UseAllAvailableWidth()
-			.SetMarginTop(15); // Add a small margin above the section
+			.SetMarginTop(15);
 
+		// 1. Notes Cell (Left Column)
+		var notesColumnConfig = wrapperConfig.Elements("Column").ElementAtOrDefault(0);
+		var notesCell = new Cell().SetBorder(Border.NO_BORDER).SetPadding(0).SetVerticalAlignment(VerticalAlignment.TOP);
 
-		// 1. Notes Cell (Left)
-		var notesCell = new Cell().SetBorder(customBorder).SetPadding(0);
-		notesCell.Add(new Paragraph("Notes:").SetFont(boldFont).SetFontSize(12).SetMarginBottom(5));
+		// Add Notes Label
+		notesCell.Add(new Paragraph(notesColumnConfig.Element("Label").Attribute("text").Value)
+			.SetFont(GetFont("Header")).SetFontSize(12).SetMarginBottom(5));
 
-		if (poData.Notes != null && poData.Notes.Note != null) {
-			foreach (var note in poData.Notes.Note) {
-				notesCell.Add(new Paragraph($"- {note}").SetFont(regularFont).SetFontSize(10));
+		// Add Notes List
+		var listConfig = notesColumnConfig.Element("List");
+		if (listConfig != null) {
+			string dataPath = listConfig.Attribute("dataPath").Value; // Notes/Note
+			string prefix = listConfig.Attribute("prefix")?.Value ?? string.Empty;
+
+			var notes = dataRoot.XPathSelectElements(dataPath).Select(n => n.Value);
+
+			foreach (var note in notes) {
+				notesCell.Add(new Paragraph($"{prefix}{note}").SetFont(GetFont("Body")).SetFontSize(10));
 			}
 		}
-		// Set vertical alignment to top in case the cells have different heights
-		notesCell.SetVerticalAlignment(VerticalAlignment.TOP);
 		wrapperTable.AddCell(notesCell);
 
+		// 2. Summary Table (Right Column)
+		var summaryCell = new Cell().SetBorder(Border.NO_BORDER).SetPadding(0).SetTextAlignment(TextAlignment.RIGHT);
 
-		// 2. Summary Table (Right)
+		var summaryTableConfig = wrapperConfig.Elements("Column").ElementAtOrDefault(1).Element("Element");
 		var summaryTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1 }))
-			.SetWidth(UnitValue.CreatePercentValue(100)); // Use 100% of the containing cell width
+			.SetWidth(UnitValue.CreatePercentValue(100));
 
-		AddSummaryRow(summaryTable, "Subtotal:", poData.Summary.Subtotal.ToString("C2"), regularFont);
-		AddSummaryRow(summaryTable, "Discount (3%):", $"-{poData.Summary.Discount.ToString("N2")}", regularFont);
-		AddSummaryRow(summaryTable, "Tax (7%):", poData.Summary.Tax.ToString("N2"), regularFont);
+		// Iterate over Summary Rows
+		foreach (var rowConfig in summaryTableConfig.Elements("SummaryRow")) {
+			string label = rowConfig.Attribute("label").Value;
+			string dataField = rowConfig.Attribute("dataField").Value;
+			string format = rowConfig.Attribute("format").Value;
+			string prefix = rowConfig.Attribute("prefix")?.Value ?? string.Empty;
+			string suffix = rowConfig.Attribute("suffix")?.Value ?? string.Empty;
+			string style = rowConfig.Attribute("style").Value;
+			string bgColorName = rowConfig.Attribute("backgroundColor")?.Value;
 
-		// Total Row - bold and highlighted
-		AddSummaryRow(summaryTable, "Total:", poData.Summary.Total.ToString("C2") + " USD", boldFont, headerBgColor);
+			string rawValue = dataRoot.XPathSelectElement(dataField)?.Value.Replace(",", "") ?? "0";
 
-		// The Summary table is wrapped in a cell that is aligned to the right.
-		var summaryCell = new Cell().SetBorder(Border.NO_BORDER).SetPadding(0)
-			// This ensures the summary table aligns to the right edge of its container cell
-			.SetTextAlignment(TextAlignment.RIGHT)
-			.Add(summaryTable);
+			if (decimal.TryParse(rawValue, NumberStyles.Currency | NumberStyles.AllowThousands | NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, invariantCulture, out decimal dValue)) {
+				string formatString = format.Split(':')[1];
+				string formattedValue = prefix + dValue.ToString(formatString, invariantCulture) + suffix;
 
+				Color bgColor = GetColor(bgColorName);
+				PdfFont font = GetFont(style); // Note: Assuming "Header" style maps to Bold font
+
+				AddSummaryRow(summaryTable, label, formattedValue, font, bgColor);
+			}
+		}
+
+		summaryCell.Add(summaryTable);
 		wrapperTable.AddCell(summaryCell);
 
 		document.Add(wrapperTable);
 	}
 
-	// Note: The helper method AddSummaryRow remains unchanged:
-	private void AddSummaryRow(Table table, string label, string value, PdfFont font, Color bgColor = null) {
+	private void AddSummaryRow(Table table, string label, string value, PdfFont font, Color bgColor) {
 		var labelCell = new Cell().Add(new Paragraph(label).SetFont(font).SetFontSize(10))
 			.SetBorder(Border.NO_BORDER).SetPadding(2).SetBackgroundColor(bgColor);
 		var valueCell = new Cell().Add(new Paragraph(value).SetFont(font).SetFontSize(10))
@@ -366,8 +358,17 @@ public class PDFGen {
 		table.AddCell(valueCell);
 	}
 
+	private Image GenerateBarcodeImage(PdfDocument pdf, string code, XElement config) {
+		Barcode128 barcode = new Barcode128(pdf);
 
+		barcode.SetCode(code);
+		barcode.SetBarHeight(float.Parse(config.Attribute("barHeight")?.Value ?? "40"));
+		barcode.SetX(1.0f); // Module width
 
+		Image barcodeImage = new Image(barcode.CreateFormXObject(ColorConstants.BLACK, ColorConstants.BLACK, pdf))
+			.ScaleToFit(float.Parse(config.Attribute("scaleX")?.Value ?? "150"),
+						float.Parse(config.Attribute("scaleY")?.Value ?? "60"));
 
+		return barcodeImage;
+	}
 }
-
