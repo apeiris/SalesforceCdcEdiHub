@@ -39,15 +39,15 @@ public class XmlMapProcessor {
 		return el;
 	}
 	public async Task ProcessPdfAndMap(string pdfPath, List<string> tableHeader, string pdfMapFilePath) {
-		//Rectangle boundingBox;
-		//	List<List<string>> tableLines;
-
+		
 		using PdfReader pdfReader = new(pdfPath);
-		using PdfDocument pdfDoc = new(pdfReader);
 		var strategy = new StopOnLargeGapStrategy(1f, 0f, 500f, 10f); // Default values; will be overridden per area
 		XDocument mapDoc = XDocument.Load(pdfMapFilePath);
 		XDocument resultDoc = new(new XElement(mapDoc.Root?.Attribute("document")?.Value ?? "Document"));
 		var areas = mapDoc.Descendants("area");// Use switch on area name for maintainability and easy extension
+		using var reader = new PdfReader(pdfPath);
+		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
+		using var pdfDoc = new PdfDocument(reader, writer);
 		try {
 			foreach (var area in areas) {
 				string areaName = (string)area.Attribute("name")!;
@@ -59,24 +59,29 @@ public class XmlMapProcessor {
 					float scanBelowY = float.Parse(parameterList.First(p => p.Name == "scanBelowY").Value!)!;
 					float scanWidth = float.Parse(parameterList.First(p => p.Name == "scanWidth").Value!)!;
 					float verticalGap = float.Parse(parameterList.First(p => p.Name == "verticalGapBelow").Value!)!;
-					using (var pdfReaderForItems = new PdfReader(pdfPath))
-					using (var pdfDocForItems = new PdfDocument(pdfReaderForItems)) {
-						 strategy = new StopOnLargeGapStrategy(startX: startX, startY: scanBelowY, scanWidth: scanWidth, gapThreshold: verticalGap);
-						var parser = new PdfCanvasProcessor(strategy);
-						parser.ProcessPageContent(pdfDoc.GetPage(1));
-					}
+			
+					strategy = new StopOnLargeGapStrategy(startX: startX, startY: scanBelowY, scanWidth: scanWidth, gapThreshold: verticalGap);
+					var parser = new PdfCanvasProcessor(strategy);
+					parser.ProcessPageContent(pdfDoc.GetPage(1));
 				}
+				Rectangle? r = null;
 				switch (areaName.ToLower()) {
 					case "buyer":
 						XElement parties = resultDoc.Root!.Element(parentName) != null ? resultDoc.Root.Element(parentName)! : AddAndReturn(resultDoc.Root, parentName);
 						string buyer = strategy.GetResultantText();
 						Log.Debug("Processing Buyer area");
+						 r = strategy.GetCollectedTextBounds();
+						Render.DrawBorder(pdfDoc, r, 1);
 						break;
 					case "seller":
 						string seller = strategy.GetResultantText();
+						 r = strategy.GetCollectedTextBounds();
+						Render.DrawBorder(pdfDoc, r, 1);
 						break;
 					case "orderitems":
 						string result = strategy.GetResultantText();
+						r = strategy.GetCollectedTextBounds();
+						Render.DrawBorder(pdfDoc, r, 1);
 						Console.WriteLine("=== EXTRACTED TEXT (stops on >10pt gap) ===");
 						Console.WriteLine(result);
 
