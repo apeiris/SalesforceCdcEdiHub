@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using n1;
+
 using Newtonsoft.Json;
 using NLog;
 using NLog.Windows.Forms;
@@ -1525,83 +1525,83 @@ public partial class MainForm : Form {
 		}
 	}
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
-		try {
-			string docName = "PO 3.pdf";
-			string src = $"C:\\Users\\tony\\Downloads\\{docName}";
-			string dest = $"C:\\temp\\testOut.pdf";
-			var x = Properties.Resources.PdfDataMapIrisSystems;
-			int pageNumber = 1;
+		//	try {
+		//		string docName = "PO 3.pdf";
+		//		string src = $"C:\\Users\\tony\\Downloads\\{docName}";
+		//		string dest = $"C:\\temp\\testOut.pdf";
+		//		var x = Properties.Resources.PdfDataMapIrisSystems;
+		//		int pageNumber = 1;
 
 
-			var rectangles = ExtractEarmarkedRectangles(Properties.Settings.Default.PdfDataTemplate);
-			/*
-			// 
-			//var rectangles = new List<(Rectangle rect, string name)> { //these are always anchored 
-			//														  	(new Rectangle(36, 601, 269, 54), "Buyer"),
-			//															(new Rectangle(306, 601, 269, 54), "Supplier"),
-			//															(new Rectangle(36,565,269,18),"PoNumber"),
-			//															(new Rectangle(306,565,269,18),"PoDate"),
-			//														  	(new Rectangle(36,547,269,18),"DeliveryDate"),
-			//															(new Rectangle(306,547,269,18),"DeliveryStatus")
-			//														  };
+		//		var rectangles = ExtractEarmarkedRectangles(Properties.Settings.Default.PdfDataTemplate);
+		//		/*
+		//		// 
+		//		//var rectangles = new List<(Rectangle rect, string name)> { //these are always anchored 
+		//		//														  	(new Rectangle(36, 601, 269, 54), "Buyer"),
+		//		//															(new Rectangle(306, 601, 269, 54), "Supplier"),
+		//		//															(new Rectangle(36,565,269,18),"PoNumber"),
+		//		//															(new Rectangle(306,565,269,18),"PoDate"),
+		//		//														  	(new Rectangle(36,547,269,18),"DeliveryDate"),
+		//		//															(new Rectangle(306,547,269,18),"DeliveryStatus")
+		//		//														  };
 
-			*/
-
-
-
-			//var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
-
-			var nextPdfScanY1 = rectangles.Select(r => {
-				float bottom = r.rect.GetBottom();
-				float top = r.rect.GetTop();
-				Console.WriteLine($"Bottom = {bottom} , Top={top}");
-				return bottom;
-			}).Min();
-			Console.WriteLine($"\n\n\n\t\t y2={nextPdfScanY1}");
-
-			var (textBlocks, tables) = PdfTableParser.ExtractTables(src, pageNumber, nextPdfScanY1, rowTolerance: 9f);
-			var mergedRectangles = PdfTableParser.MergeRowsIntoTables(tables, nextIndex: rectangles.Count + 1, rowTolerance: 9f);
-
-			foreach (var table in mergedRectangles) {
-				string name = $"{table.Index}";
-				var rect = new Rectangle(table.X, table.Y, table.Width, table.Height);
-				rectangles.Add((rect, name));
-			}
-			// Extract tables
-			//DataTable dtBuyer = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
-			//DataTable dtSupplier = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
-			//DataTable dtItems = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
-			//DataTable dtSummary = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
-			//DataTable dtNotes = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
-
-			//DataSet ds = new();
+		//		*/
 
 
 
-			//string xml = ds.GetXml();
+		//		//var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
+
+		//		var nextPdfScanY1 = rectangles.Select(r => {
+		//			float bottom = r.rect.GetBottom();
+		//			float top = r.rect.GetTop();
+		//			Console.WriteLine($"Bottom = {bottom} , Top={top}");
+		//			return bottom;
+		//		}).Min();
+		//		Console.WriteLine($"\n\n\n\t\t y2={nextPdfScanY1}");
+
+		//		var (textBlocks, tables) = PdfTableParser.ExtractTables(src, pageNumber, nextPdfScanY1, rowTolerance: 9f);
+		//		var mergedRectangles = PdfTableParser.MergeRowsIntoTables(tables, nextIndex: rectangles.Count + 1, rowTolerance: 9f);
+
+		//		foreach (var table in mergedRectangles) {
+		//			string name = $"{table.Index}";
+		//			var rect = new Rectangle(table.X, table.Y, table.Width, table.Height);
+		//			rectangles.Add((rect, name));
+		//		}
+		//		// Extract tables
+		//		//DataTable dtBuyer = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
+		//		//DataTable dtSupplier = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
+		//		//DataTable dtItems = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
+		//		//DataTable dtSummary = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
+		//		//DataTable dtNotes = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
+
+		//		//DataSet ds = new();
 
 
 
-			//dgvMondayComBuyer.DataSource = dtBuyer;
-
-			//dgvMondayComPoItems.DataSource = dtItems;
-			//dgvMondayComSummary.DataSource = dtSummary;
-			//dgvMondayComNotes.DataSource = dtNotes;
+		//		//string xml = ds.GetXml();
 
 
 
+		//		//dgvMondayComBuyer.DataSource = dtBuyer;
+
+		//		//dgvMondayComPoItems.DataSource = dtItems;
+		//		//dgvMondayComSummary.DataSource = dtSummary;
+		//		//dgvMondayComNotes.DataSource = dtNotes;
 
 
-			//	PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
-			await pdfView.EnsureCoreWebView2Async();// Show in WebView
-			pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
-			//if (chkSwitchToWebView.Checked)
-			//	TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
-		} catch (Exception ex) {
-			_logger.LogError(ex.Message);
-			_logger.LogError(ex.StackTrace);
-			MessageBox.Show($"Error: {ex.Message}\n{ex.InnerException?.Message}");
-		}
+
+
+
+		//		//	PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
+		//		await pdfView.EnsureCoreWebView2Async();// Show in WebView
+		//		pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
+		//		//if (chkSwitchToWebView.Checked)
+		//		//	TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
+		//	} catch (Exception ex) {
+		//		_logger.LogError(ex.Message);
+		//		_logger.LogError(ex.StackTrace);
+		//		MessageBox.Show($"Error: {ex.Message}\n{ex.InnerException?.Message}");
+		//	}
 	}
 	private void btnExtractXml_Click(object sender, EventArgs e) {
 		
@@ -1610,13 +1610,14 @@ public partial class MainForm : Form {
 		
 		List<string>hdr= ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
-		pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystemsN2.xml");
-
-
+		pdfMapper.ProcessPdfAndMap("C:\\temp\\PO5.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+	//	pdfMapper.ProcessPdfAndMap(hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml")
 	//	DisplayXmlInWebView(doc);
 	}
 	//btnGenPDF
 	private void btnGenPDF_Click(object sender, EventArgs e) {
+
+		Cursor.Current = Cursors.WaitCursor;
 		string dataFile =@"D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\POData.xml";
 		string templatePath= "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PurchaceOrderTemplate.xml";
 		string pdfOutPath ="C:\\temp\\GeneratedPO.pdf";
@@ -1624,12 +1625,13 @@ public partial class MainForm : Form {
 		//PDF.PDFGen pdfGen = new();
 	PDF.PDFGen pdfGen = new();
 		pdfGen.CreatePdf(dataFile, templatePath, pdfOutPath);
-	
+		Cursor.Current = Cursors.Default;
+
 	}
 
 	private void btnN2ExtractPoLinesAsXml_Click(object sender, EventArgs e) {
-		string src = "C:\\Users\\tony\\Downloads\\PO 3.pdf";
-		using PdfWriter writer = new PdfWriter("C:/temp/po_lines_extracted.pdf");
+		string src = "C:\\temp\\GeneratedPO.pdf";
+		using PdfWriter writer = new PdfWriter(@"C:\temp\GeneratedPOx.pdf");
 		using (PdfDocument pdfdoc = new PdfDocument(new PdfReader(src), writer)) {
 			List<List<string>> tableOut;
 			Rectangle boundingRect;
@@ -1643,7 +1645,7 @@ public partial class MainForm : Form {
 			Render.DrawBorder(pdfdoc, boundingRect);
 			Render.DrawCornerLabel(pdfdoc, boundingRect, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
 			DataSet ds = new(); ds.ReadXml(xD.CreateReader(), XmlReadMode.InferTypedSchema);
-			dgvMondayComPoItems.DataSource = ds.Tables[0];
+			//dgvMondayComPoItems.DataSource = ds.Tables[0];
 		}
 	}
 

@@ -56,18 +56,18 @@
 			</Element>
 		</Section>
 
-		<Section name="SummaryAndNotes" placement="Bottom">
-			<Element type="Table" columns="2" relativeWidth="100" border="None">
-				<Column widthWeight="2" alignment="Left" verticalAlignment="Top">
-					<Label text="Notes:" style="Header" />
-					<List dataPath="Notes/Note" style="Body" prefix="- " />
+		<Section name="SummaryAndNotes" placement="Bottom" backgroundColor="HeaderBackground">
+			<Element type="Table" columns="2" relativeWidth="100" border="None" backgroundColor="HeaderBackground" >
+				<Column widthWeight="2" alignment="Left" verticalAlignment="Top"  backgroundColor="HeaderBackground">
+					<Label text="Notes:" style="Header" backgroundColor="HeaderBackground" />
+					<List dataPath="Notes/Note" style="Body" prefix="- " backgroundColor="HeaderBackground" />
 				</Column>
-				<Column widthWeight="1" alignment="Right">
-					<Element type="Table" columns="2" relativeWidth="100" alignment="Right" border="None" >
-						<SummaryRow label="Subtotal:" dataField="Summary/Subtotal" format="Currency:C2" style="Body" />
+				<Column widthWeight="1" alignment="Right" backgroundColor="HeaderBackground">
+					<Element type="Table" columns="2" relativeWidth="100" alignment="Right" border="None"  >
+						<SummaryRow label="Subtotal:" dataField="Summary/Subtotal" format="Currency:C2" style="Body"  />
 						<SummaryRow label="Discount (3%):" dataField="Summary/Discount" format="Currency:N2" style="Body" prefix="-" />
 						<SummaryRow label="Tax (7%):" dataField="Summary/Tax" format="Currency:N2" style="Body" />
-						<SummaryRow label="Total:" dataField="Summary/Total" format="Currency:C2" style="Header" suffix=" USD" backgroundColor="HeaderBackground" />
+						<SummaryRow label="Total:" dataField="Summary/Total" format="Currency:C2" style="Header"/><!-- suffix=" USD" /> -->
 					</Element>
 				</Column>
 			</Element>

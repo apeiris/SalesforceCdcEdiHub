@@ -10,14 +10,29 @@ namespace PDF;
 /// <summary>
 /// A custom text extraction strategy that captures all text along with its location (bounding box).
 /// </summary>
+/// 
+
+
+public class TextChunkInfo {
+	public string Text { get; set; }
+
+	/// <summary>
+	/// The bounding box of the text chunk on the page.
+	/// </summary>
+	public Rectangle? Location { get; set; }
+
+	/// <summary>
+	/// Gets the Y-coordinate of the baseline start (useful for determining rows).
+	/// </summary>
+	public float BaseLineY { get; set; }
+}
+
 public class CustomLocationTextExtractionStrategy : ITextExtractionStrategy {
 	private readonly List<TextChunkInfo> textContent = new();
-
 	public ICollection<EventType> GetSupportedEvents() {
 		// We only care about text rendering events for extraction
 		return new List<EventType>() { EventType.RENDER_TEXT };
 	}
-
 	public void EventOccurred(IEventData data, EventType type) {
 		if (type.Equals(EventType.RENDER_TEXT)) {
 			TextRenderInfo renderInfo = (TextRenderInfo)data;
@@ -69,11 +84,6 @@ public class CustomLocationTextExtractionStrategy : ITextExtractionStrategy {
 
 		}
 	}
-
-	// ... [Rest of the class methods] ...
-
-
-
 	public string GetResultantText() {
 		return null!;
 	}

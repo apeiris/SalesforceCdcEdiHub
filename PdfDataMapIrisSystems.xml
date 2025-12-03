@@ -1,8 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <pdfMap client="IrisSystems" document="PurchaseOrder">
 	<earMarked>
-		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" />
-		<area name="Buyer" rectangle="36,601,269,72" parent="Parties">
+		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" returns="scalar" />
+		<area name="buyer" rectangle="36,601,269,72" parent="parties" returns="rowSet" >
+			<parameters>
+				<parameter name="pdfPath">C:\temp\PO3.pdf</parameter>
+				<parameter name="x">4</parameter>
+				<parameter name="scanBelowY">640.0</parameter>
+				<parameter name="scanWidth">55.0</parameter>
+				<parameter name="verticalGapBelow">18.0</parameter>
+			</parameters>
 			<rowSet>
 				<!-- SIMPLE ROW: Direct copy from row index 0 -->
 				<row index="0" name="name" operation="copy" />
@@ -46,7 +53,16 @@
 				</row>
 			</rowSet>
 		</area>
-		<area name="Supplier" rectangle="306,601,269,72" parent="Parties">
+
+		<area name="seller" parent="parties" returns="rowSet" >
+			<parameters>
+				<parameter name="x">300</parameter>
+				<parameter name="scanBelowY">640.0</parameter>
+				<parameter name="scanWidth">55.0</parameter>
+				<parameter name="verticalGapBelow">18.0</parameter>
+
+			</parameters>
+
 			<rowSet>
 				<!-- SIMPLE ROW: Direct copy from row index 0 -->
 				<row index="0" name="name" operation="copy" />
@@ -68,8 +84,6 @@
 						<country />
 					</columns>
 				</row>
-
-				<!-- SCRIPT ROW: Split contact on pipe -->
 				<row index="2" name="contact" operation="script" parent="contact" >
 					<input dataAttribute="Contact" />
 					<marker value="|" />
@@ -92,30 +106,33 @@
 				</row>
 			</rowSet>
 		</area>
-
-		<!--scanBelowY is scan below the specified Y axis and all line height less that given lineHeight considered belonging to the table.  -->
-		<area name="PurchaseOrderItems" type="variable"  parent="PurchaseOrder" scanBelowY="513.0f" lineHeight="20.0f">
-			<rowSet rowCount="variable">
-
-				<!-- Row template that repeats once for every extracted line -->
-				<row repeat="true" name="Item"  operation="script">
+		
+		<!-- returns=rowSet is only escriptiv-->
+		<area name="OrderItems" type="variable"   >
+			<method name="ExtractTableBelowY" returns="rowSet">
+				<parameters>
+					<parameter name="pdfPath">C:\temp\PO3.pdf</parameter>
+					<parameter name="x">4</parameter>
+					<parameter name="scanBelowY">513.0</parameter>
+					<parameter name="scanWidth">550.0</parameter>
+					<parameter name="verticalGapBelow">28.0</parameter>
+					
+				</parameters>
+			</method> 
+			<rowSet rowCount="variable" methodName="ExtractTableBelowY" parent="PurchaseOrder"  >
+				<row repeat="true" name="PurchaseOrderItem" operation="script">
 					<script language="csharp">
 						<![CDATA[
-          // Split into parts based on whitespace
-          var parts = text.Split(
-              new[] { ' ' }, 
-              StringSplitOptions.RemoveEmptyEntries
-          );
-
-          // Adjust this according to the actual format of your PDF lines
-          return new {
+            // Your script to parse each line text content from the extracted table lines
+            var parts = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            return new {
               Item = parts.Length > 0 ? parts[0] : "",
               Code = parts.Length > 1 ? parts[1] : "",
               Qty = parts.Length > 2 ? parts[2] : "",
               UnitPrice = parts.Length > 3 ? parts[3] : "",
               LineTotal = parts.Length > 4 ? parts[4] : ""
-          };
-      ]]>
+            };
+            ]]>
 					</script>
 					<columns>
 						<Item />

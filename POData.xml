@@ -44,6 +44,35 @@
 			<UnitPrice currency="USD">310.00</UnitPrice>
 			<LineTotal currency="USD">1,240.00</LineTotal>
 		</LineItem>
+		<LineItem>
+			<Item>Hulla hoop</Item>
+			<Code>HUL-40RIN</Code>
+			<Quantity>4</Quantity>
+			<UnitPrice currency="USD">320.00</UnitPrice>
+			<LineTotal currency="USD">1,280.00</LineTotal>
+		</LineItem>
+		<LineItem>
+			<Item>Rambutan</Item>
+			<Code>RAM-BUT01</Code>
+			<Quantity>10</Quantity>
+			<UnitPrice currency="USD">100.00</UnitPrice>
+			<LineTotal currency="USD">1000.00</LineTotal>
+		</LineItem>
+		<LineItem>
+			<Item>Gom beti</Item>
+			<Code>GOM-BET01</Code>
+			<Quantity>10</Quantity>
+			<UnitPrice currency="USD">1200.00</UnitPrice>
+			<LineTotal currency="USD">12000.00</LineTotal>
+		</LineItem>
+		<LineItem>
+			<Item>Pus Paan</Item>
+			<Code>PUS-PN01</Code>
+			<Quantity>10</Quantity>
+			<UnitPrice currency="USD">1200.00</UnitPrice>
+			<LineTotal currency="USD">12000.00</LineTotal>
+		</LineItem>
+		
 	</Items>
 	<Summary>
 		<Subtotal currency="USD">12,435.00</Subtotal>
