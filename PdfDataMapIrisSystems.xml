@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <pdfMap client="IrisSystems" document="PurchaseOrder">
 	<earMarked>
-		<area name="PoNumber" rectangle="36,565,269,18" parent="PurchaseOrder" returns="scalar" />
 		<area name="buyer" rectangle="36,601,269,72" parent="parties" returns="rowSet" >
 			<parameters>
 				<parameter name="pdfPath">C:\temp\PO3.pdf</parameter>
@@ -53,7 +52,6 @@
 				</row>
 			</rowSet>
 		</area>
-
 		<area name="seller" parent="parties" returns="rowSet" >
 			<parameters>
 				<parameter name="x">300</parameter>
@@ -106,8 +104,6 @@
 				</row>
 			</rowSet>
 		</area>
-		
-		<!-- returns=rowSet is only escriptiv-->
 		<area name="OrderItems" type="variable"   >
 			<method name="ExtractTableBelowY" returns="rowSet">
 				<parameters>
