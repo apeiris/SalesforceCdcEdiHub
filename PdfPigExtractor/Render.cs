@@ -1,4 +1,5 @@
-﻿using iText.IO.Font.Constants;
+﻿using iText.IO.Font;
+using iText.IO.Font.Constants;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
@@ -24,36 +25,46 @@ public enum LabelLocation {
 				.Rectangle(rectangle.GetX(), rectangle.GetY(), rectangle.GetWidth(), rectangle.GetHeight())
 				.Stroke();
 		}
-		/*
-		public static void DrawCornerLabel(PdfDocument document, Rectangle rect, LabelLocation location, string text = "", int pageNumber = 1) {
-			PdfCanvas canvas = new PdfCanvas(document.GetPage(pageNumber));
-			canvas.BeginText();
-			var font = iText.Kernel.Font.PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
-			float fontSize = 8f;
-		
-			canvas.SetFillColor(ColorConstants.BLACK);
-			switch (location) {
-				case LabelLocation.BOTTOM_LEFT:
-					break;
-				case LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT:// draw both corners
-					text = $"({rect.GetX()},{rect.GetY()})";
-					canvas.MoveText(rect.GetX(), rect.GetY() - 10); // Offset slightly below rect
-					canvas.ShowText(text);
-					text = $"({rect.GetRight()},{rect.GetTop()})";
-					float textWidth = font.GetWidth(text, fontSize);
-					canvas.MoveText(rect.GetRight() - rect.GetX() - textWidth, rect.GetTop() + 3 - rect.GetY() + 10); // move to top right corner
-					canvas.ShowText(text);
-					break;
-			}
-			canvas.EndText();
-		}*/
-		public static void DrawCornerLabel(PdfDocument document, Rectangle rect, LabelLocation location, int pageNumber = 1) {
+	/*
+	public static void DrawCornerLabel(PdfDocument document, Rectangle rect, LabelLocation location, string text = "", int pageNumber = 1) {
+		PdfCanvas canvas = new PdfCanvas(document.GetPage(pageNumber));
+		canvas.BeginText();
+		var font = iText.Kernel.Font.PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+		float fontSize = 8f;
+
+		canvas.SetFillColor(ColorConstants.BLACK);
+		switch (location) {
+			case LabelLocation.BOTTOM_LEFT:
+				break;
+			case LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT:// draw both corners
+				text = $"({rect.GetX()},{rect.GetY()})";
+				canvas.MoveText(rect.GetX(), rect.GetY() - 10); // Offset slightly below rect
+				canvas.ShowText(text);
+				text = $"({rect.GetRight()},{rect.GetTop()})";
+				float textWidth = font.GetWidth(text, fontSize);
+				canvas.MoveText(rect.GetRight() - rect.GetX() - textWidth, rect.GetTop() + 3 - rect.GetY() + 10); // move to top right corner
+				canvas.ShowText(text);
+				break;
+		}
+		canvas.EndText();
+	}*/
+
+	private static PdfFont GetBoldFontForAnnotation() {
+		return PdfFontFactory.CreateFont(
+			StandardFonts.HELVETICA_BOLD,
+			PdfEncodings.WINANSI,
+			PdfFontFactory.EmbeddingStrategy.FORCE_NOT_EMBEDDED);   // this is the key
+	}
+
+	public static void DrawCornerLabel(PdfDocument document, Rectangle rect, LabelLocation location, int pageNumber = 1) {
 			PdfCanvas canvas = new (document.GetPage(pageNumber));
-			PdfFont font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+		//PdfFont font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+		PdfFont font = GetBoldFontForAnnotation();
 			float fontSize = 8f;
 			void DrawLabel(string text, float x, float y) {// Helper to draw label with white text on black background at given position
 				float textWidth = font.GetWidth(text, fontSize);
 				float textHeight = font.GetAscent(text, fontSize) - font.GetDescent(text, fontSize);
+				
 				canvas.SaveState();// Draw black rectangle background
 				canvas.SetFillColor(ColorConstants.BLACK);
 				canvas.Rectangle(x, y, textWidth, textHeight);

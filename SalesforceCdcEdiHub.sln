@@ -44,6 +44,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MondayCom", "MondayCom\Mond
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFServices", "PdfPigExtractor\PDFServices.csproj", "{DDA44FFE-B1A1-4B64-9D18-F9F1EC5742E2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fonts", "fonts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		C:\Windows\Fonts\corbel.ttf = C:\Windows\Fonts\corbel.ttf
+		C:\Windows\Fonts\corbelb.ttf = C:\Windows\Fonts\corbelb.ttf
+		C:\Windows\Fonts\corbeli.ttf = C:\Windows\Fonts\corbeli.ttf
+		C:\Windows\Fonts\corbell.ttf = C:\Windows\Fonts\corbell.ttf
+		C:\Windows\Fonts\corbelli.ttf = C:\Windows\Fonts\corbelli.ttf
+		C:\Windows\Fonts\corbelz.ttf = C:\Windows\Fonts\corbelz.ttf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

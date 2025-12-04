@@ -39,7 +39,7 @@ public class XmlMapProcessor {
 		return el;
 	}
 	public async Task ProcessPdfAndMap(string pdfPath, List<string> tableHeader, string pdfMapFilePath) {
-		
+
 		using PdfReader pdfReader = new(pdfPath);
 		var strategy = new StopOnLargeGapStrategy(1f, 0f, 500f, 10f); // Default values; will be overridden per area
 		XDocument mapDoc = XDocument.Load(pdfMapFilePath);
@@ -55,11 +55,11 @@ public class XmlMapProcessor {
 				var parameterList = area.Descendants("parameter")
 							.Select(p => new Parameter { Name = (string)p.Attribute("name")!, Value = p.Value }).ToList();
 				if (parameterList.Count > 0) {
-					float startX= float.Parse(parameterList.First(p => p.Name == "x").Value!)!;
+					float startX = float.Parse(parameterList.First(p => p.Name == "x").Value!)!;
 					float scanBelowY = float.Parse(parameterList.First(p => p.Name == "scanBelowY").Value!)!;
 					float scanWidth = float.Parse(parameterList.First(p => p.Name == "scanWidth").Value!)!;
 					float verticalGap = float.Parse(parameterList.First(p => p.Name == "verticalGapBelow").Value!)!;
-			
+
 					strategy = new StopOnLargeGapStrategy(startX: startX, startY: scanBelowY, scanWidth: scanWidth, gapThreshold: verticalGap);
 					var parser = new PdfCanvasProcessor(strategy);
 					parser.ProcessPageContent(pdfDoc.GetPage(1));
@@ -70,32 +70,38 @@ public class XmlMapProcessor {
 						XElement parties = resultDoc.Root!.Element(parentName) != null ? resultDoc.Root.Element(parentName)! : AddAndReturn(resultDoc.Root, parentName);
 						string buyer = strategy.GetResultantText();
 						Log.Debug("Processing Buyer area");
-						 r = strategy.GetCollectedTextBounds();
-						Render.DrawBorder(pdfDoc, r, 1);
+						r = strategy.GetCollectedTextBounds();
+						Render.DrawBorder(pdfDoc, r);
+
+						//Render.DrawCornerLabel(pdfDoc,r,LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
 						break;
 					case "seller":
 						string seller = strategy.GetResultantText();
-						 r = strategy.GetCollectedTextBounds();
-						Render.DrawBorder(pdfDoc, r, 1);
+						r = strategy.GetCollectedTextBounds();
+						Render.DrawBorder(pdfDoc, r);
+						//Render.DrawCornerLabel(pdfDoc, r, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
+
 						break;
 					case "orderitems":
 						string result = strategy.GetResultantText();
 						r = strategy.GetCollectedTextBounds();
-						Render.DrawBorder(pdfDoc, r, 1);
+						Render.DrawBorder(pdfDoc, r);
+						//Render.DrawCornerLabel(pdfDoc, r, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
 						Console.WriteLine("=== EXTRACTED TEXT (stops on >10pt gap) ===");
 						Console.WriteLine(result);
 
-				break;
-
-
-				default:    // Do nothing or handle unknown areas as needed
 						break;
+
+
+					default:    // Do nothing or handle unknown areas as needed
+						break;
+				}
+			
 			}
-		}
 		} catch (Exception ex) {
 			Log.Error("Error processing PDF and map.");
 			Log.Error(ex.Message);
-#if DEBUG_BREAK 
+#if DEBUG_BREAK
 			Debugger.Break();
 #endif
 			throw;
@@ -103,22 +109,22 @@ public class XmlMapProcessor {
 	}
 
 	public static async Task<(List<List<string>> Rows, Rectangle Box, XDocument xd)> RunExtractorScriptAsync(PdfPage page, float lheight, float below) {
-	// 1. Get types for references
-	Type extractorType = typeof(PDF.ExtractPdfTableBelowY);
-	Type itextExtractorType = typeof(PdfTextExtractor); // Needed for GetTextFromPage
-	Type xdocType = typeof(XDocument);
-	// 2. Setup Globals with the Page
-	var globals = new ExtractBelowGlobals {
-		lineHeight = lheight,
-		belowY = below,
-		Page = page,
-		ResultRows = null,
-		BoundingBox = null
-	};
+		// 1. Get types for references
+		Type extractorType = typeof(PDF.ExtractPdfTableBelowY);
+		Type itextExtractorType = typeof(PdfTextExtractor); // Needed for GetTextFromPage
+		Type xdocType = typeof(XDocument);
+		// 2. Setup Globals with the Page
+		var globals = new ExtractBelowGlobals {
+			lineHeight = lheight,
+			belowY = below,
+			Page = page,
+			ResultRows = null,
+			BoundingBox = null
+		};
 
-	// 3. The Script Code
-	// Now the script does the work: Instantiates AND Extracts
-	string scriptCode = @"
+		// 3. The Script Code
+		// Now the script does the work: Instantiates AND Extracts
+		string scriptCode = @"
         // 1. Instantiate
         var extractor = new PDF.ExtractPdfTableBelowY(verticalGap, belowY);
         
@@ -130,26 +136,26 @@ public class XmlMapProcessor {
 		BoundingBox=extractor.GetTableBoundingBox();
 		XmlContent=PDF.ExtractPdfTableBelowY.ConvertToXDocument(ResultRows,""OrderItems"");";
 
-	var scriptOptions = ScriptOptions.Default
-		.AddImports("PDF", "iText.Kernel.Pdf.Canvas.Parser") // Import namespace
-		.AddReferences(
-			extractorType.Assembly,      // Your assembly
-			itextExtractorType.Assembly, // iText.kernel assembly
-			typeof(PdfPage).Assembly,     // iText.io or kernel assembly
-			xdocType.Assembly
-		)
-		.WithAllowUnsafe(false);
+		var scriptOptions = ScriptOptions.Default
+			.AddImports("PDF", "iText.Kernel.Pdf.Canvas.Parser") // Import namespace
+			.AddReferences(
+				extractorType.Assembly,      // Your assembly
+				itextExtractorType.Assembly, // iText.kernel assembly
+				typeof(PdfPage).Assembly,     // iText.io or kernel assembly
+				xdocType.Assembly
+			)
+			.WithAllowUnsafe(false);
 
-	var script = CSharpScript.Create(
-		scriptCode,
-		options: scriptOptions,
-		globalsType: typeof(ExtractBelowGlobals)
-	);
+		var script = CSharpScript.Create(
+			scriptCode,
+			options: scriptOptions,
+			globalsType: typeof(ExtractBelowGlobals)
+		);
 
-	await script.RunAsync(globals);
+		await script.RunAsync(globals);
 
-	return (globals.ResultRows ?? new List<List<string>>(),
-			globals.BoundingBox!,
-			globals.XmlContent!);
-}
+		return (globals.ResultRows ?? new List<List<string>>(),
+				globals.BoundingBox!,
+				globals.XmlContent!);
+	}
 }

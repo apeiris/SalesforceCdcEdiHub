@@ -35,6 +35,8 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 		if (type == EventType.RENDER_TEXT) {
 			TextRenderInfo tri = (TextRenderInfo)data;
 
+			var ascent=tri.GetAscentLine();
+			var descent=tri.GetDescentLine();
 			// Capture everything WHILE graphics state is still alive
 			LineSegment baseline = tri.GetBaseline();
 			Vector baselineStart = baseline.GetStartPoint();
@@ -67,7 +69,18 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 
 			if (inXlimits) {
 				// PRE-CAPTURE bounds and baseline Y here (safe zone)
-				Rectangle bounds = tri.GetBaseline().GetBoundingRectangle();   // ← safe now
+				//Rectangle bounds = tri.GetBaseline().GetBoundingRectangle();   // ← safe now
+				float left = descent.GetStartPoint().Get(0);
+				float right=ascent.GetEndPoint().Get(0);
+				float top = ascent.GetStartPoint().Get(1);
+				float bottom=descent.GetEndPoint().Get(1);
+
+				Rectangle bounds = new Rectangle(
+					left,
+					bottom,
+					right - left,
+					top - bottom
+				);
 				float baselineY = curY;                  // already calculated
 
 				chunks.Add(new TextChunk(
@@ -116,16 +129,20 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 		float bottom = float.MaxValue;
 		float right = float.MinValue;
 		float top = float.MinValue;
-
+		float maxPad = 0f;
 		foreach (var c in chunks) {
 			Rectangle r = c.Bounds;
 			left = Math.Min(left, r.GetLeft());
 			bottom = Math.Min(bottom, r.GetBottom());
 			right = Math.Max(right, r.GetRight());
 			top = Math.Max(top, r.GetTop());
+			float pad = r.GetHeight() * 0.10f;
+			maxPad=pad>maxPad?pad:maxPad;
+			//Console.WriteLine($"r.Height={r.GetHeight()},x={r.GetX()}");
 		}
 
-		return new Rectangle(left, bottom, right - left, top - bottom);
+		Console.WriteLine($"maxPad={maxPad}");
+		return new Rectangle(left-maxPad, bottom-maxPad, (right - left)+maxPad*2, (top - bottom)+maxPad*2);
 	}
 
 	// Required interface members
@@ -143,6 +160,8 @@ class TextChunk {
 	public string Text { get; }
 	public Vector StartPoint { get; }
 	public float BaselineY { get; }      // pre-captured Y
+
+	
 	public Rectangle Bounds { get; }     // pre-captured bounding box
 	public int TextRenderMode { get; }
 
