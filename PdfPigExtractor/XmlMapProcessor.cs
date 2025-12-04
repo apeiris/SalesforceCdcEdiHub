@@ -40,7 +40,7 @@ public class XmlMapProcessor {
 	}
 	public async Task ProcessPdfAndMap(string pdfPath, List<string> tableHeader, string pdfMapFilePath) {
 
-		using PdfReader pdfReader = new(pdfPath);
+	
 		var strategy = new StopOnLargeGapStrategy(1f, 0f, 500f, 10f); // Default values; will be overridden per area
 		XDocument mapDoc = XDocument.Load(pdfMapFilePath);
 		XDocument resultDoc = new(new XElement(mapDoc.Root?.Attribute("document")?.Value ?? "Document"));
@@ -86,7 +86,7 @@ public class XmlMapProcessor {
 						string result = strategy.GetResultantText();
 						r = strategy.GetCollectedTextBounds();
 						Render.DrawBorder(pdfDoc, r);
-						//Render.DrawCornerLabel(pdfDoc, r, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
+						Render.DrawCornerLabel(pdfDoc, r, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
 						Console.WriteLine("=== EXTRACTED TEXT (stops on >10pt gap) ===");
 						Console.WriteLine(result);
 

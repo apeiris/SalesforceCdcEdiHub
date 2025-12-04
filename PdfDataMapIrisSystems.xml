@@ -114,7 +114,7 @@
 					<parameter name="pdfPath">C:\temp\PO3.pdf</parameter>
 					<parameter name="x">4</parameter>
 					<parameter name="scanBelowY">513.0</parameter>
-					<parameter name="scanWidth">550.0</parameter>
+					<parameter name="scanWidth">525.85</parameter>
 					<parameter name="verticalGapBelow">28.0</parameter>
 					
 				</parameters>
