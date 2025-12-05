@@ -69,7 +69,7 @@ public partial class MainForm : Form {
 	private readonly ILogger<MainForm> _logger;
 	private readonly X12 _x12;
 	private readonly HashSet<int> _higlightTabs = new();
-	private DataSet _dsOpenAs2=new();
+	private DataSet _dsOpenAs2 = new();
 	static string _instanceUrl = "";
 	static string _tenantId = "";
 	private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
@@ -84,7 +84,7 @@ public partial class MainForm : Form {
 	private DataTable _dtRegisteredCDCCandidates; // Data source for registered tables
 	private DataTable _dtSoqlResults = new DataTable();
 
-	
+
 	private readonly SqlServerLib _sqlServerLib;
 	private readonly object _lock = new object();
 	private static enmObjectSource _retrieveFrom = enmObjectSource.SalesForce;
@@ -313,7 +313,7 @@ public partial class MainForm : Form {
 					switch (resource) {
 						case "PARTNERSHIP":
 							JsonElement data = d.RootElement.GetProperty("data");
-							DataTable? dt = JsonExtensions.JsonExtensions.ToDataTable(data, resource).Transpose();	// Convert to DataTable -> DataSet -> XML
+							DataTable? dt = JsonExtensions.JsonExtensions.ToDataTable(data, resource).Transpose();  // Convert to DataTable -> DataSet -> XML
 							DataSet ds = new DataSet();
 							ds.Tables.Add(dt);
 							dt = null;
@@ -324,7 +324,7 @@ public partial class MainForm : Form {
 							string baseUrl = _cfg["OpenAs2:Url"]!.TrimEnd('/');// Build OpenAS2 URL safely
 							string url = $"{baseUrl}/api/partnership/view/{partnershipName}";
 							_logger.LogInformation("Fetching OpenAS2 partnership: {Url}", url);
-							XmlDocument xmlDoc = await Axios.GetXmlDocumentAsync(url, _cfg["OpenAs2:Username"]!, _cfg["OpenAs2:Password"]!);	// ✅ Await the async HTTP call
+							XmlDocument xmlDoc = await Axios.GetXmlDocumentAsync(url, _cfg["OpenAs2:Username"]!, _cfg["OpenAs2:Password"]!);    // ✅ Await the async HTTP call
 							_logger.LogDebug("✅ OpenAS2 Response:\n{Xml}", xmlDoc.OuterXml);
 							break;
 						default:
@@ -547,7 +547,7 @@ public partial class MainForm : Form {
 			_ = await PopulateDbTableFromSfObject(name);
 		}
 		foreach (string name in listToCreate) {
-			Console.WriteLine($"name to create:{name}");
+		//	Console.WriteLine($"name to create:{name}");
 		}
 	}
 	private void btnDispatchEvent_Click(object sender, EventArgs e) {
@@ -1333,7 +1333,7 @@ public partial class MainForm : Form {
 				break;
 			case "tbpopenas2":
 				var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/list", "userID", "pWd");
-				if (_dsOpenAs2!=null)_dsOpenAs2.Clear();
+				if (_dsOpenAs2 != null) _dsOpenAs2.Clear();
 				_dsOpenAs2.ReadXml(x.CreateReader());
 				cmbOpenAs2ResultObjects.Items.Clear();
 				//cmbOpenAs2ResultObjects.Items.AddRange(_dsOpenAs2.Tables.Cast<DataTable>().Select(t => t.TableName).ToArray());
@@ -1344,8 +1344,8 @@ public partial class MainForm : Form {
 								.ToArray());
 				break;
 			case "tbpmondaycom":// tbpMondayCom
-				_logger.LogDebug($"Loading Monday.com data...");
-				_logger.LogDebug($"Monday.com data loaded. Apikey={Environment.GetEnvironmentVariable("Monday_com_token")}", LogLevel.Debug);
+				//_logger.LogDebug($"Loading Monday.com data...");
+				//_logger.LogDebug($"Monday.com data loaded. Apikey={Environment.GetEnvironmentVariable("Monday_com_token")}", LogLevel.Debug);
 				break;
 			//case "tbppdf":
 			//	tabControl1.SelectedIndex =(int) tbp.Pdf;
@@ -1605,25 +1605,25 @@ public partial class MainForm : Form {
 		//	}
 	}
 	private async void btnExtractXml_Click(object sender, EventArgs e) {
-		
+
 		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
-		
-		
-		List<string>hdr= ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
+
+
+		List<string> hdr = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
-		XDocument xd=await	pdfMapper.ProcessPdfAndMap("C:\\temp\\PO5.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		XDocument xd = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO5.pdf", hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
 		DisplayXmlInWebView(xd);
 	}
 	//btnGenPDF
 	private void btnGenPDF_Click(object sender, EventArgs e) {
 
 		Cursor.Current = Cursors.WaitCursor;
-		string dataFile =@"D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\POData.xml";
-		string templatePath= "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PurchaceOrderTemplate.xml";
-		string pdfOutPath ="C:\\temp\\GeneratedPO.pdf";
-		
+		string dataFile = @"D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\POData.xml";
+		string templatePath = "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PurchaceOrderTemplate.xml";
+		string pdfOutPath = "C:\\temp\\GeneratedPO.pdf";
+
 		//PDF.PDFGen pdfGen = new();
-	PDF.PDFGen pdfGen = new();
+		PDF.PDFGen pdfGen = new();
 		pdfGen.CreatePdf(dataFile, templatePath, pdfOutPath);
 		Cursor.Current = Cursors.Default;
 
@@ -1637,8 +1637,8 @@ public partial class MainForm : Form {
 			Rectangle boundingRect;
 			XDocument xD;
 
-			List<string> Header= ["Item", "Code", "Qty", "UnitPrice", "LineTotal" ];
-		ExtractTableBelowY(pdfdoc,Header, out boundingRect, out tableOut,out xD);
+			List<string> Header = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
+			ExtractTableBelowY(pdfdoc, Header, out boundingRect, out tableOut, out xD);
 
 
 			DisplayXmlInWebView(xD);
@@ -1649,14 +1649,18 @@ public partial class MainForm : Form {
 		}
 	}
 
-	private static void ExtractTableBelowY(PdfDocument pdfdoc,List<string>TableHeader, out Rectangle BoundingBox, out List<List<string>> tableLines,out XDocument xdContent) {
-		PDF.ExtractPdfTableBelowY  ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
+	private static void ExtractTableBelowY(PdfDocument pdfdoc, List<string> TableHeader, out Rectangle BoundingBox, out List<List<string>> tableLines, out XDocument xdContent) {
+		PDF.ExtractPdfTableBelowY ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
 		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), ContentBelowY);
 		tableLines = ContentBelowY.GetTableRows();
 		tableLines[0] = TableHeader; // override header
-		BoundingBox  = ContentBelowY.GetTableBoundingBox();	
-	    xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "OrderItems");
-		Console.WriteLine($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={	BoundingBox.GetHeight()}");
+		BoundingBox = ContentBelowY.GetTableBoundingBox();
+		xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "OrderItems");
+		Console.WriteLine($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={BoundingBox.GetHeight()}");
+	}
+
+	private void btnClearLog_Click_1(object sender, EventArgs e) {
+		rtxLog.Clear();
 	}
 }
 

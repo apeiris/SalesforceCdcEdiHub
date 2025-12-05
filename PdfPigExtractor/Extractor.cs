@@ -4,7 +4,7 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
-
+using NLog;
 namespace PDF;
 
 // ──────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 	private float lastBaselineY = 0f;
 
 	private readonly List<TextChunk> chunks = new List<TextChunk>();
-
+	private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 	public StopOnLargeGapStrategy(float startX, float startY, float scanWidth, float gapThreshold) {
 		_startX = startX;
 		_startY = startY;
@@ -111,8 +111,8 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 		foreach (var chunk in chunks) {
 			float curY = chunk.BaselineY;
 
-			if (Math.Abs(curY - lastY) > tolerance && lastY > -9990)
-				sb.AppendLine();
+			if (Math.Abs(curY - lastY) > tolerance && lastY > -9990) 
+				sb.AppendLine(); 
 
 			sb.AppendLine(chunk.Text);
 			lastY = curY;
@@ -141,7 +141,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			//Console.WriteLine($"r.Height={r.GetHeight()},x={r.GetX()}");
 		}
 
-		Console.WriteLine($"maxPad={maxPad}");
+	//Console.WriteLine($"maxPad={maxPad}");
 		return new Rectangle(left-maxPad, bottom-maxPad, (right - left)+maxPad*2, (top - bottom)+maxPad*2);
 	}
 

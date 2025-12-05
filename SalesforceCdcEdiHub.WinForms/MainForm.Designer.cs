@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -1107,14 +1107,14 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle2.BackColor = SystemColors.Control;
-		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
+		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle1.BackColor = SystemColors.Control;
+		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
 		dgvOrderList.Size = new Size(392, 166);
 		dgvOrderList.TabIndex = 11;
 		// 
@@ -1800,6 +1800,7 @@ partial class MainForm {
 		btnClearLog.TabIndex = 3;
 		btnClearLog.Text = "Clear log";
 		btnClearLog.UseVisualStyleBackColor = true;
+		btnClearLog.Click += btnClearLog_Click_1;
 		// 
 		// btnLogTest
 		// 
@@ -2304,7 +2305,6 @@ partial class MainForm {
 		btnGenPDF.Text = "Generate PDF";
 		btnGenPDF.UseVisualStyleBackColor = true;
 		btnGenPDF.Click += btnGenPDF_Click;
-
 		// 
 		// btnExtractXml
 		// 

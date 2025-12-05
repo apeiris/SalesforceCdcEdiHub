@@ -49,7 +49,7 @@ public class XmlMapProcessor {
 					}
 				case "script": {
 						Dictionary<string, object> globals = new() {// 🔹 Build globals (text, marker, input, etc.)
-							["text"] = text.Trim(['\t', '\r', '\n'])
+							["text"] = text
 						};
 						var markerNode = row.Element("marker");
 						if (markerNode != null)
@@ -59,7 +59,7 @@ public class XmlMapProcessor {
 							string attr = (string)inputNode.Attribute("dataAttribute")!;
 							globals["input"] = attr;
 						}
-						var script = row.Element("script")!.Value;//.Replace("\t", "").Replace("\n", "").Replace("\r", "");
+						var script = row.Element("script")!.Value.Replace("\t", "").Replace("\n", "").Replace("\r", "");
 						var result = ScriptRunner.Run(script, globals);
 
 
