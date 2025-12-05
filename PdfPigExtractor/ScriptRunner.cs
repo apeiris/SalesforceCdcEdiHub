@@ -6,6 +6,7 @@ using Microsoft.CSharp.RuntimeBinder;
 namespace PDF;
 
 public static class ScriptRunner {
+	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
 	private static readonly ScriptOptions options = ScriptOptions.Default
 	.AddReferences(
 		typeof(object).Assembly,                     // mscorlib/System.Runtime
@@ -27,7 +28,11 @@ public static class ScriptRunner {
 				typeof(Globals)
 			).GetAwaiter().GetResult();
 		} catch (Exception ex) {
-			Console.WriteLine(ex);
+			Log.Error(ex);
+			Log.Error(code);
+			foreach (KeyValuePair<string, object> pair in globals) {
+				Log.Info($"\t\tkey={pair.Key}= {pair.Value}");
+			}
 			return null;
 		}
 	}

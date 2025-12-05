@@ -16,7 +16,7 @@
 				<marker value=',' />
 				<script language="csharp">
 					<![CDATA[
-						var parts = text.Split(['\r','\n'], StringSplitOptions.RemoveEmptyEntries);
+						var parts = text.Split(new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);
 						return new {
 						street = parts.Length > 0 ? parts[0].Trim() : "",
 						city = parts.Length > 1 ? parts[1].Trim() : "",
@@ -34,7 +34,7 @@
 				<input dataAttribute="Contact" />
 				<marker value="|" />
 				<script language="csharp">
-					<![CDATA[var parts = text.Split(new[]{ marker }, StringSplitOptions.None);
+					<![CDATA[var parts = text.Split(new[]{ '|' }, StringSplitOptions.None);
 						return new {
 						phone = parts.Length > 0 ? parts[0].Trim() : "",
 						email = parts.Length > 1 ? parts[1].Trim() : ""};]]>
@@ -61,7 +61,7 @@
 			<row index="1" name="address" operation="script" parent="address">
 				<marker value="," />
 				<script language="csharp">
-					<![CDATA[ var parts = ((string)text).Split(new[] { marker }, StringSplitOptions.None);
+					<![CDATA[var parts=((string)text).Split(new[]{'|'}, StringSplitOptions.None);
 return new {
     street = parts.Length > 0 ? parts[0].Trim() : "",
     city = parts.Length > 1 ? parts[1].Trim() : "",
@@ -79,8 +79,7 @@ return new {
 				<input dataAttribute="Contact" />
 				<marker value="|" />
 				<script language="csharp">
-					<![CDATA[
-            var parts = text.Split(new[]{ marker }, StringSplitOptions.None);
+					<![CDATA[var parts = text.Split(new[]{'|'}, StringSplitOptions.None);
             return new {
                 phone = parts.Length > 0 ? parts[0].Trim() : "",
                 email = parts.Length > 1 ? parts[1].Trim() : ""
@@ -109,7 +108,7 @@ return new {
 			</parameters>
 		</method>
 		<rowSet rowCount="variable" methodName="ExtractTableBelowY" parent="PurchaseOrder"  >
-			<row repeat="true" name="PurchaseOrderItem" operation="script">
+			<row repeat="true" name="PO1" operation="script"> <!-- PO1 is the PO1 Loop in 850-->
 				<script language="csharp">
 					<![CDATA[
              var parts = text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);

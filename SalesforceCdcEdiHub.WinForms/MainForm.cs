@@ -547,7 +547,6 @@ public partial class MainForm : Form {
 			_ = await PopulateDbTableFromSfObject(name);
 		}
 		foreach (string name in listToCreate) {
-		//	Console.WriteLine($"name to create:{name}");
 		}
 	}
 	private void btnDispatchEvent_Click(object sender, EventArgs e) {
@@ -1526,83 +1525,7 @@ public partial class MainForm : Form {
 		}
 	}
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
-		//	try {
-		//		string docName = "PO 3.pdf";
-		//		string src = $"C:\\Users\\tony\\Downloads\\{docName}";
-		//		string dest = $"C:\\temp\\testOut.pdf";
-		//		var x = Properties.Resources.PdfDataMapIrisSystems;
-		//		int pageNumber = 1;
-
-
-		//		var rectangles = ExtractEarmarkedRectangles(Properties.Settings.Default.PdfDataTemplate);
-		//		/*
-		//		// 
-		//		//var rectangles = new List<(Rectangle rect, string name)> { //these are always anchored 
-		//		//														  	(new Rectangle(36, 601, 269, 54), "Buyer"),
-		//		//															(new Rectangle(306, 601, 269, 54), "Supplier"),
-		//		//															(new Rectangle(36,565,269,18),"PoNumber"),
-		//		//															(new Rectangle(306,565,269,18),"PoDate"),
-		//		//														  	(new Rectangle(36,547,269,18),"DeliveryDate"),
-		//		//															(new Rectangle(306,547,269,18),"DeliveryStatus")
-		//		//														  };
-
-		//		*/
-
-
-
-		//		//var nextPdfScanY1 = rectangles.Select(item => item.rect.GetBottom()).Min();
-
-		//		var nextPdfScanY1 = rectangles.Select(r => {
-		//			float bottom = r.rect.GetBottom();
-		//			float top = r.rect.GetTop();
-		//			Console.WriteLine($"Bottom = {bottom} , Top={top}");
-		//			return bottom;
-		//		}).Min();
-		//		Console.WriteLine($"\n\n\n\t\t y2={nextPdfScanY1}");
-
-		//		var (textBlocks, tables) = PdfTableParser.ExtractTables(src, pageNumber, nextPdfScanY1, rowTolerance: 9f);
-		//		var mergedRectangles = PdfTableParser.MergeRowsIntoTables(tables, nextIndex: rectangles.Count + 1, rowTolerance: 9f);
-
-		//		foreach (var table in mergedRectangles) {
-		//			string name = $"{table.Index}";
-		//			var rect = new Rectangle(table.X, table.Y, table.Width, table.Height);
-		//			rectangles.Add((rect, name));
-		//		}
-		//		// Extract tables
-		//		//DataTable dtBuyer = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[1].rect, "Buyer");
-		//		//DataTable dtSupplier = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[2].rect, "Supplier");
-		//		//DataTable dtItems = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[3].rect, "Items");
-		//		//DataTable dtSummary = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[4].rect, "Totals");
-		//		//DataTable dtNotes = PdfTableExtractor.ExtractSingleTable(src, pageNumber, rectangles[5].rect, "Notes");
-
-		//		//DataSet ds = new();
-
-
-
-		//		//string xml = ds.GetXml();
-
-
-
-		//		//dgvMondayComBuyer.DataSource = dtBuyer;
-
-		//		//dgvMondayComPoItems.DataSource = dtItems;
-		//		//dgvMondayComSummary.DataSource = dtSummary;
-		//		//dgvMondayComNotes.DataSource = dtNotes;
-
-
-
-
-
-		//		//	PdfTableExtractor.AddMultipleRedBorders(src, dest, rectangles);
-		//		await pdfView.EnsureCoreWebView2Async();// Show in WebView
-		//		pdfView.CoreWebView2.Navigate($"file:///{dest.Replace("\\", "/")}");
-		//		//if (chkSwitchToWebView.Checked)
-		//		//	TabControl1_Selected1(this, new TabControlEventArgs(tbpPdf, tabControl1.TabPages.IndexOf(tbpPdf), TabControlAction.Selected));
-		//	} catch (Exception ex) {
-		//		_logger.LogError(ex.Message);
-		//		_logger.LogError(ex.StackTrace);
-		//		MessageBox.Show($"Error: {ex.Message}\n{ex.InnerException?.Message}");
-		//	}
+		
 	}
 	private async void btnExtractXml_Click(object sender, EventArgs e) {
 
@@ -1656,7 +1579,8 @@ public partial class MainForm : Form {
 		tableLines[0] = TableHeader; // override header
 		BoundingBox = ContentBelowY.GetTableBoundingBox();
 		xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "OrderItems");
-		Console.WriteLine($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={BoundingBox.GetHeight()}");
+	
+//	 ($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={BoundingBox.GetHeight()}");
 	}
 
 	private void btnClearLog_Click_1(object sender, EventArgs e) {

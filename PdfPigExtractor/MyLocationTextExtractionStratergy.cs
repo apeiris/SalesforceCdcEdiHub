@@ -44,7 +44,6 @@ public class MyLocationTextExtractionStrategy : ITextExtractionStrategy {
 
 					// Check if it's a rectangle shape
 					StrokedPathsCount++;
-					//Console.WriteLine($"Detected stroked path (possible table line). Width={pathInfo.GetLineWidth()}, Cap={pathInfo.GetLineCapStyle()}");
 				}
 				
 				break;

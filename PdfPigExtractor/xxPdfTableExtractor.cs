@@ -106,7 +106,6 @@ public class xxPdfTableExtractorxxx {
 			PdfPage page = pdfDocument.GetPage(pageNumber);
 			CustomLocationTextExtractionStrategy strategy = new(); // 1. Extract all text chunks on the page
 			PdfTextExtractor.GetTextFromPage(page, strategy);
-			Console.WriteLine($"Getting TextArea bounded by:X1={tableArea.GetX()}\tY1={tableArea.GetY()}\tX2={tableArea.GetRight()}\tY2={tableArea.GetTop()}");
 			List<TextChunkInfo> filteredChunks = strategy.GetTextContent()// 2. Filter chunks to only those within the specified bounding box
 				.Where(chunk =>
 					chunk.Location!.GetLeft() >= tableArea.GetLeft() &&// X-AXIS (Strict Containment)

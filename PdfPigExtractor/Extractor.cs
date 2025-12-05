@@ -65,7 +65,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			// 3. Keep only text inside the horizontal scan band
 			bool inXlimits = curX >= _startX && curX <= _startX + _scanWidth;
 
-			Console.WriteLine($"Text: '{tri.GetText()}' at ({curX:F1},{curY:F1}) InXlimits={inXlimits}");
+			
 
 			if (inXlimits) {
 				// PRE-CAPTURE bounds and baseline Y here (safe zone)
@@ -138,10 +138,8 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			top = Math.Max(top, r.GetTop());
 			float pad = r.GetHeight() * 0.10f;
 			maxPad=pad>maxPad?pad:maxPad;
-			//Console.WriteLine($"r.Height={r.GetHeight()},x={r.GetX()}");
 		}
 
-	//Console.WriteLine($"maxPad={maxPad}");
 		return new Rectangle(left-maxPad, bottom-maxPad, (right - left)+maxPad*2, (top - bottom)+maxPad*2);
 	}
 

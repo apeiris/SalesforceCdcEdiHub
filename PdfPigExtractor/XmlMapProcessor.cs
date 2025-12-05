@@ -128,6 +128,10 @@ public class XmlMapProcessor {
 			try {
 				XElement mappedAreaXml = await ProcessRowSet(areaNode, area.Text);
 				resDoc.Root!.Add(mappedAreaXml); // Add under root
+				Log.Info(area.Text);
+				Log.Info("----------------------------------------");
+				Log.Info(mappedAreaXml.ToString());
+
 			} catch (Exception ex) {
 				Log.Error(ex.Message);
 				throw;

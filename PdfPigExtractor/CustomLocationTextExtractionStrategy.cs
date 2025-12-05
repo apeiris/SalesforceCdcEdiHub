@@ -70,10 +70,7 @@ public class CustomLocationTextExtractionStrategy : ITextExtractionStrategy {
 				width,      // Width
 				height      // Height (YTop - YBottom)
 			);
-			//	Console.WriteLine($"Getting TextArea bounded by:X1={tableArea.GetX()}\tY1={tableArea.GetY()}\tX2={tableArea.GetRight()}\tY2={tableArea.GetTop()}");
-
-			//	Console.WriteLine($"Adjusted bound             :X1={adjRect.GetX()}\tY1={adjRect.GetY()}\tX2={adjRect.GetRight()}\tY2={adjRect.GetTop()}");
-
+		
 			textContent.Add(new TextChunkInfo {
 				Text = text,
 				Location = adjRect,
