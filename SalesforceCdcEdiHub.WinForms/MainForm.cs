@@ -33,6 +33,7 @@ using PDF;
 using iText.Kernel.Pdf.Filespec;
 using iText.Layout.Properties;
 using DocumentFormat.OpenXml;
+using System.Threading.Tasks;
 
 
 namespace WinForms;
@@ -1603,16 +1604,15 @@ public partial class MainForm : Form {
 		//		MessageBox.Show($"Error: {ex.Message}\n{ex.InnerException?.Message}");
 		//	}
 	}
-	private void btnExtractXml_Click(object sender, EventArgs e) {
+	private async void btnExtractXml_Click(object sender, EventArgs e) {
 		
 		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
 		
 		
 		List<string>hdr= ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
-		pdfMapper.ProcessPdfAndMap("C:\\temp\\PO5.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-	//	pdfMapper.ProcessPdfAndMap(hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml")
-	//	DisplayXmlInWebView(doc);
+		XDocument xd=await	pdfMapper.ProcessPdfAndMap("C:\\temp\\PO5.pdf",hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		DisplayXmlInWebView(xd);
 	}
 	//btnGenPDF
 	private void btnGenPDF_Click(object sender, EventArgs e) {

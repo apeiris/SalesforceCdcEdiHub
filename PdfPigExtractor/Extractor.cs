@@ -114,7 +114,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			if (Math.Abs(curY - lastY) > tolerance && lastY > -9990)
 				sb.AppendLine();
 
-			sb.Append(chunk.Text + '|');
+			sb.AppendLine(chunk.Text);
 			lastY = curY;
 		}
 
