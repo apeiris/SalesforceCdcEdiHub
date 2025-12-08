@@ -39,7 +39,6 @@ public class XmlMapProcessor {
 	Rectangle Bounds
 );
 
-
 	private XElement doRowScript(XElement row, Dictionary<string, object> globals) {
 		var markerNode = row.Element("marker");
 		if (markerNode != null)
@@ -134,7 +133,7 @@ public class XmlMapProcessor {
 					Log.Debug($"{attr.Name}={value}");
 					break;
 				case "constant":
-					 value = attr.Value.Split(',', 2)[0];
+					value = attr.Value.Split(',', 2)[0];
 					attr.SetValue(value);
 
 					Log.Debug($"{attr.Name}={value}");
@@ -223,17 +222,17 @@ public class XmlMapProcessor {
 		return new XDocument(children);
 	}
 	public async Task<XElement> ProcessPdfAndMap(string pdfPath, string xmlMapPath) {
-
 		using var reader = new PdfReader(pdfPath);
 		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
 		using var pdfDoc = new PdfDocument(reader, writer);
 		List<ExtractedArea> collectedAreas = new(); // Store results before drawing
 		XDocument originalDoc = XDocument.Load(xmlMapPath);
-		XDocument replicaDoc =GetChildren( ReplicateXDocument(originalDoc));// ignore the root <pdfMap>, it is not relavent  
+		XDocument replicaDoc = GetChildren(ReplicateXDocument(originalDoc));// ignore the root <pdfMap>, it is not relavent  
 		string value = ""; // work vars
-		
 		foreach (XElement xe in replicaDoc.Descendants()) {
+			Log.Info($"DocDecendeants {xe.Name} path={xe.GetXPath()}");
 			foreach (var attr in xe.Attributes()) {
+				Log.Info(attr.GetXPath());
 				Dictionary<string, string> prms = attr.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 				.Select(pair => pair.Split('=', 2)) // Split into exactly 2 parts
 				.Where(parts => parts.Length == 2)          // Ensure we have a key and a value
@@ -241,35 +240,87 @@ public class XmlMapProcessor {
 					parts => parts[0].Trim(),
 					parts => parts[1].Trim()
 				);
+				if (prms.Count == 0) continue;
 				string valueFrom = prms["src"] ?? throw new Exception($"Missing mandatory parameter 'src' in attribute={attr.Name} ");
 				switch (valueFrom.ToLower()) {
 					case "pdf":
 						var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
 						var parser = new PdfCanvasProcessor(strategy);
 						parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
-						value = strategy.GetResultantText().Replace("\r","").Replace("\n","");
+						value = strategy.GetResultantText().Replace("\r", "").Replace("\n", "");
 						Rectangle bounds = strategy.GetCollectedTextBounds();
 						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
 						Log.Debug($"{attr.Name}={value}");
 						break;
 					case "constant":
-						value = attr.Value.Split(',', 2)[0];
+						value = attr.Value.Split(',', 2)[0]; //split and get the first(0) fragment 
 						attr.SetValue(value);
-
 						Log.Debug($"{attr.Name}={value}");
+						break;
+					case "postfix":
+						Log.Warn($" error pre {replicaDoc.ToString()}");
+						var script = xe.Element("postfix")!.Value;
+						var data = new Dictionary<string, object>();
+						data["value"] = xe.FirstAttribute.Value;
+						var result = ScriptRunner.Run(script, data);
+						if (result is Dictionary<string, string> dict) xe.SetAttributes(dict);
+						xe.Element("postfix")!.Remove();// remove  postfix (script etc)
+						Log.Trace($"postfix:post\r\n{replicaDoc.ToString()}");
 						break;
 				}
 				xe.SetAttributeValue(attr.Name, value);
 			}
 		}
-
-
-
-
-		return null;
+		foreach (var area in collectedAreas) {
+			Render.DrawBorder(pdfDoc, area.Bounds);
+			Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
+		}
+		return (XElement) replicaDoc.Root!;
 		await Task.CompletedTask;
 	}
+}
+public static class XElementExtensions {
+	///
+	///Extension method Bulk updates or creates attributes on an XElement from a Dictionary.	
+	///
+	public static void SetAttributes(this XElement e, Dictionary<string, string> dict) {
+		if (e == null || dict == null) return;
 
+		foreach (KeyValuePair<string, string> kv in dict) {
+			e.SetAttributeValue(kv.Key, kv.Value);
+		}
+	}
+	//public static string GetXPath(this XElement element) {
+	//	if (element == null) return string.Empty;
+	//	string path = element.AncestorsAndSelf().Reverse().Select(e => {// Recursively build the path by looking at parents
+	//		var siblings = e.ElementsBeforeSelf(e.Name).Count() + 1;// Get siblings with the same name to determine index
+	//		return $"{e.Name.LocalName}[{siblings}]";// If there's only one sibling of this name, the index [1] is optional but clearer
+	//	}).Aggregate((current, next) => $"{current}/{next}");
+	//	return $"/{path}";
+	//}
+	public static string GetXPath(this XNode node) {
+		if (node == null) return string.Empty;
 
+		// XNodes include elements, text, and comments. 
+		// We handle XElement specifically to get tag names.
+		if (node is XElement element) {
+			// Build the path by checking indices among siblings
+			string path = element.AncestorsAndSelf().Reverse().Select(e => {
+				// Count siblings with the same name that appear before this node
+				var siblings = e.ElementsBeforeSelf(e.Name).Count() + 1;
+				return $"{e.Name.LocalName}[{siblings}]";
+			}).Aggregate((current, next) => $"{current}/{next}");
 
+			return $"/{path}";
+		}
+
+		// If it's a Text node or Comment, return parent path with specific identifier
+		return node.Parent != null ? $"{node.Parent.GetXPath()}/{node.NodeType.ToString().ToLower()}()" : "/";
+	}
+	public static string GetXPath(this XAttribute attribute) {
+		if (attribute == null) return string.Empty;
+
+		// Get the parent element's path and append the attribute identifier (@)
+		return $"{attribute.Parent.GetXPath()}/@{attribute.Name.LocalName}";
+	}
 }

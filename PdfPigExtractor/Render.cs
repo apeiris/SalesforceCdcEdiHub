@@ -4,6 +4,7 @@ using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NLog;
 using Rectangle = iText.Kernel.Geom.Rectangle;
 namespace PDF;
@@ -18,6 +19,7 @@ public enum LabelLocation {
 public class Render {
 	private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 	public static void DrawBorder(PdfDocument document, Rectangle rectangle, int pageNumber = 1) {
+		if (rectangle == null) return;
 		//if(rectangle!=null)
 		//Logger.Debug($"Drawing border on page {pageNumber} at rect x={rectangle.GetX()}:y={rectangle.GetY()} w={rectangle.GetWidth()}:h={rectangle.GetHeight()}");
 		PdfCanvas canvas = new(document.GetPage(pageNumber));

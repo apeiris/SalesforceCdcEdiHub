@@ -17,37 +17,49 @@ public static class ScriptRunner {
 	)
 	.AddImports(
 		"System",
-		"System.Linq"
+		"System.Linq",
+		"System.Collections.Generic"
 	);
 	public static object Run(string code, Dictionary<string, object> globals) {
+		var options = ScriptOptions.Default
+			.AddReferences(
+				typeof(System.Linq.Enumerable).Assembly, // For .Select()
+				typeof(System.Collections.Generic.Dictionary<string, string>).Assembly, // For Dictionary
+				typeof(System.Runtime.CompilerServices.DynamicAttribute).Assembly // For dynamic handling
+			)
+			.AddImports("System", "System.Linq", "System.Collections.Generic");
 		try {
-			return CSharpScript.EvaluateAsync<object>(
+			var globalsInstance = new Globals(globals);
+			var task = CSharpScript.EvaluateAsync<object>(
 				code,
 				options,
-				new Globals(globals),
+				globalsInstance,
 				typeof(Globals)
-			).GetAwaiter().GetResult();
+			);
+
+			return task.Result; // Simplified wait
 		} catch (Exception ex) {
-			Log.Error(ex);
-			Log.Error(code);
-			foreach (KeyValuePair<string, object> pair in globals) {
-				Log.Info($"\t\tkey={pair.Key}= {pair.Value}");
-			}
+			Log.Error($"Script Execution Error: {ex.InnerException?.Message ?? ex.Message}");// Log the actual script exception details
 			return null;
 		}
 	}
 }
 
 public class Globals {
-	private readonly Dictionary<string, object> Vars;
-	public Globals(Dictionary<string, object> vars) => Vars = vars;
-
-	public object this[string name] {
-		get => Vars.ContainsKey(name) ? Vars[name] : null;
-		set => Vars[name] = value;
+	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+	private Dictionary<string, object> _data;
+	public Dictionary<string, object> data {
+		get {
+			Log.Debug("Roslyn Script: Accessing 'data' global object.");	// This logs every time the script accesses the 'data' global
+			return _data;
+		}
 	}
 
-	// ⭐ magically expose dictionary values as dynamic fields
-	public dynamic text => this["text"];
-	public dynamic marker => this["marker"];
+	public Globals(Dictionary<string, object> vars) {
+		this._data = vars;
+		Log.Debug("Roslyn Script: Environment initialized with keys: " + string.Join(", ", vars.Keys));
+		if (vars.ContainsKey("value")) {
+			Log.Debug($"Roslyn Script: Input 'value' content: {vars["value"]}");
+		}
+	}
 }

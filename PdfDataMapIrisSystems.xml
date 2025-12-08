@@ -5,26 +5,26 @@
 		 status="x=169,scanBelowY=742, width=50,line2LineGap=10,src=pdf"
 		 x12Model="850-4010,src=constant">
 		<parties>
-			<buyer			name="x=30,scanBelowY=700,width=50,line2LineGap=60,src=pdf" >
-				<address	street="x=30,scanBelowY=700,width=300,line2LineGap=60,src=pdf"
-							postcode="x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
-							city= "x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
-							country ="x=30,scanBelowY=720,width=100, line2LineGap=60,src=pdf">
+
+			<buyer name="x=47,scanBelowY=653,width=50,line2LineGap=10,src=pdf">
+				<address	street="x=47,scanBelowY=635,width=50,line2LineGap=10,src=pdf"
+							city="src=postfix"
+							postcode="src=none"
+							country="src=none"
+							>
+					<postfix>
+						<![CDATA[var raw = data["value"].ToString();
+								 var parts = raw.Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+												.Select(p => p.Trim())
+												.ToArray();
+        				        new System.Collections.Generic.Dictionary<string, string>
+								{   ["street"] = parts.Length > 0 ? parts[0] : "",
+									["city"] = parts.Length > 1 ? parts[1] : "",
+									["postcode"] = parts.Length > 2 ? parts[2] : "",
+									["country"]=parts.Length > 3 ? parts[3]:""}  ]]>
+					</postfix>
 				</address>
-				<contact	tel="x=30,scanBelowY=650,width=100,line2LineGap=60,src=pdf"
-							email="x=100,scanBelowY=650,width=100, line2LineGap=60,src=pdf">
-				</contact>
 			</buyer>
-			<seller			name="x=30,scanBelowY=700,width=50,line2LineGap=60,src=pdf">
-				<address	street="x=30,scanBelowY=700,width=300,line2LineGap=60,src=pdf"
-							postcode="x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
-							city="x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
-							country ="x=30,scanBelowY=720,width=100, line2LineGap=60,src=pdf">
-				</address>
-				<contact	tel="x=30,scanBelowY=650,width=100,line2LineGap=60,src=pdf"
-							email="x=100,scanBelowY=650,width=100, line2LineGap=60,src=pdf">
-				</contact>
-			</seller>
 		</parties>
 	</po>
 </pdfMap>
