@@ -13,7 +13,7 @@ namespace PDF;
 public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 	private readonly float _startX;
 	private readonly float _startY;
-	private readonly float _scanWidth;
+	private readonly float _width;
 	private readonly float _gapThreshold;
 
 	private bool started = false;
@@ -22,10 +22,10 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 
 	private readonly List<TextChunk> chunks = new List<TextChunk>();
 	private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-	public StopOnLargeGapStrategy(float startX, float startY, float scanWidth, float gapThreshold) {
+	public StopOnLargeGapStrategy(float startX, float startY, float width, float gapThreshold) {
 		_startX = startX;
 		_startY = startY;
-		_scanWidth = scanWidth;
+		_width = width;
 		_gapThreshold = gapThreshold;
 	}
 
@@ -63,7 +63,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			lastBaselineY = curY;
 
 			// 3. Keep only text inside the horizontal scan band
-			bool inXlimits = curX >= _startX && curX <= _startX + _scanWidth;
+			bool inXlimits = curX >= _startX && curX <= _startX + _width;
 
 			
 

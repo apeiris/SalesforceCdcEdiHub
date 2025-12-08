@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<po ponumber="10345" date="Sep. 4,2025" status="Pending"  x12model="850-4010">
+	<parties>
+		<buyer name="NextGen Corp">
+			<address street="77 Bay Street" postcode="ON M5J 2L9" city="Toronto" country="Canada"/>
+			<contact tel="+1(416) 555-7789" email="finance@nextgen.com"/>
+		</buyer>
+		<seller name="Metro Office Furniture Co.">
+			<address street="1750 Market St." postcode="CO 80202" city="Denver" country="USA" />
+			<contact tel="1(303) 555-9922" email="sales@metrooffice.com"/>
+		</seller>
+	</parties>
+	<delivery date="Sep.20,2025" notes="Please deliver to Toronot HQ dock entrance. All items must be packaged securely."/>
+	<fob pay="CC" location="DE" costfreight="CFR" />
+	<lines>
+		<line index="1" code="MOF-WS600" description="Workstation (Cubicle)" qty="8" unitprice="850.00"/>
+		<line index="2" code="MOF-SC100" description="Storage Cabinets" uom="ea" qty="6" unitprice="295.00"/>
+		<line index="3" code="MOF-TC210" description="Task Chairs" uom="ea"	qty="15" unitprice="175.00"/>
+		<line index="4" code="MOF-BT50" description="Breakroom Tables" uom="ea"	qty="4" unitprice="310.00"/>
+		<line index="5" code="RAM=BUT1" description="Rambutan" uom="ea" qty="20" unitprice="40.00"/>
+	</lines>
+</po>

@@ -1487,7 +1487,7 @@ public partial class MainForm : Form {
 			}).ToList();
 		return earmarkedRectangles;
 	}
-	private async void DisplayXmlInWebView(XDocument extractedDoc) {
+	private async void DisplayXmlInWebView(XElement extractedDoc) {
 		if (extractedDoc == null) {
 			MessageBox.Show("No XML document to display.");
 			return;
@@ -1528,14 +1528,16 @@ public partial class MainForm : Form {
 		
 	}
 	private async void btnExtractXml_Click(object sender, EventArgs e) {
-
+		Cursor.Current = Cursors.WaitCursor;
 		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
 
 
 		List<string> hdr = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
-		XDocument xd = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO5.pdf", hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-		DisplayXmlInWebView(xd);
+		//XDocument xd = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf", hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		XElement xe = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf", "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
+		DisplayXmlInWebView(xe);
+		Cursor.Current = Cursors.Default;
 	}
 	//btnGenPDF
 	private void btnGenPDF_Click(object sender, EventArgs e) {
@@ -1564,7 +1566,7 @@ public partial class MainForm : Form {
 			ExtractTableBelowY(pdfdoc, Header, out boundingRect, out tableOut, out xD);
 
 
-			DisplayXmlInWebView(xD);
+			DisplayXmlInWebView(xD.Root);
 			Render.DrawBorder(pdfdoc, boundingRect);
 			Render.DrawCornerLabel(pdfdoc, boundingRect, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
 			DataSet ds = new(); ds.ReadXml(xD.CreateReader(), XmlReadMode.InferTypedSchema);

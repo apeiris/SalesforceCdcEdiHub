@@ -18,8 +18,8 @@ public enum LabelLocation {
 public class Render {
 	private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 	public static void DrawBorder(PdfDocument document, Rectangle rectangle, int pageNumber = 1) {
-
-		Logger.Debug($"Drawing border on page {pageNumber} at rect x={rectangle.GetX()}:y={rectangle.GetY()} w={rectangle.GetWidth()}:h={rectangle.GetHeight()}");
+		//if(rectangle!=null)
+		//Logger.Debug($"Drawing border on page {pageNumber} at rect x={rectangle.GetX()}:y={rectangle.GetY()} w={rectangle.GetWidth()}:h={rectangle.GetHeight()}");
 		PdfCanvas canvas = new(document.GetPage(pageNumber));
 		canvas.SetStrokeColor(DeviceRgb.RED)
 			.SetLineWidth(1f)

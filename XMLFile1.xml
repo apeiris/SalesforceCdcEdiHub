@@ -1,4 +1,175 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<rows>
-	<row index="0" Descirption="" ItemCode="" Qty="" UnitPrice="" total=""/>
-</rows>
+<pdfMap>
+	<buyer>
+		<name>NextGen Tech Corp</name>
+		<row index="1" name="address" operation="script" parent="address">
+			<marker value="," />
+
+			<columns>
+				<street />
+				<city />
+				<postalCode />
+				<country />
+			</columns>
+			<street>NextGen Tech Corp</street>
+			<city>77 Bay Street, Toronto, ON M5J 2L9, Canada</city>
+			<postalCode>Contact: +1 (416) 555-7789</postalCode>
+			<country>Email: finance@nextgen.com</country>
+		</row>
+		<row index="2" name="contact" operation="script" parent="contact">
+			<input dataAttribute="Contact" />
+			<marker value="|" />
+			<columns>
+				<email />
+				<phone />
+			</columns>
+			<email></email>
+			<phone>
+				NextGen Tech Corp
+				77 Bay Street, Toronto, ON M5J 2L9, Canada
+				Contact: +1 (416) 555-7789
+				Email: finance@nextgen.com
+			</phone>
+		</row>
+	</buyer>
+	<seller>
+		<name>Metro Office Furniture Co.</name>
+		<row index="1" name="address" operation="script" parent="address">
+			<marker value="," />
+			<columns>
+				<street />
+				<City />
+				<postalCode />
+				<country />
+			</columns>
+			<street>
+				Metro Office Furniture Co.
+				1750 Market St, Denver, CO 80202, USA
+				Contact: +1 (303) 555-9922
+				Email: sales@metrooffice.com
+			</street>
+			<City></City>
+			<postalCode></postalCode>
+			<country></country>
+		</row>
+		<row index="2" name="contact" operation="script" parent="contact">
+			<input dataAttribute="Contact" />
+			<marker value="|" />
+			<email></email>
+			<phone>
+				Metro Office Furniture Co.
+				1750 Market St, Denver, CO 80202, USA
+				Contact: +1 (303) 555-9922
+				Email: sales@metrooffice.com
+			</phone>
+			<mobile></mobile>
+			<other></other>
+		</row>
+	</seller>
+	<OrderItems>
+		<PO>
+			<Item>
+				Storage Cabinets
+			</Item>
+			<Code>
+				MOF-SC100
+			</Code>
+			<Qty>
+				6
+			</Qty>
+			<UnitPrice>
+				295.00
+			</UnitPrice>
+			<LineTotal>1,770.00</LineTotal>
+		</PO>
+		<PO>
+			<Item>
+				Task Chairs
+			</Item>
+			<Code>
+				MOF-TC210
+			</Code>
+			<Qty>
+				15
+			</Qty>
+			<UnitPrice>
+				175.00
+			</UnitPrice>
+			<LineTotal>2,625.00</LineTotal>
+			<Item>
+				Breakroom Tables
+			</Item>
+			<Code>
+				MOF-BT50
+			</Code>
+			<Qty>
+				4
+			</Qty>
+			<UnitPrice>
+				310.00
+			</UnitPrice>
+			<LineTotal>1,240.00</LineTotal>
+
+		</PO>
+		<PO>
+			<Item>
+				Hulla hoop
+			</Item>
+			<Code>
+				HUL-40RIN
+			</Code>
+			<Qty>
+				4
+			</Qty>
+			<UnitPrice>
+				320.00
+			</UnitPrice>
+			<LineTotal>1,280.00</LineTotal>
+			<Item>
+				Rambutan
+			</Item>
+			<Code>
+				RAM-BUT01
+			</Code>
+			<Qty>
+				10
+			</Qty>
+			<UnitPrice>
+				100.00
+			</UnitPrice>
+			<LineTotal>1,000.00</LineTotal>
+		</PO>
+		<PO>
+			<Item>
+				Gom beti
+			</Item>
+			<Code>
+				GOM-BET01
+			</Code>
+			<Qty>
+				10
+			</Qty>
+			<UnitPrice>
+				1,200.00
+			</UnitPrice>
+			<LineTotal>12,000.00</LineTotal>
+		</PO>
+		<PO>
+			<Item>
+				Pus Paan
+			</Item>
+			<Code>
+				PUS-PN01
+			</Code>
+			<Qty>
+				10
+			</Qty>
+			<UnitPrice>
+				1,200.00
+			</UnitPrice>
+			<LineTotal>
+				12,000.00
+			</LineTotal>
+		</PO>
+	</OrderItems>
+</pdfMap>

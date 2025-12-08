@@ -1,0 +1,83 @@
+	<area name="seller" parent="parties" returns="rowSet" source="pdf" >
+		<parameters>
+			<parameter name="x">250</parameter>
+			<parameter name="scanBelowY">660.0</parameter>
+			<parameter name="width">55.0</parameter>
+			<parameter name="line2LineGap">20.0</parameter>
+		</parameters>
+		<rowSet>
+			<row index="0" name="name" operation="copy"  />
+			<!-- SIMPLE ROW: Direct copy from row index 0 -->
+			<row index="1" name="address" operation="script" parent="address">
+				<!-- SCRIPT ROW: Split address on comma -->
+				<marker value="," />
+				<script language="csharp">
+					<![CDATA[var parts=((string)text).Split(new[]{'|'}, StringSplitOptions.None);
+return new {
+    street = parts.Length > 0 ? parts[0].Trim() : "",
+    city = parts.Length > 1 ? parts[1].Trim() : "",
+    postalCode = parts.Length > 2 ? parts[2].Trim() : ""
+};	]]>
+				</script>
+				<columns>
+					<street />
+					<City />
+					<postalCode />
+					<country />
+				</columns>
+			</row>
+			<row index="2" name="contact" operation="script" parent="contact" >
+				<input dataAttribute="Contact" />
+				<marker value="|" />
+				<script language="csharp">
+					<![CDATA[var parts = text.Split(new[]{'|'}, StringSplitOptions.None);
+            return new {
+                phone = parts.Length > 0 ? parts[0].Trim() : "",
+                email = parts.Length > 1 ? parts[1].Trim() : ""
+        
+            };
+          ]]>
+				</script>
+				<columns>
+					<email />
+					<phone />
+					<mobile />
+					<other />
+				</columns>
+			</row>
+		</rowSet>
+	</area>
+	<area name="OrderItems" type="variable"  source="pdf"  >
+		<method name="ExtractTableBelowY" returns="rowSet">
+			<parameters>
+				<parameter name="x">4</parameter>
+				<parameter name="scanBelowY">513.0</parameter>
+				<parameter name="width">525.85</parameter>
+				<parameter name="line2LineGap">28.0</parameter>
+			</parameters>
+		</method>
+		<rowSet rowCount="variable" methodName="ExtractTableBelowY" parent="PurchaseOrder"  >
+			<row repeat="true" name="PO1" operation="script">
+				<!-- PO1 is the PO1 Loop in 850-->
+				<script language="csharp">
+					<![CDATA[
+             var parts = text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            return new {
+              Item = parts.Length > 0 ? parts[0] : "",
+              Code = parts.Length > 1 ? parts[1] : "",
+              Qty = parts.Length > 2 ? parts[2] : "",
+              UnitPrice = parts.Length > 3 ? parts[3] : "",
+              LineTotal = parts.Length > 4 ? parts[4] : ""
+            };]]>
+				</script>
+				<columns>
+					<Item />
+					<Code />
+					<Qty />
+					<UnitPrice />
+					<LineTotal />
+				</columns>
+			</row>
+		</rowSet>
+	</area>
+</pdfMap>

@@ -7,7 +7,13 @@ using System.Xml.Linq;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.XMP.Impl;
+using iText.Layout;
+using iText.Layout.Splitting;
+using iText.StyledXmlParser.Jsoup.Nodes;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Org.BouncyCastle.Crypto;
 namespace PDF;
@@ -29,168 +35,241 @@ public class XmlMapProcessor {
 	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
 	public record ExtractedArea(
 	string Name,
-	string Parent,
 	string Text,
 	Rectangle Bounds
 );
+
+
+	private XElement doRowScript(XElement row, Dictionary<string, object> globals) {
+		var markerNode = row.Element("marker");
+		if (markerNode != null)
+			globals["marker"] = markerNode.Attribute("value")?.Value!;
+		var inputNode = row.Element("input");
+		if (inputNode != null) {
+			string attr = (string)inputNode.Attribute("dataAttribute")!;
+			globals["input"] = attr;
+		}
+		var script = row.Element("script")!.Value.Replace("\t", "").Replace("\n", "").Replace("\r", "");
+		var result = ScriptRunner.Run(script, globals);
+
+
+		foreach (var col in row.Element("columns")!.Elements()) {// 🔹 Map returned anonymous object to XML <columns>
+			string colName = col.Name.LocalName;
+			var prop = result?.GetType().GetProperty(colName);
+			row.Add(new XElement(colName, prop?.GetValue(result)?.ToString() ?? ""));
+		}
+		return row;
+	}
+	private bool isTrue(XElement element, string attributeName) {
+		return element.Attribute(attributeName) != null ? bool.Parse(element.Attribute(attributeName)!.Value) : false;
+	}
+	private bool hasElement(XElement e, string name) {
+		return e.Element(name) != null;
+	}
+	private static string getAttributesAsDelimited(XElement el, string delimiter = ",") {
+		var attributeStrings = el.Attributes()
+		.Select(attr => $"{attr.Name.LocalName}={attr.Value}");
+
+		// 4. Combine all the formatted strings using the specified delimiter.
+		return string.Join(delimiter, attributeStrings);
+	}
+
 	private async Task<XElement> ProcessRowSet(XElement areaElement, string text) {
 		XElement rowSet = areaElement.Element("rowSet")!;
-		XElement output = new XElement(areaElement.Attribute("name")?.Value);
-		foreach (var row in rowSet.Elements("row")) {
-			string op = (string)row.Attribute("operation")!;
-			string rowName = (string)row.Attribute("name")!;
-			XElement xmlRow = new XElement(rowName);
-			switch (op.ToLower()) {
-				case "copy": {
+		XElement output = new XElement(areaElement.Attribute("name")?.Value!);
+		if (rowSet != null)
+			foreach (var row in rowSet.Elements("row")) {
+				string op = (string)row.Attribute("operation")!;
+				string rowName = (string)row.Attribute("name")!;
+				XElement xmlRow = new XElement(rowName);
+				switch (op.ToLower()) {
+					case "copy":
 						int idx = int.Parse(row.Attribute("index")!.Value);
 						var lines = text.Split('\n');
 						xmlRow.Value = lines.Length > idx ? lines[idx].Trim() : "";
 						break;
-					}
-				case "script": {
-						Dictionary<string, object> globals = new() {// 🔹 Build globals (text, marker, input, etc.)
-							["text"] = text
-						};
-						var markerNode = row.Element("marker");
-						if (markerNode != null)
-							globals["marker"] = markerNode.Attribute("value")?.Value!;
-						var inputNode = row.Element("input");
-						if (inputNode != null) {
-							string attr = (string)inputNode.Attribute("dataAttribute")!;
-							globals["input"] = attr;
-						}
-						var script = row.Element("script")!.Value.Replace("\t", "").Replace("\n", "").Replace("\r", "");
-						var result = ScriptRunner.Run(script, globals);
 
+					case "script":// 🔹 Build globals (text, marker, input, etc.)
+						Dictionary<string, object> globals = new() { ["text"] = text };
+						if (isTrue(row, "repeat")) {
+							string[] inDataRows = text.Split("\r\n\r\n");
+							foreach (string x in inDataRows) {
 
-						foreach (var col in row.Element("columns")!.Elements()) {// 🔹 Map returned anonymous object to XML <columns>
-							string colName = col.Name.LocalName;
-							var prop = result?.GetType().GetProperty(colName);
-							xmlRow.Add(new XElement(colName, prop?.GetValue(result)?.ToString() ?? ""));
-						}
+								xmlRow = doRowScript(row, new Dictionary<string, object> { ["text"] = x });
+							}
+							Log.Debug($"Repeat row in ={xmlRow.Name}");
+							//Debugger.Break();
+						} else
+							xmlRow = doRowScript(row, new Dictionary<string, object> { ["text"] = text });
 						break;
-					}
-				default:
-					throw new InvalidOperationException($"Unknown row operation: '{op}'");
+
+					default:
+						throw new InvalidOperationException($"Unknown row operation: '{op}'");
+				}
+				output.Add(xmlRow);
 			}
-			output.Add(xmlRow);
-		}
 		return output;
 	}
-	public async Task<XDocument> ProcessPdfAndMap(string pdfPath, List<string> tableHeader, string pdfMapFilePath) {
+	static XElement ReplicateXElementWithPdf(XElement src, PdfDocument pdfDoc) {
+		var newElement = new XElement(src.Name);
+		string value = "";
 		List<ExtractedArea> collectedAreas = new(); // Store results before drawing
+		foreach (var attr in src.Attributes()) {
+			Dictionary<string, string> prms = attr.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.Select(pair => pair.Split('=', 2)) // Split into exactly 2 parts
+			.Where(parts => parts.Length == 2)          // Ensure we have a key and a value
+			.ToDictionary(
+				parts => parts[0].Trim(),
+				parts => parts[1].Trim()
+			);
+			string valueFrom = prms["src"] ?? throw new Exception($"Missing mandatory parameter 'src' in attribute={attr.Name} ");
+			switch (valueFrom.ToLower()) {
+				case "pdf":
+					var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
+					var parser = new PdfCanvasProcessor(strategy);
+					parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
+					value = strategy.GetResultantText();
+					Rectangle bounds = strategy.GetCollectedTextBounds();
+					collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
+					Log.Debug($"{attr.Name}={value}");
+					break;
+				case "constant":
+					 value = attr.Value.Split(',', 2)[0];
+					attr.SetValue(value);
+
+					Log.Debug($"{attr.Name}={value}");
+					break;
+			}
+			newElement.SetAttributeValue(attr.Name, value);
+		}
+		foreach (var node in src.Nodes()) {
+
+			switch (node) {
+				case XElement childElement:
+					newElement.Add(ReplicateXElementWithPdf(childElement, pdfDoc));
+					break;
+				case XText text:
+					newElement.Add(new XText(text.Value));
+					break;
+
+				case XComment comment:
+					newElement.Add(new XComment(comment.Value));
+					break;
+
+				//case XCData cdata:
+				//	newElement.Add(new XCData(cdata.Value));
+				//	break;
+
+				case XProcessingInstruction pi:
+					newElement.Add(new XProcessingInstruction(pi.Target, pi.Data));
+					break;
+
+				default:
+					// Ignore others if needed
+					break;
+			}
+		}
+		return newElement;
+	}
+
+	static XElement ReplicateXElement(XElement source) {
+		// Create new element with same name
+		var newElement = new XElement(source.Name);
+
+		// Copy all attributes exactly as they are
+		foreach (var attr in source.Attributes()) {
+			newElement.SetAttributeValue(attr.Name, attr.Value);
+		}
+
+		// Recursively replicate child nodes (elements, text, comments, etc.)
+		foreach (var node in source.Nodes()) {
+			switch (node) {
+				case XElement childElement:
+					newElement.Add(ReplicateXElement(childElement));
+					break;
+
+				case XText text:
+					newElement.Add(new XText(text.Value));
+					break;
+
+				case XComment comment:
+					newElement.Add(new XComment(comment.Value));
+					break;
+
+				//case XCData cdata:
+				//	newElement.Add(new XCData(cdata.Value));
+				//	break;
+
+				case XProcessingInstruction pi:
+					newElement.Add(new XProcessingInstruction(pi.Target, pi.Data));
+					break;
+
+				default:
+					// Ignore others if needed
+					break;
+			}
+		}
+
+		return newElement;
+	}
+
+	static XDocument ReplicateXDocument(XDocument source) {
+		if (source.Root is null) throw new InvalidOperationException("Source document has no root element.");
+		XElement replicatedRoot = ReplicateXElement(source.Root);
+		return new XDocument(replicatedRoot);
+	}
+	static XDocument GetChildren(XDocument doc) {
+		var children = doc.Root?.Elements().Select(e => new XElement(e)) ?? Enumerable.Empty<XElement>();
+		return new XDocument(children);
+	}
+	public async Task<XElement> ProcessPdfAndMap(string pdfPath, string xmlMapPath) {
 
 		using var reader = new PdfReader(pdfPath);
 		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
 		using var pdfDoc = new PdfDocument(reader, writer);
+		List<ExtractedArea> collectedAreas = new(); // Store results before drawing
+		XDocument originalDoc = XDocument.Load(xmlMapPath);
+		XDocument replicaDoc =GetChildren( ReplicateXDocument(originalDoc));// ignore the root <pdfMap>, it is not relavent  
+		string value = ""; // work vars
+		
+		foreach (XElement xe in replicaDoc.Descendants()) {
+			foreach (var attr in xe.Attributes()) {
+				Dictionary<string, string> prms = attr.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+				.Select(pair => pair.Split('=', 2)) // Split into exactly 2 parts
+				.Where(parts => parts.Length == 2)          // Ensure we have a key and a value
+				.ToDictionary(
+					parts => parts[0].Trim(),
+					parts => parts[1].Trim()
+				);
+				string valueFrom = prms["src"] ?? throw new Exception($"Missing mandatory parameter 'src' in attribute={attr.Name} ");
+				switch (valueFrom.ToLower()) {
+					case "pdf":
+						var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
+						var parser = new PdfCanvasProcessor(strategy);
+						parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
+						value = strategy.GetResultantText().Replace("\r","").Replace("\n","");
+						Rectangle bounds = strategy.GetCollectedTextBounds();
+						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
+						Log.Debug($"{attr.Name}={value}");
+						break;
+					case "constant":
+						value = attr.Value.Split(',', 2)[0];
+						attr.SetValue(value);
 
-		XDocument mapDoc = XDocument.Load(pdfMapFilePath);
-		XDocument resDoc = new(new XElement(mapDoc.Root?.Attribute("document")?.Value ?? "Document"));
-		var areas = mapDoc.Descendants("area");
-
-		// Step 1: Extract text for each area
-		foreach (var area in areas) {
-			var name = (string)area.Attribute("name")!;
-			var parent = (string)area.Attribute("parent")!;
-			var parameters = area.Descendants("parameter")
-								 .ToDictionary(x => (string)x.Attribute("name")!, x => x.Value);
-
-			float startX = float.Parse(parameters["x"]);
-			float scanBelowY = float.Parse(parameters["scanBelowY"]);
-			float scanWidth = float.Parse(parameters["scanWidth"]);
-			float verticalGap = float.Parse(parameters["verticalGapBelow"]);
-
-			var strategy = new StopOnLargeGapStrategy(startX, scanBelowY, scanWidth, verticalGap);
-			var parser = new PdfCanvasProcessor(strategy);
-			parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
-
-			string extractedText = strategy.GetResultantText();
-			Rectangle bounds = strategy.GetCollectedTextBounds();
-
-			collectedAreas.Add(new ExtractedArea(name, parent, extractedText, bounds));
-		}
-
-		// Step 2: Draw borders/labels and build XML
-		foreach (var area in collectedAreas) {
-			switch (area.Name.ToLower()) {
-				case "buyer":
-				case "seller":
-				case "orderitems":
-					Render.DrawBorder(pdfDoc, area.Bounds);
-					Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
-					break;
-				default:
-					break;
-			}
-
-			var areaNode = areas.First(x => (string)x.Attribute("name")! == area.Name);
-
-			try {
-				XElement mappedAreaXml = await ProcessRowSet(areaNode, area.Text);
-				resDoc.Root!.Add(mappedAreaXml); // Add under root
-				Log.Info(area.Text);
-				Log.Info("----------------------------------------");
-				Log.Info(mappedAreaXml.ToString());
-
-			} catch (Exception ex) {
-				Log.Error(ex.Message);
-				throw;
+						Log.Debug($"{attr.Name}={value}");
+						break;
+				}
+				xe.SetAttributeValue(attr.Name, value);
 			}
 		}
 
-		// Step 3: Return the final XML document
-		return resDoc;
+
+
+
+		return null;
+		await Task.CompletedTask;
 	}
 
 
-	public static async Task<(List<List<string>> Rows, Rectangle Box, XDocument xd)> RunExtractorScriptAsync(PdfPage page, float lheight, float below) {
-		// 1. Get types for references
-		Type extractorType = typeof(PDF.ExtractPdfTableBelowY);
-		Type itextExtractorType = typeof(PdfTextExtractor); // Needed for GetTextFromPage
-		Type xdocType = typeof(XDocument);
-		// 2. Setup Globals with the Page
-		var globals = new ExtractBelowGlobals {
-			lineHeight = lheight,
-			belowY = below,
-			Page = page,
-			ResultRows = null,
-			BoundingBox = null
-		};
 
-		// 3. The Script Code
-		// Now the script does the work: Instantiates AND Extracts
-		string scriptCode = @"
-        // 1. Instantiate
-        var extractor = new PDF.ExtractPdfTableBelowY(verticalGap, belowY);
-        
-        // 2. Run Extraction (using the passed 'Page' variable)
-        iText.Kernel.Pdf.Canvas.Parser.PdfTextExtractor.GetTextFromPage(Page, extractor);
-        
-        // 3. Get Rows and assign to result
-        ResultRows = extractor.GetTableRows();
-		BoundingBox=extractor.GetTableBoundingBox();
-		XmlContent=PDF.ExtractPdfTableBelowY.ConvertToXDocument(ResultRows,""OrderItems"");";
-
-		var scriptOptions = ScriptOptions.Default
-			.AddImports("PDF", "iText.Kernel.Pdf.Canvas.Parser") // Import namespace
-			.AddReferences(
-				extractorType.Assembly,      // Your assembly
-				itextExtractorType.Assembly, // iText.kernel assembly
-				typeof(PdfPage).Assembly,     // iText.io or kernel assembly
-				xdocType.Assembly
-			)
-			.WithAllowUnsafe(false);
-
-		var script = CSharpScript.Create(
-			scriptCode,
-			options: scriptOptions,
-			globalsType: typeof(ExtractBelowGlobals)
-		);
-
-		await script.RunAsync(globals);
-
-		return (globals.ResultRows ?? new List<List<string>>(),
-				globals.BoundingBox!,
-				globals.XmlContent!);
-	}
 }

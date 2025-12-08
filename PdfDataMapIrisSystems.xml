@@ -1,133 +1,30 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<pdfMap client="IrisSystems" document="PurchaseOrder">
-	<area name="buyer" rectangle="36,601,269,72" parent="parties" returns="rowSet" >
-		<parameters><!--  -->
-			<parameter name="pdfPath">C:\temp\PO3.pdf</parameter>
-			<parameter name="x">4</parameter>
-			<parameter name="scanBelowY">640.0</parameter>
-			<parameter name="scanWidth">55.0</parameter>
-			<parameter name="verticalGapBelow">18.0</parameter>
-		</parameters>
-		<rowSet>
-			<!-- SIMPLE ROW: Direct copy from row index 0 -->
-			<row index="0" name="name" operation="copy" />
-			<!-- SCRIPT ROW: Split address on comma -->
-			<row index="1" name="address" operation="script" parent="address">
-				<marker value=',' />
-				<script language="csharp">
-					<![CDATA[
-						var parts = text.Split(new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);
-						return new {
-						street = parts.Length > 0 ? parts[0].Trim() : "",
-						city = parts.Length > 1 ? parts[1].Trim() : "",
-						postalCode = parts.Length > 2 ? parts[2].Trim() : "",
-						country = parts.Length > 3 ? parts[3].Trim() : ""};]]>
-				</script>
-				<columns>
-					<street />
-					<city />
-					<postalCode />
-					<country />
-				</columns>
-			</row>
-			<row index="2" name="contact" operation="script" parent="contact" >
-				<input dataAttribute="Contact" />
-				<marker value="|" />
-				<script language="csharp">
-					<![CDATA[var parts = text.Split(new[]{ '|' }, StringSplitOptions.None);
-						return new {
-						phone = parts.Length > 0 ? parts[0].Trim() : "",
-						email = parts.Length > 1 ? parts[1].Trim() : ""};]]>
-				</script>
-				<columns>
-					<email />
-					<phone />
-				</columns>
-			</row>
-		</rowSet>
-	</area>
-	<area name="seller" parent="parties" returns="rowSet" >
-		<parameters>
-			<parameter name="x">300</parameter>
-			<parameter name="scanBelowY">640.0</parameter>
-			<parameter name="scanWidth">55.0</parameter>
-			<parameter name="verticalGapBelow">18.0</parameter>
-
-		</parameters>
-		<rowSet>
-			<!-- SIMPLE ROW: Direct copy from row index 0 -->
-			<row index="0" name="name" operation="copy" />
-			<!-- SCRIPT ROW: Split address on comma -->
-			<row index="1" name="address" operation="script" parent="address">
-				<marker value="," />
-				<script language="csharp">
-					<![CDATA[var parts=((string)text).Split(new[]{'|'}, StringSplitOptions.None);
-return new {
-    street = parts.Length > 0 ? parts[0].Trim() : "",
-    city = parts.Length > 1 ? parts[1].Trim() : "",
-    postalCode = parts.Length > 2 ? parts[2].Trim() : ""
-};	]]>
-				</script>
-				<columns>
-					<street />
-					<City />
-					<postalCode />
-					<country />
-				</columns>
-			</row>
-			<row index="2" name="contact" operation="script" parent="contact" >
-				<input dataAttribute="Contact" />
-				<marker value="|" />
-				<script language="csharp">
-					<![CDATA[var parts = text.Split(new[]{'|'}, StringSplitOptions.None);
-            return new {
-                phone = parts.Length > 0 ? parts[0].Trim() : "",
-                email = parts.Length > 1 ? parts[1].Trim() : ""
-        
-            };
-          ]]>
-				</script>
-				<columns>
-					<email />
-					<phone />
-					<mobile />
-					<other />
-				</columns>
-			</row>
-		</rowSet>
-	</area>
-	<area name="OrderItems" type="variable"   >
-		<method name="ExtractTableBelowY" returns="rowSet">
-			<parameters>
-				<parameter name="pdfPath">C:\temp\PO3.pdf</parameter>
-				<parameter name="x">4</parameter>
-				<parameter name="scanBelowY">513.0</parameter>
-				<parameter name="scanWidth">525.85</parameter>
-				<parameter name="verticalGapBelow">28.0</parameter>
-
-			</parameters>
-		</method>
-		<rowSet rowCount="variable" methodName="ExtractTableBelowY" parent="PurchaseOrder"  >
-			<row repeat="true" name="PO1" operation="script"> <!-- PO1 is the PO1 Loop in 850-->
-				<script language="csharp">
-					<![CDATA[
-             var parts = text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            return new {
-              Item = parts.Length > 0 ? parts[0] : "",
-              Code = parts.Length > 1 ? parts[1] : "",
-              Qty = parts.Length > 2 ? parts[2] : "",
-              UnitPrice = parts.Length > 3 ? parts[3] : "",
-              LineTotal = parts.Length > 4 ? parts[4] : ""
-            };]]>
-				</script>
-				<columns>
-					<Item />
-					<Code />
-					<Qty />
-					<UnitPrice />
-					<LineTotal />
-				</columns>
-			</row>
-		</rowSet>
-	</area>
+<pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po" pdfSource="c:\\temp\\PO4.pdf" >
+	<po  ponumber="x=505,scanBelowY=792,width=50,line2LineGap=60,src=pdf"
+		 date="x=169,scanBelowY=760,width=48,line2LineGap=10,src=pdf"
+		 status="x=169,scanBelowY=742, width=50,line2LineGap=10,src=pdf"
+		 x12Model="850-4010,src=constant">
+		<parties>
+			<buyer			name="x=30,scanBelowY=700,width=50,line2LineGap=60,src=pdf" >
+				<address	street="x=30,scanBelowY=700,width=300,line2LineGap=60,src=pdf"
+							postcode="x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
+							city= "x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
+							country ="x=30,scanBelowY=720,width=100, line2LineGap=60,src=pdf">
+				</address>
+				<contact	tel="x=30,scanBelowY=650,width=100,line2LineGap=60,src=pdf"
+							email="x=100,scanBelowY=650,width=100, line2LineGap=60,src=pdf">
+				</contact>
+			</buyer>
+			<seller			name="x=30,scanBelowY=700,width=50,line2LineGap=60,src=pdf">
+				<address	street="x=30,scanBelowY=700,width=300,line2LineGap=60,src=pdf"
+							postcode="x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
+							city="x=30,scanBelowY=720,width=100,line2LineGap=60,src=pdf"
+							country ="x=30,scanBelowY=720,width=100, line2LineGap=60,src=pdf">
+				</address>
+				<contact	tel="x=30,scanBelowY=650,width=100,line2LineGap=60,src=pdf"
+							email="x=100,scanBelowY=650,width=100, line2LineGap=60,src=pdf">
+				</contact>
+			</seller>
+		</parties>
+	</po>
 </pdfMap>
