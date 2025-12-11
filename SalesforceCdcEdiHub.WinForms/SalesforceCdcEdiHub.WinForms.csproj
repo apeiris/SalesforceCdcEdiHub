@@ -46,6 +46,7 @@
 		<PackageReference Include="NLog.Targets.Mail" Version="6.0.3" />
 		<PackageReference Include="NLog.Targets.Network" Version="6.0.3" />
 		<PackageReference Include="NLog.Windows.Forms" Version="6.0.2" />
+		<PackageReference Include="NLog.Schema" Version="6.0.7" />
 	</ItemGroup>
 
 	<ItemGroup>

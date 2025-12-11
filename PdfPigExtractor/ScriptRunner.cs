@@ -21,43 +21,51 @@ public static class ScriptRunner {
 		"System.Collections.Generic"
 	);
 	public static object Run(string code, Dictionary<string, object> globals) {
-		var options = ScriptOptions.Default
-			.AddReferences(
-				typeof(System.Linq.Enumerable).Assembly, // For .Select()
-				typeof(System.Collections.Generic.Dictionary<string, string>).Assembly, // For Dictionary
-				typeof(System.Runtime.CompilerServices.DynamicAttribute).Assembly // For dynamic handling
-			)
-			.AddImports("System", "System.Linq", "System.Collections.Generic");
+
+		// 🔥 normalize input to string so Split() always works
+		if (globals.TryGetValue("value", out var v))
+			globals["value"] = v?.ToString() ?? "";
+
+		var globalsInstance = new Globals(globals);
+
 		try {
-			var globalsInstance = new Globals(globals);
-			var task = CSharpScript.EvaluateAsync<object>(
+			var result = CSharpScript.EvaluateAsync<object>(
 				code,
 				options,
 				globalsInstance,
 				typeof(Globals)
-			);
+			).Result;
 
-			return task.Result; // Simplified wait
+			return result;
 		} catch (Exception ex) {
-			Log.Error($"Script Execution Error: {ex.InnerException?.Message ?? ex.Message}");// Log the actual script exception details
+			Log.Error($"Script Execution Error: {ex.InnerException?.Message ?? ex.Message}");
 			return null;
 		}
 	}
+
 }
 
 public class Globals {
 	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
-	private Dictionary<string, object> _data;
+	private readonly Dictionary<string, object> _data;
+
 	public Dictionary<string, object> data {
 		get {
-			Log.Debug("Roslyn Script: Accessing 'data' global object.");	// This logs every time the script accesses the 'data' global
+			Log.Debug("Roslyn Script: Accessing 'data' global object.");
 			return _data;
 		}
 	}
 
+	// 🔥 MUST BE string, not object
+	public string value =>
+		_data.TryGetValue("value", out var v) ? v?.ToString() ?? "" : "";
+
 	public Globals(Dictionary<string, object> vars) {
-		this._data = vars;
-		Log.Debug("Roslyn Script: Environment initialized with keys: " + string.Join(", ", vars.Keys));
+		_data = vars;
+
+		Log.Debug("Roslyn Script: Environment initialized with keys: " +
+				  string.Join(", ", vars.Keys));
+
 		if (vars.ContainsKey("value")) {
 			Log.Debug($"Roslyn Script: Input 'value' content: {vars["value"]}");
 		}

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
@@ -217,9 +218,12 @@ public class XmlMapProcessor {
 		XElement replicatedRoot = ReplicateXElement(source.Root);
 		return new XDocument(replicatedRoot);
 	}
-	static XDocument GetChildren(XDocument doc) {
-		var children = doc.Root?.Elements().Select(e => new XElement(e)) ?? Enumerable.Empty<XElement>();
-		return new XDocument(children);
+	public static XDocument GetElementAsDocument(XDocument doc, string elementName) {
+		if (doc == null) throw new ArgumentNullException(nameof(doc));
+		if (string.IsNullOrWhiteSpace(elementName)) throw new ArgumentException("Element name cannot be null or empty.", nameof(elementName));
+		var element = doc.Root?.Element(elementName);	// Find the first element with the given name
+		if (element == null)			return null; 
+		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), new XElement(element));// Create a new XDocument containing a deep copy of the element
 	}
 	public async Task<XElement> ProcessPdfAndMap(string pdfPath, string xmlMapPath) {
 		using var reader = new PdfReader(pdfPath);
@@ -227,55 +231,65 @@ public class XmlMapProcessor {
 		using var pdfDoc = new PdfDocument(reader, writer);
 		List<ExtractedArea> collectedAreas = new(); // Store results before drawing
 		XDocument originalDoc = XDocument.Load(xmlMapPath);
-		XDocument replicaDoc = GetChildren(ReplicateXDocument(originalDoc));// ignore the root <pdfMap>, it is not relavent  
+		XDocument replicaDoc = GetElementAsDocument(originalDoc, "po");// ignore the root <pdfMap>, it is not relavent  
 		string value = ""; // work vars
 		foreach (XElement xe in replicaDoc.Descendants()) {
-			Log.Info($"DocDecendeants {xe.Name} path={xe.GetXPath()}");
+			Log.Info($"Element Name={xe.Name}  XPath={xe.GetXPath()}");
 			foreach (var attr in xe.Attributes()) {
 				Log.Info(attr.GetXPath());
-				Dictionary<string, string> prms = attr.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-				.Select(pair => pair.Split('=', 2)) // Split into exactly 2 parts
-				.Where(parts => parts.Length == 2)          // Ensure we have a key and a value
-				.ToDictionary(
-					parts => parts[0].Trim(),
-					parts => parts[1].Trim()
-				);
-				if (prms.Count == 0) continue;
-				string valueFrom = prms["src"] ?? throw new Exception($"Missing mandatory parameter 'src' in attribute={attr.Name} ");
-				switch (valueFrom.ToLower()) {
-					case "pdf":
-						var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
-						var parser = new PdfCanvasProcessor(strategy);
-						parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
-						value = strategy.GetResultantText().Replace("\r", "").Replace("\n", "");
-						Rectangle bounds = strategy.GetCollectedTextBounds();
-						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
-						Log.Debug($"{attr.Name}={value}");
-						break;
-					case "constant":
-						value = attr.Value.Split(',', 2)[0]; //split and get the first(0) fragment 
-						attr.SetValue(value);
-						Log.Debug($"{attr.Name}={value}");
-						break;
-					case "postfix":
-						Log.Warn($" error pre {replicaDoc.ToString()}");
-						var script = xe.Element("postfix")!.Value;
-						var data = new Dictionary<string, object>();
-						data["value"] = xe.FirstAttribute.Value;
-						var result = ScriptRunner.Run(script, data);
-						if (result is Dictionary<string, string> dict) xe.SetAttributes(dict);
-						xe.Element("postfix")!.Remove();// remove  postfix (script etc)
-						Log.Trace($"postfix:post\r\n{replicaDoc.ToString()}");
-						break;
+				var aDict = attr.AttributesToFsmDictionary();
+				if (aDict.Count ==0) continue;
+				Dictionary<string,string>prms = new Dictionary<string,string>();
+				foreach(KeyValuePair<string,string> kv in aDict) {
+					Log.Debug($"kv k={kv.Key} v={kv.Value}");
+					switch (kv.Key.ToLower()) {
+						case "scrape":
+							 Log.Debug($"v={kv.Value}");
+							prms = kv.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+										   .Select(pair => pair.Split('=', 2)) // Split into exactly 2 parts
+										   .Where(parts => parts.Length == 2)          // Ensure we have a key and a value
+										   .ToDictionary(parts => parts[0].Trim(),parts => parts[1].Trim());
+							var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
+							var parser = new PdfCanvasProcessor(strategy);
+							parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
+							value = strategy.GetResultantText().Replace("\r", "").Replace("\n", "");
+							Rectangle bounds = strategy.GetCollectedTextBounds();
+							collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
+							Log.Debug($"{attr.Name}={value}");
+							xe.SetAttributeValue(attr.Name, value);
+							break;
+						case "script":
+							// the first op scrape is already done and value has the desired input
+							//  revise this  to use Regex
+							Log.Debug($"{attr.Name}=value={value} ");
+							string method = aDict["script"];
+							string script = originalDoc.XPathSelectElement($"/pdfMap/script[@name='{aDict["script"]}']")!.Value;
+							var data = new Dictionary<string, object> { ["value"] = value };
+							var results =(List<string>)ScriptRunner.Run(script, data);
+							if(aDict.Keys.Contains("map")) {
+								string xpath = aDict["xpath"];
+								string[] atts = aDict["map"].Split(',', StringSplitOptions.RemoveEmptyEntries);
+								int i = 0;
+								xe.Attribute("map")?.Remove();// remove the map attribute after use
+								foreach (string att in atts) {
+									var xx = results[i];
+									var attValue = results;
+									xe.SetAttributeValue(att, results[i]);
+									Log.Debug($"Mapped {att}={attValue}");
+									i++;
+								}
+							}
+							break;
+					}
 				}
-				xe.SetAttributeValue(attr.Name, value);
 			}
 		}
 		foreach (var area in collectedAreas) {
 			Render.DrawBorder(pdfDoc, area.Bounds);
 			Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
 		}
-		return (XElement) replicaDoc.Root!;
+		Log.Debug(replicaDoc.ToString());
+		return (XElement)replicaDoc.Root!;
 		await Task.CompletedTask;
 	}
 }
@@ -290,17 +304,29 @@ public static class XElementExtensions {
 			e.SetAttributeValue(kv.Key, kv.Value);
 		}
 	}
-	//public static string GetXPath(this XElement element) {
-	//	if (element == null) return string.Empty;
-	//	string path = element.AncestorsAndSelf().Reverse().Select(e => {// Recursively build the path by looking at parents
-	//		var siblings = e.ElementsBeforeSelf(e.Name).Count() + 1;// Get siblings with the same name to determine index
-	//		return $"{e.Name.LocalName}[{siblings}]";// If there's only one sibling of this name, the index [1] is optional but clearer
-	//	}).Aggregate((current, next) => $"{current}/{next}");
-	//	return $"/{path}";
-	//}
+	public static Dictionary<string, string> AttributesToFsmDictionary(this XAttribute attr) {
+		if (attr == null || string.IsNullOrWhiteSpace(attr.Value))
+			return new Dictionary<string, string>();
+		return attr.Value
+			.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+			.Select(segment => {
+				char sep = segment.Contains(':') ? ':' : segment.Contains('=') ? '=' : '\0';
+				if (sep == '\0')
+					return null;
+
+				var parts = segment.Split(sep, 2);
+				if (parts.Length < 2)
+					return null;
+				return new {
+					Key = parts[0].Trim(),
+					Value = parts[1].Trim()
+				};
+			})
+			.Where(x => x != null) // remove nulls
+			.ToDictionary(x => x.Key, x => x.Value);
+	}
 	public static string GetXPath(this XNode node) {
 		if (node == null) return string.Empty;
-
 		// XNodes include elements, text, and comments. 
 		// We handle XElement specifically to get tag names.
 		if (node is XElement element) {

@@ -1,30 +1,31 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po" pdfSource="c:\\temp\\PO4.pdf" >
-	<po  ponumber="x=505,scanBelowY=792,width=50,line2LineGap=60,src=pdf"
-		 date="x=169,scanBelowY=760,width=48,line2LineGap=10,src=pdf"
-		 status="x=169,scanBelowY=742, width=50,line2LineGap=10,src=pdf"
-		 x12Model="850-4010,src=constant">
-		<parties>
+<?xml version="1.0" encoding="utf-8"?>
+<pdfMap client="IrisSystems"
+        document="PurchaseOrder"
+        rootName="po"
+        pdfSource="c:\\temp\\PO4.pdf">
 
-			<buyer name="x=47,scanBelowY=653,width=50,line2LineGap=10,src=pdf">
-				<address	street="x=47,scanBelowY=635,width=50,line2LineGap=10,src=pdf"
-							city="src=postfix"
-							postcode="src=none"
-							country="src=none"
-							>
-					<postfix>
-						<![CDATA[var raw = data["value"].ToString();
-								 var parts = raw.Split(',', System.StringSplitOptions.RemoveEmptyEntries)
-												.Select(p => p.Trim())
-												.ToArray();
-        				        new System.Collections.Generic.Dictionary<string, string>
-								{   ["street"] = parts.Length > 0 ? parts[0] : "",
-									["city"] = parts.Length > 1 ? parts[1] : "",
-									["postcode"] = parts.Length > 2 ? parts[2] : "",
-									["country"]=parts.Length > 3 ? parts[3]:""}  ]]>
-					</postfix>
-				</address>
+	<po ponumber="scrape:x=505,scanBelowY=792,width=50,line2LineGap=60"
+	    date    ="scrape:x=169,scanBelowY=760,width=48,line2LineGap=10"
+	    status  ="scrape:x=169,scanBelowY=742,width=50,line2LineGap=10"
+	    x12Model="850-4010">
+
+		<parties>
+			<!-- single value field-->
+			<buyer name="scrape:x=47,scanBelowY=653,width=50,line2LineGap=10">
+				<!--1. scrape  -->
+				<!--2. runs script:SplitAddress-->
+				<!--3. maps to multiple fields (street,city,postcode,country)  -->
+				<address map="scrape:x=47,scanBelowY=635,width=50,line2LineGap=10 | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map" />
 			</buyer>
 		</parties>
 	</po>
+	<!-- ♻ Central script library -->
+	<script name="SplitAddress">
+		<![CDATA[
+		return value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+		            .Select(x => x.Trim())
+		            .ToList();
+	]]>
+	</script>
+
 </pdfMap>
