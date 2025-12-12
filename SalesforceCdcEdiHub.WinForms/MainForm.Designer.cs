@@ -17,7 +17,7 @@ partial class MainForm {
 
 	private void InitializeComponent() {
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-		DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+		DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
 		btnAuthenticate = new Button();
 		txtResult = new TextBox();
 		btnGetTokenAsync = new Button();
@@ -359,7 +359,7 @@ partial class MainForm {
 		tbpSfObjects.Controls.Add(tableLayoutPanel3);
 		tbpSfObjects.Location = new Point(4, 24);
 		tbpSfObjects.Name = "tbpSfObjects";
-		tbpSfObjects.Size = new Size(1688, 708);
+		tbpSfObjects.Size = new Size(1567, 813);
 		tbpSfObjects.TabIndex = 2;
 		tbpSfObjects.Text = "Objects";
 		tbpSfObjects.UseVisualStyleBackColor = true;
@@ -369,7 +369,7 @@ partial class MainForm {
 		toolStrip1.Items.AddRange(new ToolStripItem[] { newToolStripButton, openToolStripButton, saveToolStripButton, printToolStripButton, toolStripSeparator, cutToolStripButton, copyToolStripButton, pasteToolStripButton, toolStripSeparator1, helpToolStripButton, toolStripButton1, toolStripLabel1 });
 		toolStrip1.Location = new Point(0, 0);
 		toolStrip1.Name = "toolStrip1";
-		toolStrip1.Size = new Size(1688, 25);
+		toolStrip1.Size = new Size(1567, 25);
 		toolStrip1.TabIndex = 1;
 		toolStrip1.Text = "toolStrip1";
 		// 
@@ -502,7 +502,7 @@ partial class MainForm {
 		tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 62F));
 		tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 73F));
 		tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel3.Size = new Size(1688, 708);
+		tableLayoutPanel3.Size = new Size(1567, 813);
 		tableLayoutPanel3.TabIndex = 0;
 		// 
 		// dgvCDCEnabledObjects
@@ -515,7 +515,7 @@ partial class MainForm {
 		dgvCDCEnabledObjects.Location = new Point(3, 44);
 		dgvCDCEnabledObjects.Name = "dgvCDCEnabledObjects";
 		tableLayoutPanel3.SetRowSpan(dgvCDCEnabledObjects, 4);
-		dgvCDCEnabledObjects.Size = new Size(1214, 518);
+		dgvCDCEnabledObjects.Size = new Size(1093, 623);
 		dgvCDCEnabledObjects.TabIndex = 0;
 		dgvCDCEnabledObjects.RowsAdded += dgvRowCountChanged;
 		dgvCDCEnabledObjects.RowsRemoved += dgvRowCountChanged;
@@ -576,7 +576,7 @@ partial class MainForm {
 		tableLayoutPanel10.Controls.Add(button3, 2, 0);
 		tableLayoutPanel10.Controls.Add(button2, 1, 0);
 		tableLayoutPanel10.Controls.Add(bsA, 0, 0);
-		tableLayoutPanel10.Location = new Point(3, 568);
+		tableLayoutPanel10.Location = new Point(3, 673);
 		tableLayoutPanel10.Name = "tableLayoutPanel10";
 		tableLayoutPanel10.RowCount = 1;
 		tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -846,7 +846,7 @@ partial class MainForm {
 		// btnMoveRight
 		// 
 		btnMoveRight.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-		btnMoveRight.Location = new Point(1223, 223);
+		btnMoveRight.Location = new Point(1102, 298);
 		btnMoveRight.Name = "btnMoveRight";
 		btnMoveRight.Size = new Size(56, 40);
 		btnMoveRight.TabIndex = 0;
@@ -861,7 +861,7 @@ partial class MainForm {
 		dgvRegisteredCDCCandidates.AllowUserToResizeRows = false;
 		dgvRegisteredCDCCandidates.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCellsExceptHeader;
 		tableLayoutPanel3.SetColumnSpan(dgvRegisteredCDCCandidates, 2);
-		dgvRegisteredCDCCandidates.Location = new Point(1285, 44);
+		dgvRegisteredCDCCandidates.Location = new Point(1164, 44);
 		dgvRegisteredCDCCandidates.Name = "dgvRegisteredCDCCandidates";
 		dgvRegisteredCDCCandidates.RowHeadersWidth = 10;
 		tableLayoutPanel3.SetRowSpan(dgvRegisteredCDCCandidates, 4);
@@ -874,7 +874,7 @@ partial class MainForm {
 		// btnMoveLeft
 		// 
 		btnMoveLeft.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-		btnMoveLeft.Location = new Point(1223, 293);
+		btnMoveLeft.Location = new Point(1102, 398);
 		btnMoveLeft.Name = "btnMoveLeft";
 		btnMoveLeft.Size = new Size(56, 40);
 		btnMoveLeft.TabIndex = 1;
@@ -891,7 +891,7 @@ partial class MainForm {
 		label2.ForeColor = Color.Blue;
 		label2.Location = new Point(3, 0);
 		label2.Name = "label2";
-		label2.Size = new Size(1682, 41);
+		label2.Size = new Size(1561, 41);
 		label2.TabIndex = 5;
 		label2.Text = "Choose the objects that require Change Data Capture (CDC) subscription.";
 		label2.TextAlign = ContentAlignment.MiddleCenter;
@@ -902,7 +902,7 @@ partial class MainForm {
 		tableLayoutPanel3.SetColumnSpan(lblDestinationList, 2);
 		lblDestinationList.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblDestinationList.ForeColor = Color.Brown;
-		lblDestinationList.Location = new Point(1285, 565);
+		lblDestinationList.Location = new Point(1164, 670);
 		lblDestinationList.Name = "lblDestinationList";
 		lblDestinationList.Size = new Size(96, 21);
 		lblDestinationList.TabIndex = 8;
@@ -919,7 +919,7 @@ partial class MainForm {
 		grpPrimaryKey.Controls.Add(chkAddIdentityField);
 		grpPrimaryKey.Controls.Add(btnCommitToDB);
 		grpPrimaryKey.Controls.Add(btnClearDestination);
-		grpPrimaryKey.Location = new Point(1285, 607);
+		grpPrimaryKey.Location = new Point(1164, 712);
 		grpPrimaryKey.Name = "grpPrimaryKey";
 		tableLayoutPanel3.SetRowSpan(grpPrimaryKey, 2);
 		grpPrimaryKey.Size = new Size(400, 90);
@@ -987,7 +987,7 @@ partial class MainForm {
 		lblSourceList.AutoSize = true;
 		lblSourceList.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblSourceList.ForeColor = Color.Brown;
-		lblSourceList.Location = new Point(3, 604);
+		lblSourceList.Location = new Point(3, 709);
 		lblSourceList.Name = "lblSourceList";
 		lblSourceList.Size = new Size(96, 21);
 		lblSourceList.TabIndex = 6;
@@ -997,7 +997,7 @@ partial class MainForm {
 		// pictureBox2
 		// 
 		pictureBox2.Image = Properties.Resources.CacheOk;
-		pictureBox2.Location = new Point(3, 648);
+		pictureBox2.Location = new Point(3, 753);
 		pictureBox2.Name = "pictureBox2";
 		pictureBox2.Size = new Size(100, 50);
 		pictureBox2.TabIndex = 12;
@@ -1009,7 +1009,7 @@ partial class MainForm {
 		tbpPubSub.Location = new Point(4, 24);
 		tbpPubSub.Name = "tbpPubSub";
 		tbpPubSub.Padding = new Padding(3);
-		tbpPubSub.Size = new Size(1688, 708);
+		tbpPubSub.Size = new Size(1567, 813);
 		tbpPubSub.TabIndex = 1;
 		tbpPubSub.Text = "Pub/Sub";
 		tbpPubSub.UseVisualStyleBackColor = true;
@@ -1031,7 +1031,7 @@ partial class MainForm {
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 47.0779228F));
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 52.9220772F));
 		tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
-		tableLayoutPanel1.Size = new Size(1682, 702);
+		tableLayoutPanel1.Size = new Size(1561, 807);
 		tableLayoutPanel1.TabIndex = 0;
 		// 
 		// splitContainer1
@@ -1049,8 +1049,8 @@ partial class MainForm {
 		// 
 		splitContainer1.Panel2.Controls.Add(dgvObject);
 		splitContainer1.Panel2.Controls.Add(lblSelectedTable);
-		splitContainer1.Size = new Size(1676, 298);
-		splitContainer1.SplitterDistance = 468;
+		splitContainer1.Size = new Size(1555, 348);
+		splitContainer1.SplitterDistance = 434;
 		splitContainer1.TabIndex = 6;
 		// 
 		// splitContainer2
@@ -1068,8 +1068,8 @@ partial class MainForm {
 		// splitContainer2.Panel2
 		// 
 		splitContainer2.Panel2.Controls.Add(dgvOrderList);
-		splitContainer2.Size = new Size(468, 298);
-		splitContainer2.SplitterDistance = 128;
+		splitContainer2.Size = new Size(434, 348);
+		splitContainer2.SplitterDistance = 149;
 		splitContainer2.TabIndex = 7;
 		// 
 		// lbxObjects
@@ -1078,7 +1078,7 @@ partial class MainForm {
 		lbxObjects.FormattingEnabled = true;
 		lbxObjects.Location = new Point(0, 21);
 		lbxObjects.Name = "lbxObjects";
-		lbxObjects.Size = new Size(468, 107);
+		lbxObjects.Size = new Size(434, 128);
 		lbxObjects.TabIndex = 5;
 		lbxObjects.SelectedIndexChanged += lbxObjects_SelectedIndexChanged;
 		// 
@@ -1103,15 +1103,15 @@ partial class MainForm {
 		dgvOrderList.Dock = DockStyle.Fill;
 		dgvOrderList.Location = new Point(0, 0);
 		dgvOrderList.Name = "dgvOrderList";
-		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-		dataGridViewCellStyle2.BackColor = SystemColors.Control;
-		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-		dataGridViewCellStyle2.ForeColor = Color.IndianRed;
-		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-		dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-		dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
-		dgvOrderList.Size = new Size(468, 166);
+		dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		dataGridViewCellStyle1.BackColor = SystemColors.Control;
+		dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+		dataGridViewCellStyle1.ForeColor = Color.IndianRed;
+		dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+		dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+		dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+		dgvOrderList.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
+		dgvOrderList.Size = new Size(434, 195);
 		dgvOrderList.TabIndex = 11;
 		// 
 		// dgvObject
@@ -1123,7 +1123,7 @@ partial class MainForm {
 		dgvObject.Dock = DockStyle.Fill;
 		dgvObject.Location = new Point(0, 21);
 		dgvObject.Name = "dgvObject";
-		dgvObject.Size = new Size(1204, 277);
+		dgvObject.Size = new Size(1117, 327);
 		dgvObject.TabIndex = 4;
 		dgvObject.CellContentClick += dgvObject_CellContentClick_1;
 		// 
@@ -1150,7 +1150,7 @@ partial class MainForm {
 		tableLayoutPanel2.Controls.Add(btnDeleteCDCRegistration, 1, 4);
 		tableLayoutPanel2.Controls.Add(btnListEvents, 0, 3);
 		tableLayoutPanel2.Dock = DockStyle.Fill;
-		tableLayoutPanel2.Location = new Point(3, 354);
+		tableLayoutPanel2.Location = new Point(3, 404);
 		tableLayoutPanel2.Name = "tableLayoutPanel2";
 		tableLayoutPanel2.RowCount = 5;
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 91.70985F));
@@ -1159,7 +1159,7 @@ partial class MainForm {
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
 		tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel2.Size = new Size(467, 336);
+		tableLayoutPanel2.Size = new Size(433, 391);
 		tableLayoutPanel2.TabIndex = 3;
 		// 
 		// pnlOrderStates
@@ -1199,7 +1199,7 @@ partial class MainForm {
 		// 
 		btnDispatchEvent.BackColor = Color.Green;
 		btnDispatchEvent.ForeColor = Color.Yellow;
-		btnDispatchEvent.Location = new Point(233, 181);
+		btnDispatchEvent.Location = new Point(216, 236);
 		btnDispatchEvent.Name = "btnDispatchEvent";
 		btnDispatchEvent.Size = new Size(155, 44);
 		btnDispatchEvent.TabIndex = 10;
@@ -1211,7 +1211,7 @@ partial class MainForm {
 		// 
 		btnRetrieveOrder.BackColor = Color.Green;
 		btnRetrieveOrder.ForeColor = Color.Yellow;
-		btnRetrieveOrder.Location = new Point(3, 181);
+		btnRetrieveOrder.Location = new Point(3, 236);
 		btnRetrieveOrder.Name = "btnRetrieveOrder";
 		btnRetrieveOrder.Size = new Size(155, 44);
 		btnRetrieveOrder.TabIndex = 13;
@@ -1223,7 +1223,7 @@ partial class MainForm {
 		// 
 		btnDeleteCDCRegistration.BackColor = Color.Green;
 		btnDeleteCDCRegistration.ForeColor = Color.Yellow;
-		btnDeleteCDCRegistration.Location = new Point(233, 288);
+		btnDeleteCDCRegistration.Location = new Point(216, 343);
 		btnDeleteCDCRegistration.Name = "btnDeleteCDCRegistration";
 		btnDeleteCDCRegistration.Size = new Size(155, 44);
 		btnDeleteCDCRegistration.TabIndex = 8;
@@ -1235,7 +1235,7 @@ partial class MainForm {
 		// 
 		btnListEvents.BackColor = Color.Green;
 		btnListEvents.ForeColor = Color.Yellow;
-		btnListEvents.Location = new Point(3, 236);
+		btnListEvents.Location = new Point(3, 291);
 		btnListEvents.Name = "btnListEvents";
 		btnListEvents.Size = new Size(155, 44);
 		btnListEvents.TabIndex = 9;
@@ -1250,13 +1250,13 @@ partial class MainForm {
 		tableLayoutPanel4.Controls.Add(dgvObjectUrls, 0, 1);
 		tableLayoutPanel4.Controls.Add(lblRelations, 0, 0);
 		tableLayoutPanel4.Dock = DockStyle.Fill;
-		tableLayoutPanel4.Location = new Point(476, 354);
+		tableLayoutPanel4.Location = new Point(442, 404);
 		tableLayoutPanel4.Name = "tableLayoutPanel4";
 		tableLayoutPanel4.RowCount = 2;
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 11.8942728F));
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 88.10573F));
 		tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel4.Size = new Size(1203, 336);
+		tableLayoutPanel4.Size = new Size(1116, 391);
 		tableLayoutPanel4.TabIndex = 7;
 		// 
 		// dgvObjectUrls
@@ -1266,9 +1266,9 @@ partial class MainForm {
 		dgvObjectUrls.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
 		dgvObjectUrls.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		dgvObjectUrls.Dock = DockStyle.Fill;
-		dgvObjectUrls.Location = new Point(3, 42);
+		dgvObjectUrls.Location = new Point(3, 49);
 		dgvObjectUrls.Name = "dgvObjectUrls";
-		dgvObjectUrls.Size = new Size(1197, 291);
+		dgvObjectUrls.Size = new Size(1110, 339);
 		dgvObjectUrls.TabIndex = 10;
 		// 
 		// lblRelations
@@ -1325,7 +1325,7 @@ partial class MainForm {
 		tbpOAuth2.Location = new Point(4, 24);
 		tbpOAuth2.Name = "tbpOAuth2";
 		tbpOAuth2.Padding = new Padding(3);
-		tbpOAuth2.Size = new Size(1688, 708);
+		tbpOAuth2.Size = new Size(1567, 813);
 		tbpOAuth2.TabIndex = 0;
 		tbpOAuth2.Text = "OAuth2";
 		tbpOAuth2.UseVisualStyleBackColor = true;
@@ -1335,7 +1335,7 @@ partial class MainForm {
 		tbpSOQL.Controls.Add(tableLayoutPanel11);
 		tbpSOQL.Location = new Point(4, 24);
 		tbpSOQL.Name = "tbpSOQL";
-		tbpSOQL.Size = new Size(1688, 708);
+		tbpSOQL.Size = new Size(1567, 813);
 		tbpSOQL.TabIndex = 6;
 		tbpSOQL.Text = "SOQL";
 		tbpSOQL.UseVisualStyleBackColor = true;
@@ -1355,13 +1355,13 @@ partial class MainForm {
 		tableLayoutPanel11.RowCount = 2;
 		tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 12.0943956F));
 		tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 87.9056F));
-		tableLayoutPanel11.Size = new Size(1688, 708);
+		tableLayoutPanel11.Size = new Size(1567, 813);
 		tableLayoutPanel11.TabIndex = 0;
 		// 
 		// splitcSoql
 		// 
 		tableLayoutPanel11.SetColumnSpan(splitcSoql, 4);
-		splitcSoql.Location = new Point(3, 88);
+		splitcSoql.Location = new Point(3, 101);
 		splitcSoql.Name = "splitcSoql";
 		// 
 		// splitcSoql.Panel1
@@ -1550,9 +1550,9 @@ partial class MainForm {
 		lblSoqlText.Dock = DockStyle.Fill;
 		lblSoqlText.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblSoqlText.ForeColor = Color.Brown;
-		lblSoqlText.Location = new Point(611, 0);
+		lblSoqlText.Location = new Point(563, 0);
 		lblSoqlText.Name = "lblSoqlText";
-		lblSoqlText.Size = new Size(922, 85);
+		lblSoqlText.Size = new Size(849, 98);
 		lblSoqlText.TabIndex = 5;
 		lblSoqlText.Text = "soql";
 		// 
@@ -1621,7 +1621,7 @@ partial class MainForm {
 		tbpDescribeObject.Controls.Add(tableLayoutPanel5);
 		tbpDescribeObject.Location = new Point(4, 24);
 		tbpDescribeObject.Name = "tbpDescribeObject";
-		tbpDescribeObject.Size = new Size(1688, 708);
+		tbpDescribeObject.Size = new Size(1567, 813);
 		tbpDescribeObject.TabIndex = 3;
 		tbpDescribeObject.Text = "Describe Object";
 		tbpDescribeObject.UseVisualStyleBackColor = true;
@@ -1651,7 +1651,7 @@ partial class MainForm {
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 53.3333321F));
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 46.6666679F));
 		tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 578F));
-		tableLayoutPanel5.Size = new Size(1688, 708);
+		tableLayoutPanel5.Size = new Size(1567, 813);
 		tableLayoutPanel5.TabIndex = 0;
 		// 
 		// label1
@@ -1660,7 +1660,7 @@ partial class MainForm {
 		label1.Dock = DockStyle.Fill;
 		label1.Location = new Point(3, 0);
 		label1.Name = "label1";
-		label1.Size = new Size(352, 69);
+		label1.Size = new Size(230, 125);
 		label1.TabIndex = 0;
 		label1.Text = "Object Name";
 		label1.TextAlign = ContentAlignment.MiddleLeft;
@@ -1670,16 +1670,16 @@ partial class MainForm {
 		dgvSchema.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		tableLayoutPanel5.SetColumnSpan(dgvSchema, 5);
 		dgvSchema.Dock = DockStyle.Fill;
-		dgvSchema.Location = new Point(3, 132);
+		dgvSchema.Location = new Point(3, 237);
 		dgvSchema.Name = "dgvSchema";
-		dgvSchema.Size = new Size(1392, 573);
+		dgvSchema.Size = new Size(1270, 573);
 		dgvSchema.TabIndex = 3;
 		dgvSchema.CellContentClick += dgvSchema_CellContentClick;
 		// 
 		// cmbObjects
 		// 
 		cmbObjects.FormattingEnabled = true;
-		cmbObjects.Location = new Point(361, 3);
+		cmbObjects.Location = new Point(239, 3);
 		cmbObjects.Name = "cmbObjects";
 		cmbObjects.Size = new Size(564, 23);
 		cmbObjects.TabIndex = 5;
@@ -1691,7 +1691,7 @@ partial class MainForm {
 		lblCDCName.AutoSize = true;
 		lblCDCName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblCDCName.ForeColor = Color.IndianRed;
-		lblCDCName.Location = new Point(1398, 69);
+		lblCDCName.Location = new Point(1276, 125);
 		lblCDCName.Margin = new Padding(0);
 		lblCDCName.Name = "lblCDCName";
 		lblCDCName.Size = new Size(40, 15);
@@ -1701,7 +1701,7 @@ partial class MainForm {
 		// label5
 		// 
 		label5.AutoSize = true;
-		label5.Location = new Point(3, 69);
+		label5.Location = new Point(3, 125);
 		label5.Name = "label5";
 		label5.Size = new Size(67, 15);
 		label5.TabIndex = 10;
@@ -1711,7 +1711,7 @@ partial class MainForm {
 		// cmbField
 		// 
 		cmbField.FormattingEnabled = true;
-		cmbField.Location = new Point(361, 72);
+		cmbField.Location = new Point(239, 128);
 		cmbField.Name = "cmbField";
 		cmbField.Size = new Size(564, 23);
 		cmbField.TabIndex = 11;
@@ -1719,7 +1719,7 @@ partial class MainForm {
 		// 
 		// btnDescribe
 		// 
-		btnDescribe.Location = new Point(931, 3);
+		btnDescribe.Location = new Point(809, 3);
 		btnDescribe.Name = "btnDescribe";
 		btnDescribe.Size = new Size(148, 35);
 		btnDescribe.TabIndex = 2;
@@ -1729,7 +1729,7 @@ partial class MainForm {
 		// 
 		// btnDeleteCmbObjectSelected
 		// 
-		btnDeleteCmbObjectSelected.Location = new Point(1117, 3);
+		btnDeleteCmbObjectSelected.Location = new Point(995, 3);
 		btnDeleteCmbObjectSelected.Name = "btnDeleteCmbObjectSelected";
 		btnDeleteCmbObjectSelected.Size = new Size(113, 35);
 		btnDeleteCmbObjectSelected.TabIndex = 6;
@@ -1740,7 +1740,7 @@ partial class MainForm {
 		// btnGetPickList
 		// 
 		btnGetPickList.Enabled = false;
-		btnGetPickList.Location = new Point(1401, 132);
+		btnGetPickList.Location = new Point(1279, 237);
 		btnGetPickList.Name = "btnGetPickList";
 		btnGetPickList.Size = new Size(148, 35);
 		btnGetPickList.TabIndex = 9;
@@ -1753,7 +1753,7 @@ partial class MainForm {
 		tbpEventLog.Controls.Add(tableLayoutPanel6);
 		tbpEventLog.Location = new Point(4, 24);
 		tbpEventLog.Name = "tbpEventLog";
-		tbpEventLog.Size = new Size(1688, 708);
+		tbpEventLog.Size = new Size(1567, 813);
 		tbpEventLog.TabIndex = 4;
 		tbpEventLog.Text = "Event Log";
 		tbpEventLog.UseVisualStyleBackColor = true;
@@ -1772,7 +1772,7 @@ partial class MainForm {
 		tableLayoutPanel6.RowCount = 2;
 		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 95.32164F));
 		tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 4.67836237F));
-		tableLayoutPanel6.Size = new Size(1688, 708);
+		tableLayoutPanel6.Size = new Size(1567, 813);
 		tableLayoutPanel6.TabIndex = 1;
 		// 
 		// rtxLog
@@ -1784,13 +1784,13 @@ partial class MainForm {
 		rtxLog.ForeColor = Color.Lime;
 		rtxLog.Location = new Point(3, 3);
 		rtxLog.Name = "rtxLog";
-		rtxLog.Size = new Size(1682, 668);
+		rtxLog.Size = new Size(1561, 768);
 		rtxLog.TabIndex = 2;
 		rtxLog.Text = "";
 		// 
 		// btnClearLog
 		// 
-		btnClearLog.Location = new Point(3, 677);
+		btnClearLog.Location = new Point(3, 777);
 		btnClearLog.Name = "btnClearLog";
 		btnClearLog.Size = new Size(93, 23);
 		btnClearLog.TabIndex = 3;
@@ -1800,7 +1800,7 @@ partial class MainForm {
 		// 
 		// btnLogTest
 		// 
-		btnLogTest.Location = new Point(121, 677);
+		btnLogTest.Location = new Point(112, 777);
 		btnLogTest.Name = "btnLogTest";
 		btnLogTest.Size = new Size(93, 23);
 		btnLogTest.TabIndex = 4;
@@ -1812,7 +1812,7 @@ partial class MainForm {
 		tbpCDCEvents.Controls.Add(tableLayoutPanel8);
 		tbpCDCEvents.Location = new Point(4, 24);
 		tbpCDCEvents.Name = "tbpCDCEvents";
-		tbpCDCEvents.Size = new Size(1688, 708);
+		tbpCDCEvents.Size = new Size(1567, 813);
 		tbpCDCEvents.TabIndex = 5;
 		tbpCDCEvents.Text = "CDC Events";
 		tbpCDCEvents.UseVisualStyleBackColor = true;
@@ -1831,7 +1831,7 @@ partial class MainForm {
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 78.46608F));
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 21.5339241F));
 		tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-		tableLayoutPanel8.Size = new Size(1688, 708);
+		tableLayoutPanel8.Size = new Size(1567, 813);
 		tableLayoutPanel8.TabIndex = 0;
 		// 
 		// splitContainer4
@@ -1847,8 +1847,8 @@ partial class MainForm {
 		// splitContainer4.Panel2
 		// 
 		splitContainer4.Panel2.Controls.Add(splitContainer5);
-		splitContainer4.Size = new Size(1682, 502);
-		splitContainer4.SplitterDistance = 626;
+		splitContainer4.Size = new Size(1561, 584);
+		splitContainer4.SplitterDistance = 580;
 		splitContainer4.TabIndex = 0;
 		// 
 		// lbxCDCTopics
@@ -1859,7 +1859,7 @@ partial class MainForm {
 		lbxCDCTopics.Location = new Point(0, 0);
 		lbxCDCTopics.Name = "lbxCDCTopics";
 		lbxCDCTopics.ScrollAlwaysVisible = true;
-		lbxCDCTopics.Size = new Size(626, 502);
+		lbxCDCTopics.Size = new Size(580, 584);
 		lbxCDCTopics.TabIndex = 1;
 		// 
 		// splitContainer5
@@ -1875,8 +1875,8 @@ partial class MainForm {
 		// splitContainer5.Panel2
 		// 
 		splitContainer5.Panel2.Controls.Add(dgvFilteredFields);
-		splitContainer5.Size = new Size(1052, 502);
-		splitContainer5.SplitterDistance = 479;
+		splitContainer5.Size = new Size(977, 584);
+		splitContainer5.SplitterDistance = 444;
 		splitContainer5.TabIndex = 0;
 		// 
 		// lbxCDCEvents
@@ -1887,7 +1887,7 @@ partial class MainForm {
 		lbxCDCEvents.Location = new Point(0, 0);
 		lbxCDCEvents.Name = "lbxCDCEvents";
 		lbxCDCEvents.ScrollAlwaysVisible = true;
-		lbxCDCEvents.Size = new Size(479, 502);
+		lbxCDCEvents.Size = new Size(444, 584);
 		lbxCDCEvents.TabIndex = 0;
 		// 
 		// dgvFilteredFields
@@ -1896,7 +1896,7 @@ partial class MainForm {
 		dgvFilteredFields.Dock = DockStyle.Fill;
 		dgvFilteredFields.Location = new Point(0, 0);
 		dgvFilteredFields.Name = "dgvFilteredFields";
-		dgvFilteredFields.Size = new Size(569, 502);
+		dgvFilteredFields.Size = new Size(529, 584);
 		dgvFilteredFields.TabIndex = 0;
 		// 
 		// tableLayoutPanel9
@@ -1907,7 +1907,7 @@ partial class MainForm {
 		tableLayoutPanel9.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 235F));
 		tableLayoutPanel9.Controls.Add(btnGetCDCSubscriptions, 1, 0);
 		tableLayoutPanel9.Controls.Add(btnCDCStartSubscription, 0, 0);
-		tableLayoutPanel9.Location = new Point(3, 511);
+		tableLayoutPanel9.Location = new Point(3, 593);
 		tableLayoutPanel9.Name = "tableLayoutPanel9";
 		tableLayoutPanel9.RowCount = 1;
 		tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -1938,7 +1938,7 @@ partial class MainForm {
 		// 
 		lblCDCStatus.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
 		lblCDCStatus.AutoSize = true;
-		lblCDCStatus.Location = new Point(3, 647);
+		lblCDCStatus.Location = new Point(3, 752);
 		lblCDCStatus.Name = "lblCDCStatus";
 		lblCDCStatus.Size = new Size(66, 61);
 		lblCDCStatus.TabIndex = 2;
@@ -1951,7 +1951,7 @@ partial class MainForm {
 		tbpX12.Location = new Point(4, 24);
 		tbpX12.Name = "tbpX12";
 		tbpX12.Padding = new Padding(3);
-		tbpX12.Size = new Size(1688, 708);
+		tbpX12.Size = new Size(1567, 813);
 		tbpX12.TabIndex = 7;
 		tbpX12.Text = "X12";
 		tbpX12.UseVisualStyleBackColor = true;
@@ -1976,7 +1976,7 @@ partial class MainForm {
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 288F));
 		tableLayoutPanel18.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel18.Size = new Size(1682, 702);
+		tableLayoutPanel18.Size = new Size(1561, 807);
 		tableLayoutPanel18.TabIndex = 0;
 		// 
 		// cmbOrderTables
@@ -2055,7 +2055,7 @@ partial class MainForm {
 		webView21.Location = new Point(584, 64);
 		webView21.Name = "webView21";
 		tableLayoutPanel18.SetRowSpan(webView21, 4);
-		webView21.Size = new Size(1095, 635);
+		webView21.Size = new Size(974, 740);
 		webView21.TabIndex = 4;
 		webView21.ZoomFactor = 1D;
 		// 
@@ -2065,7 +2065,7 @@ partial class MainForm {
 		tbpWebHook.Location = new Point(4, 24);
 		tbpWebHook.Name = "tbpWebHook";
 		tbpWebHook.Padding = new Padding(3);
-		tbpWebHook.Size = new Size(1688, 708);
+		tbpWebHook.Size = new Size(1567, 813);
 		tbpWebHook.TabIndex = 8;
 		tbpWebHook.Text = "WebHook";
 		tbpWebHook.UseVisualStyleBackColor = true;
@@ -2088,7 +2088,7 @@ partial class MainForm {
 		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 5.022831F));
 		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 94.9771652F));
 		tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-		tableLayoutPanel19.Size = new Size(1682, 702);
+		tableLayoutPanel19.Size = new Size(1561, 807);
 		tableLayoutPanel19.TabIndex = 0;
 		// 
 		// lblWebHookUrl
@@ -2097,9 +2097,9 @@ partial class MainForm {
 		lblWebHookUrl.Dock = DockStyle.Left;
 		lblWebHookUrl.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		lblWebHookUrl.ForeColor = Color.Firebrick;
-		lblWebHookUrl.Location = new Point(222, 0);
+		lblWebHookUrl.Location = new Point(181, 0);
 		lblWebHookUrl.Name = "lblWebHookUrl";
-		lblWebHookUrl.Size = new Size(0, 34);
+		lblWebHookUrl.Size = new Size(0, 39);
 		lblWebHookUrl.TabIndex = 1;
 		lblWebHookUrl.TextAlign = ContentAlignment.MiddleLeft;
 		// 
@@ -2110,7 +2110,7 @@ partial class MainForm {
 		label6.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
 		label6.Location = new Point(3, 0);
 		label6.Name = "label6";
-		label6.Size = new Size(119, 34);
+		label6.Size = new Size(119, 39);
 		label6.TabIndex = 0;
 		label6.Text = "(Env.) WebHook Url:";
 		label6.TextAlign = ContentAlignment.MiddleLeft;
@@ -2119,15 +2119,15 @@ partial class MainForm {
 		// 
 		tableLayoutPanel19.SetColumnSpan(rtxWebhook, 4);
 		rtxWebhook.Dock = DockStyle.Fill;
-		rtxWebhook.Location = new Point(3, 37);
+		rtxWebhook.Location = new Point(3, 42);
 		rtxWebhook.Name = "rtxWebhook";
-		rtxWebhook.Size = new Size(1676, 641);
+		rtxWebhook.Size = new Size(1555, 741);
 		rtxWebhook.TabIndex = 2;
 		rtxWebhook.Text = "";
 		// 
 		// button1
 		// 
-		button1.Location = new Point(980, 3);
+		button1.Location = new Point(859, 3);
 		button1.Name = "button1";
 		button1.Size = new Size(75, 23);
 		button1.TabIndex = 3;
@@ -2140,7 +2140,7 @@ partial class MainForm {
 		tbpOpenAS2.Location = new Point(4, 24);
 		tbpOpenAS2.Name = "tbpOpenAS2";
 		tbpOpenAS2.Padding = new Padding(3);
-		tbpOpenAS2.Size = new Size(1688, 708);
+		tbpOpenAS2.Size = new Size(1567, 813);
 		tbpOpenAS2.TabIndex = 9;
 		tbpOpenAS2.Text = "OpenAS2";
 		tbpOpenAS2.UseVisualStyleBackColor = true;
@@ -2163,7 +2163,7 @@ partial class MainForm {
 		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Percent, 17.5F));
 		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Percent, 82.5F));
 		tableLayoutPanel20.RowStyles.Add(new RowStyle(SizeType.Absolute, 477F));
-		tableLayoutPanel20.Size = new Size(1682, 702);
+		tableLayoutPanel20.Size = new Size(1561, 807);
 		tableLayoutPanel20.TabIndex = 0;
 		// 
 		// cmbOpenAs2ResultObjects
@@ -2178,7 +2178,7 @@ partial class MainForm {
 		// 
 		// btnGetPartnerList
 		// 
-		btnGetPartnerList.Location = new Point(723, 3);
+		btnGetPartnerList.Location = new Point(669, 3);
 		btnGetPartnerList.Name = "btnGetPartnerList";
 		btnGetPartnerList.Size = new Size(104, 23);
 		btnGetPartnerList.TabIndex = 1;
@@ -2190,10 +2190,10 @@ partial class MainForm {
 		// 
 		dgvOpenAs2Results.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 		dgvOpenAs2Results.Dock = DockStyle.Fill;
-		dgvOpenAs2Results.Location = new Point(3, 42);
+		dgvOpenAs2Results.Location = new Point(3, 60);
 		dgvOpenAs2Results.Name = "dgvOpenAs2Results";
 		tableLayoutPanel20.SetRowSpan(dgvOpenAs2Results, 2);
-		dgvOpenAs2Results.Size = new Size(714, 657);
+		dgvOpenAs2Results.Size = new Size(660, 744);
 		dgvOpenAs2Results.TabIndex = 2;
 		// 
 		// tbpPdf
@@ -2238,8 +2238,8 @@ partial class MainForm {
 		tableLayoutPanel21.Location = new Point(1273, 80);
 		tableLayoutPanel21.Name = "tableLayoutPanel21";
 		tableLayoutPanel21.RowCount = 2;
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 25.6410255F));
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 74.35897F));
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 17.521368F));
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 82.47863F));
 		tableLayoutPanel21.Size = new Size(200, 234);
 		tableLayoutPanel21.TabIndex = 0;
 		// 
@@ -2247,7 +2247,7 @@ partial class MainForm {
 		// 
 		btnMcCreatePO.Location = new Point(104, 3);
 		btnMcCreatePO.Name = "btnMcCreatePO";
-		btnMcCreatePO.Size = new Size(88, 45);
+		btnMcCreatePO.Size = new Size(88, 33);
 		btnMcCreatePO.TabIndex = 0;
 		btnMcCreatePO.Text = "Create PO";
 		btnMcCreatePO.UseVisualStyleBackColor = true;
@@ -2257,7 +2257,7 @@ partial class MainForm {
 		// 
 		button27.Location = new Point(3, 3);
 		button27.Name = "button27";
-		button27.Size = new Size(88, 45);
+		button27.Size = new Size(88, 33);
 		button27.TabIndex = 1;
 		button27.Text = "Retrive POs";
 		button27.UseVisualStyleBackColor = true;
@@ -2268,25 +2268,25 @@ partial class MainForm {
 		tableLayoutPanel22.ColumnCount = 2;
 		tableLayoutPanel21.SetColumnSpan(tableLayoutPanel22, 2);
 		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 95F));
+		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 97F));
 		tableLayoutPanel22.Controls.Add(btnN1ExtractTextBlocks, 1, 0);
-		tableLayoutPanel22.Controls.Add(btnGenPDF, 0, 2);
-		tableLayoutPanel22.Controls.Add(btnExtractXml, 0, 1);
 		tableLayoutPanel22.Controls.Add(btnExtractPdf, 0, 0);
-		tableLayoutPanel22.Location = new Point(3, 63);
+		tableLayoutPanel22.Controls.Add(btnExtractXml, 0, 2);
+		tableLayoutPanel22.Controls.Add(btnGenPDF, 0, 1);
+		tableLayoutPanel22.Location = new Point(3, 44);
 		tableLayoutPanel22.Name = "tableLayoutPanel22";
 		tableLayoutPanel22.RowCount = 3;
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 48.62385F));
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 51.37615F));
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
-		tableLayoutPanel22.Size = new Size(194, 168);
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 82F));
+		tableLayoutPanel22.Size = new Size(194, 187);
 		tableLayoutPanel22.TabIndex = 4;
 		// 
 		// btnN1ExtractTextBlocks
 		// 
-		btnN1ExtractTextBlocks.Location = new Point(102, 3);
+		btnN1ExtractTextBlocks.Location = new Point(100, 3);
 		btnN1ExtractTextBlocks.Name = "btnN1ExtractTextBlocks";
-		btnN1ExtractTextBlocks.Size = new Size(88, 45);
+		btnN1ExtractTextBlocks.Size = new Size(88, 33);
 		btnN1ExtractTextBlocks.TabIndex = 5;
 		btnN1ExtractTextBlocks.Text = "n2.Extract TextBlocks";
 		btnN1ExtractTextBlocks.UseVisualStyleBackColor = true;
@@ -2294,9 +2294,9 @@ partial class MainForm {
 		// 
 		// btnGenPDF
 		// 
-		btnGenPDF.Location = new Point(3, 112);
+		btnGenPDF.Location = new Point(3, 55);
 		btnGenPDF.Name = "btnGenPDF";
-		btnGenPDF.Size = new Size(88, 45);
+		btnGenPDF.Size = new Size(88, 33);
 		btnGenPDF.TabIndex = 4;
 		btnGenPDF.Text = "Generate PDF";
 		btnGenPDF.UseVisualStyleBackColor = true;
@@ -2304,9 +2304,9 @@ partial class MainForm {
 		// 
 		// btnExtractXml
 		// 
-		btnExtractXml.Location = new Point(3, 56);
+		btnExtractXml.Location = new Point(3, 107);
 		btnExtractXml.Name = "btnExtractXml";
-		btnExtractXml.Size = new Size(88, 45);
+		btnExtractXml.Size = new Size(88, 33);
 		btnExtractXml.TabIndex = 3;
 		btnExtractXml.Text = "Extract XML";
 		btnExtractXml.UseVisualStyleBackColor = true;
@@ -2316,7 +2316,7 @@ partial class MainForm {
 		// 
 		btnExtractPdf.Location = new Point(3, 3);
 		btnExtractPdf.Name = "btnExtractPdf";
-		btnExtractPdf.Size = new Size(88, 45);
+		btnExtractPdf.Size = new Size(88, 33);
 		btnExtractPdf.TabIndex = 2;
 		btnExtractPdf.Text = "Extract Pdf";
 		btnExtractPdf.UseVisualStyleBackColor = true;

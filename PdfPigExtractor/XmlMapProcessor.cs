@@ -272,10 +272,11 @@ public class XmlMapProcessor {
 								int i = 0;
 								xe.Attribute("map")?.Remove();// remove the map attribute after use
 								foreach (string att in atts) {
+									if (results.Count-1 < i) break;
 									var xx = results[i];
 									var attValue = results;
 									xe.SetAttributeValue(att, results[i]);
-									Log.Debug($"Mapped {att}={attValue}");
+									Log.Debug($"Mapped {att}={attValue.First()}");
 									i++;
 								}
 							}
