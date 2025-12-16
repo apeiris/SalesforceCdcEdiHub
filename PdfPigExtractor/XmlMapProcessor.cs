@@ -263,7 +263,7 @@ public class XmlMapProcessor {
 							//  revise this  to use Regex
 							Log.Debug($"{attr.Name}=value={value} ");
 							string method = aDict["script"];
-							string script = originalDoc.XPathSelectElement($"/pdfMap/script[@name='{aDict["script"]}']")!.Value;
+							string script = originalDoc.XPathSelectElement($"/pdfMap/scriptlib/script[@name='{aDict["script"]}']")!.Value;
 							var data = new Dictionary<string, object> { ["value"] = value };
 							var results =(List<string>)ScriptRunner.Run(script, data);
 							if(aDict.Keys.Contains("map")) {

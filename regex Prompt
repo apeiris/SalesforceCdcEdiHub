@@ -1,0 +1,2 @@
+regex to gropup/capture this
+<loop name="PO1" fsm="scrape:x=47,scanBelowY=513,width=500,line2LineGap=20 |<%#script:<%(xml)=SplitPOLine(<%var$:returnValue=(string)fsm,delimiter=',',columSet='Item,Code,Qty,UnitPrice'%>)%>">

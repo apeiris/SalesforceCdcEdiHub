@@ -10,24 +10,34 @@
 	    x12Model="850-4010">
 
 		<parties>
+			<delivery date="scrape:x=428,scanBelowY=750,width=100,line2LineGap=10"  />
 			<buyer name="scrape:x=47,scanBelowY=653,width=50,line2LineGap=10">
 				<address map="scrape:x=47,scanBelowY=635,width=50,line2LineGap=10 | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map" />
-				<contact map="scrape:x=47,scanBelowY=615,width=50,line2LineGap=10 | script:SplitAddress | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
-
-
+				<contact map="scrape:x=47,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
 			</buyer>
 			<seller name="scrape:x=299,scanBelowY=653,width=50,line2LineGap=10">
 				<address map="scrape:x=299,scanBelowY=635,width=50,line2LineGap=10 | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map" />
+				<contact map="scrape:x=299,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
 			</seller>
 		</parties>
 	</po>
 	<!-- ♻ Central script library -->
-	<script name="SplitAddress">
-		<![CDATA[
+	<scriptlib>
+		<script name="SplitAddress">
+			<![CDATA[
 		return value.Split(',', StringSplitOptions.RemoveEmptyEntries)
 		            .Select(x => x.Trim())
 		            .ToList();
 	]]>
-	</script>
+		</script>
+		<script name="SplitContact">
+			<![CDATA[
+		return value.Split('|', StringSplitOptions.RemoveEmptyEntries)
+		            .Select(x => x.Trim())
+		            .ToList();
+	]]>
+		</script>
+	</scriptlib>
+
 
 </pdfMap>

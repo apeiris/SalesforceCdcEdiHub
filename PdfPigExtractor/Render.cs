@@ -80,7 +80,10 @@ public class Render {
 					rect.GetRight() - w2, rect.GetTop() + 3);
 				break;
 			case LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL:
-
+				if (rect == null) {
+					Logger.Error("empty bounding box @ presented to draw label");
+					break;
+				}
 				DrawLabel($"{rect.GetX():0}, {rect.GetY():0}",
 				rect.GetX(), rect.GetY() - 7);
 
