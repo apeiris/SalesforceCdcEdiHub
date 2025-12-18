@@ -10,7 +10,7 @@
 	    x12Model="850-4010">
 
 		<parties>
-			<delivery date="scrape:x=428,scanBelowY=750,width=100,line2LineGap=10"  />
+			<delivery date="scrape:x=428,scanBelowY=752,width=100,line2LineGap=10"  />
 			<buyer name="scrape:x=47,scanBelowY=653,width=50,line2LineGap=10">
 				<address map="scrape:x=47,scanBelowY=635,width=50,line2LineGap=10 | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map" />
 				<contact map="scrape:x=47,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
@@ -20,6 +20,12 @@
 				<contact map="scrape:x=299,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
 			</seller>
 		</parties>
+		<po1loop name="scrape:x=40,scanBelowY=501,width=515,line2LineGap=30">
+			
+			<line>
+				
+			</line>
+		</po1loop>
 	</po>
 	<!-- ♻ Central script library -->
 	<scriptlib>

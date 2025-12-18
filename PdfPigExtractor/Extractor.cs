@@ -31,28 +31,22 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 
 	public void EventOccurred(IEventData data, EventType type) {
 		if (stopped) return;
-
 		if (type == EventType.RENDER_TEXT) {
 			TextRenderInfo tri = (TextRenderInfo)data;
-
-			var ascent=tri.GetAscentLine();
-			var descent=tri.GetDescentLine();
-			// Capture everything WHILE graphics state is still alive
-			LineSegment baseline = tri.GetBaseline();
+			var ascent = tri.GetAscentLine();
+			var descent = tri.GetDescentLine();
+			LineSegment baseline = tri.GetBaseline();   // Capture everything WHILE graphics state is still alive
 			Vector baselineStart = baseline.GetStartPoint();
 			float curX = baselineStart.Get(Vector.I1);
 			float curY = baselineStart.Get(Vector.I2);
 
-			// 1. Wait until we hit the starting region
-			if (!started) {
+			if (!started) {// 1. Wait until we hit the starting region
 				if (curX >= _startX && curY <= _startY)
 					started = true;
 				else
 					return;
 			}
-
-			// 2. Detect large vertical gap → stop forever
-			if (lastBaselineY > 0) {
+			if (lastBaselineY > 0) {// 2. Detect large vertical gap → stop forever
 				float gap = lastBaselineY - curY;
 				if (gap > _gapThreshold) {
 					stopped = true;
@@ -60,36 +54,33 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 				}
 			}
 
-			lastBaselineY = curY;
-
-			// 3. Keep only text inside the horizontal scan band
-			bool inXlimits = curX >= _startX && curX <= _startX + _width;
-
-			
-
-			if (inXlimits) {
-				// PRE-CAPTURE bounds and baseline Y here (safe zone)
-				//Rectangle bounds = tri.GetBaseline().GetBoundingRectangle();   // ← safe now
+			bool inXlimits = curX >= _startX && curX <= _startX + _width;// 3. Keep only text inside the horizontal scan band
+		
+			if (inXlimits) {// PRE-CAPTURE bounds and baseline Y here (safe zone)
 				float left = descent.GetStartPoint().Get(0);
-				float right=ascent.GetEndPoint().Get(0);
+				float right = ascent.GetEndPoint().Get(0);
 				float top = ascent.GetStartPoint().Get(1);
-				float bottom=descent.GetEndPoint().Get(1);
-
+				float bottom = descent.GetEndPoint().Get(1);
 				Rectangle bounds = new Rectangle(
 					left,
 					bottom,
 					right - left,
 					top - bottom
 				);
-				float baselineY = curY;                  // already calculated
-
-				chunks.Add(new TextChunk(
-					text: tri.GetText(),
-					startPoint: baselineStart,
-					baselineY: baselineY,
-					bounds: bounds,
-					textRenderMode: tri.GetTextRenderMode()
-				));
+			
+				float baselineY = curY;      // already calculated
+			    string lineEnd = lastBaselineY != baselineY ? "\r\n" : "";
+				
+				TextChunk tc =	new TextChunk(
+												text: lineEnd+tri.GetText() ,
+												startPoint: baselineStart,
+												baselineY: baselineY,
+												bounds: bounds,
+												textRenderMode: tri.GetTextRenderMode()
+											 );
+				Logger.Debug($"lastbline={lastBaselineY}: baselineY={baselineY}:{tc.Text} :lineEnd={lineEnd}");
+				lastBaselineY = curY;
+				chunks.Add(tc);
 			}
 		}
 	}
@@ -111,16 +102,20 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 		foreach (var chunk in chunks) {
 			float curY = chunk.BaselineY;
 
-			if (Math.Abs(curY - lastY) > tolerance && lastY > -9990) 
-				sb.AppendLine(); 
+			if (Math.Abs(curY - lastY) > tolerance && lastY > -9990)
+				sb.AppendLine();
 
 			sb.AppendLine(chunk.Text);
+			if (lastY != curY) {
+				sb.AppendLine();
+			
+				sb.AppendLine();
+			}
+
 			lastY = curY;
 		}
-
 		return sb.ToString();
 	}
-
 	// NEW METHOD – 100% safe, no graphics state needed
 	public Rectangle GetCollectedTextBounds() {
 		if (chunks.Count == 0) return null;
@@ -137,10 +132,10 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			right = Math.Max(right, r.GetRight());
 			top = Math.Max(top, r.GetTop());
 			float pad = r.GetHeight() * 0.10f;
-			maxPad=pad>maxPad?pad:maxPad;
+			maxPad = pad > maxPad ? pad : maxPad;
 		}
 
-		return new Rectangle(left-maxPad, bottom-maxPad, (right - left)+maxPad*2, (top - bottom)+maxPad*2);
+		return new Rectangle(left - maxPad, bottom - maxPad, (right - left) + maxPad * 2, (top - bottom) + maxPad * 2);
 	}
 
 	// Required interface members
@@ -159,7 +154,7 @@ class TextChunk {
 	public Vector StartPoint { get; }
 	public float BaselineY { get; }      // pre-captured Y
 
-	
+
 	public Rectangle Bounds { get; }     // pre-captured bounding box
 	public int TextRenderMode { get; }
 

@@ -176,13 +176,16 @@ partial class MainForm {
 		tbpPdf = new TabPage();
 		tableLayoutPanel7 = new TableLayoutPanel();
 		tableLayoutPanel21 = new TableLayoutPanel();
-		btnMcCreatePO = new Button();
-		button27 = new Button();
 		tableLayoutPanel22 = new TableLayoutPanel();
+		btnExtractXml = new Button();
+		button27 = new Button();
+		btnMcCreatePO = new Button();
+		btnExtractPdf = new Button();
 		btnN1ExtractTextBlocks = new Button();
 		btnGenPDF = new Button();
-		btnExtractXml = new Button();
-		btnExtractPdf = new Button();
+		grpSwitchToTab = new GroupBox();
+		radioButton6 = new RadioButton();
+		rbEventLog = new RadioButton();
 		cmbMondayPOs = new ComboBox();
 		splitContainer8 = new SplitContainer();
 		splitContainer7 = new SplitContainer();
@@ -271,6 +274,7 @@ partial class MainForm {
 		tableLayoutPanel7.SuspendLayout();
 		tableLayoutPanel21.SuspendLayout();
 		tableLayoutPanel22.SuspendLayout();
+		grpSwitchToTab.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)splitContainer8).BeginInit();
 		splitContainer8.Panel1.SuspendLayout();
 		splitContainer8.Panel2.SuspendLayout();
@@ -2229,62 +2233,87 @@ partial class MainForm {
 		// 
 		// tableLayoutPanel21
 		// 
-		tableLayoutPanel21.ColumnCount = 2;
+		tableLayoutPanel21.ColumnCount = 3;
 		tableLayoutPanel21.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50.5F));
 		tableLayoutPanel21.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 49.5F));
-		tableLayoutPanel21.Controls.Add(btnMcCreatePO, 1, 0);
-		tableLayoutPanel21.Controls.Add(button27, 0, 0);
+		tableLayoutPanel21.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 94F));
 		tableLayoutPanel21.Controls.Add(tableLayoutPanel22, 0, 1);
 		tableLayoutPanel21.Location = new Point(1273, 80);
 		tableLayoutPanel21.Name = "tableLayoutPanel21";
 		tableLayoutPanel21.RowCount = 2;
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 17.521368F));
-		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 82.47863F));
-		tableLayoutPanel21.Size = new Size(200, 234);
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 25.34819F));
+		tableLayoutPanel21.RowStyles.Add(new RowStyle(SizeType.Percent, 74.65181F));
+		tableLayoutPanel21.Size = new Size(283, 359);
 		tableLayoutPanel21.TabIndex = 0;
 		// 
-		// btnMcCreatePO
+		// tableLayoutPanel22
 		// 
-		btnMcCreatePO.Location = new Point(104, 3);
-		btnMcCreatePO.Name = "btnMcCreatePO";
-		btnMcCreatePO.Size = new Size(88, 33);
-		btnMcCreatePO.TabIndex = 0;
-		btnMcCreatePO.Text = "Create PO";
-		btnMcCreatePO.UseVisualStyleBackColor = true;
-		btnMcCreatePO.Click += btnMcCreatePO_Click;
+		tableLayoutPanel22.ColumnCount = 3;
+		tableLayoutPanel21.SetColumnSpan(tableLayoutPanel22, 3);
+		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 97F));
+		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+		tableLayoutPanel22.Controls.Add(btnExtractXml, 0, 4);
+		tableLayoutPanel22.Controls.Add(button27, 0, 3);
+		tableLayoutPanel22.Controls.Add(btnMcCreatePO, 1, 3);
+		tableLayoutPanel22.Controls.Add(btnExtractPdf, 0, 1);
+		tableLayoutPanel22.Controls.Add(btnN1ExtractTextBlocks, 1, 1);
+		tableLayoutPanel22.Controls.Add(btnGenPDF, 0, 2);
+		tableLayoutPanel22.Controls.Add(grpSwitchToTab, 0, 0);
+		tableLayoutPanel22.Location = new Point(3, 94);
+		tableLayoutPanel22.Name = "tableLayoutPanel22";
+		tableLayoutPanel22.RowCount = 5;
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 45.87156F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 54.12844F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 75F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 41F));
+		tableLayoutPanel22.Size = new Size(277, 262);
+		tableLayoutPanel22.TabIndex = 4;
+		// 
+		// btnExtractXml
+		// 
+		btnExtractXml.Location = new Point(3, 223);
+		btnExtractXml.Name = "btnExtractXml";
+		btnExtractXml.Size = new Size(88, 33);
+		btnExtractXml.TabIndex = 3;
+		btnExtractXml.Text = "Extract XML";
+		btnExtractXml.UseVisualStyleBackColor = true;
+		btnExtractXml.Click += btnExtractXml_Click;
 		// 
 		// button27
 		// 
-		button27.Location = new Point(3, 3);
+		button27.Location = new Point(3, 187);
 		button27.Name = "button27";
-		button27.Size = new Size(88, 33);
+		button27.Size = new Size(88, 30);
 		button27.TabIndex = 1;
 		button27.Text = "Retrive POs";
 		button27.UseVisualStyleBackColor = true;
 		button27.Click += btnRetriveMondayComPOs;
 		// 
-		// tableLayoutPanel22
+		// btnMcCreatePO
 		// 
-		tableLayoutPanel22.ColumnCount = 2;
-		tableLayoutPanel21.SetColumnSpan(tableLayoutPanel22, 2);
-		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-		tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 97F));
-		tableLayoutPanel22.Controls.Add(btnN1ExtractTextBlocks, 1, 0);
-		tableLayoutPanel22.Controls.Add(btnExtractPdf, 0, 0);
-		tableLayoutPanel22.Controls.Add(btnExtractXml, 0, 2);
-		tableLayoutPanel22.Controls.Add(btnGenPDF, 0, 1);
-		tableLayoutPanel22.Location = new Point(3, 44);
-		tableLayoutPanel22.Name = "tableLayoutPanel22";
-		tableLayoutPanel22.RowCount = 3;
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-		tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Absolute, 82F));
-		tableLayoutPanel22.Size = new Size(194, 187);
-		tableLayoutPanel22.TabIndex = 4;
+		btnMcCreatePO.Location = new Point(163, 187);
+		btnMcCreatePO.Name = "btnMcCreatePO";
+		btnMcCreatePO.Size = new Size(88, 30);
+		btnMcCreatePO.TabIndex = 0;
+		btnMcCreatePO.Text = "Create PO";
+		btnMcCreatePO.UseVisualStyleBackColor = true;
+		btnMcCreatePO.Click += btnMcCreatePO_Click;
+		// 
+		// btnExtractPdf
+		// 
+		btnExtractPdf.Location = new Point(3, 53);
+		btnExtractPdf.Name = "btnExtractPdf";
+		btnExtractPdf.Size = new Size(88, 33);
+		btnExtractPdf.TabIndex = 2;
+		btnExtractPdf.Text = "Extract Pdf";
+		btnExtractPdf.UseVisualStyleBackColor = true;
+		btnExtractPdf.Click += btnExtractPdf_Click;
 		// 
 		// btnN1ExtractTextBlocks
 		// 
-		btnN1ExtractTextBlocks.Location = new Point(100, 3);
+		btnN1ExtractTextBlocks.Location = new Point(163, 53);
 		btnN1ExtractTextBlocks.Name = "btnN1ExtractTextBlocks";
 		btnN1ExtractTextBlocks.Size = new Size(88, 33);
 		btnN1ExtractTextBlocks.TabIndex = 5;
@@ -2294,7 +2323,7 @@ partial class MainForm {
 		// 
 		// btnGenPDF
 		// 
-		btnGenPDF.Location = new Point(3, 55);
+		btnGenPDF.Location = new Point(3, 112);
 		btnGenPDF.Name = "btnGenPDF";
 		btnGenPDF.Size = new Size(88, 33);
 		btnGenPDF.TabIndex = 4;
@@ -2302,25 +2331,41 @@ partial class MainForm {
 		btnGenPDF.UseVisualStyleBackColor = true;
 		btnGenPDF.Click += btnGenPDF_Click;
 		// 
-		// btnExtractXml
+		// grpSwitchToTab
 		// 
-		btnExtractXml.Location = new Point(3, 107);
-		btnExtractXml.Name = "btnExtractXml";
-		btnExtractXml.Size = new Size(88, 33);
-		btnExtractXml.TabIndex = 3;
-		btnExtractXml.Text = "Extract XML";
-		btnExtractXml.UseVisualStyleBackColor = true;
-		btnExtractXml.Click += btnExtractXml_Click;
+		tableLayoutPanel22.SetColumnSpan(grpSwitchToTab, 3);
+		grpSwitchToTab.Controls.Add(radioButton6);
+		grpSwitchToTab.Controls.Add(rbEventLog);
+		grpSwitchToTab.Location = new Point(3, 3);
+		grpSwitchToTab.Name = "grpSwitchToTab";
+		grpSwitchToTab.Size = new Size(271, 44);
+		grpSwitchToTab.TabIndex = 6;
+		grpSwitchToTab.TabStop = false;
+		grpSwitchToTab.Text = "Switch To";
 		// 
-		// btnExtractPdf
+		// radioButton6
 		// 
-		btnExtractPdf.Location = new Point(3, 3);
-		btnExtractPdf.Name = "btnExtractPdf";
-		btnExtractPdf.Size = new Size(88, 33);
-		btnExtractPdf.TabIndex = 2;
-		btnExtractPdf.Text = "Extract Pdf";
-		btnExtractPdf.UseVisualStyleBackColor = true;
-		btnExtractPdf.Click += btnExtractPdf_Click;
+		radioButton6.AutoSize = true;
+		radioButton6.Location = new Point(93, 22);
+		radioButton6.Name = "radioButton6";
+		radioButton6.Size = new Size(44, 19);
+		radioButton6.TabIndex = 1;
+		radioButton6.Tag = "tbpX12";
+		radioButton6.Text = "X12";
+		radioButton6.UseVisualStyleBackColor = true;
+		// 
+		// rbEventLog
+		// 
+		rbEventLog.AutoSize = true;
+		rbEventLog.Checked = true;
+		rbEventLog.Location = new Point(10, 22);
+		rbEventLog.Name = "rbEventLog";
+		rbEventLog.Size = new Size(77, 19);
+		rbEventLog.TabIndex = 0;
+		rbEventLog.TabStop = true;
+		rbEventLog.Tag = "tbpEventLog";
+		rbEventLog.Text = "Event Log";
+		rbEventLog.UseVisualStyleBackColor = true;
 		// 
 		// cmbMondayPOs
 		// 
@@ -2653,6 +2698,8 @@ partial class MainForm {
 		tableLayoutPanel7.ResumeLayout(false);
 		tableLayoutPanel21.ResumeLayout(false);
 		tableLayoutPanel22.ResumeLayout(false);
+		grpSwitchToTab.ResumeLayout(false);
+		grpSwitchToTab.PerformLayout();
 		splitContainer8.Panel1.ResumeLayout(false);
 		splitContainer8.Panel2.ResumeLayout(false);
 		((System.ComponentModel.ISupportInitialize)splitContainer8).EndInit();
@@ -2884,4 +2931,7 @@ partial class MainForm {
 	private Button btnN1ExtractTextBlocks;
 	private Button btnGenPDF;
 	private TabPage tbpPdf;
+	private GroupBox grpSwitchToTab;
+	private RadioButton radioButton6;
+	private RadioButton rbEventLog;
 }

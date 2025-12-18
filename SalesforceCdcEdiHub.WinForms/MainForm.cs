@@ -46,13 +46,13 @@ public partial class MainForm : Form {
 		None
 	}
 	public enum tbp {
-		objects,
-		pubsub,
-		Oauth2,
-		DescribeO,
-		EventLog,
+		tbpObjects,
+		tbpPubsub,
+		tbpOauth2,
+		tbpDescribeO,
+		tbpEventLog,
 		CDCEvents,
-		X12,
+		tbpX12,
 		WebHook,
 		OpenAs2,
 		MondayCom,
@@ -1527,8 +1527,29 @@ public partial class MainForm : Form {
 	private async void btnExtractPdf_Click(object sender, EventArgs e) {
 		
 	}
+	public void SelectTab(TabControl tabControl, GroupBox grp) {
+		var selectedRb = grp.Controls
+						   .OfType<RadioButton>()
+						   .FirstOrDefault(r => r.Checked);
+
+		if (selectedRb?.Tag == null)
+			return;
+		string tabName = selectedRb.Tag.ToString();
+		var page = tabControl.TabPages
+							 .Cast<TabPage>()
+							 .FirstOrDefault(p =>
+								 string.Equals(p.Name, tabName,
+											   StringComparison.OrdinalIgnoreCase));
+
+		if (page != null)
+			tabControl.SelectedTab = page;
+
+	}
+
 	private async void btnExtractXml_Click(object sender, EventArgs e) {
 		Cursor.Current = Cursors.WaitCursor;
+		
+		
 		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
 
 
@@ -1538,6 +1559,7 @@ public partial class MainForm : Form {
 		string pdfPath = "C:\\temp\\PO4.pdf";
 		XElement xe = await pdfMapper.ProcessPdfAndMap(pdfPath, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
 		DisplayXmlInWebView(xe,pdfPath);
+		SelectTab(tabControl1,grpSwitchToTab);
 		Cursor.Current = Cursors.Default;
 	}
 	//btnGenPDF

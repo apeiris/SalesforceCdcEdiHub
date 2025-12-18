@@ -306,15 +306,12 @@ public static class XElementExtensions {
 		}
 	}
 	public static Dictionary<string, string> AttributesToFsmDictionary(this XAttribute attr) {
-		if (attr == null || string.IsNullOrWhiteSpace(attr.Value))
-			return new Dictionary<string, string>();
+		if (attr == null || string.IsNullOrWhiteSpace(attr.Value)) 	return new Dictionary<string, string>();// null dictionary
 		return attr.Value
 			.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
 			.Select(segment => {
 				char sep = segment.Contains(':') ? ':' : segment.Contains('=') ? '=' : '\0';
-				if (sep == '\0')
-					return null;
-
+				if (sep == '\0') return null;
 				var parts = segment.Split(sep, 2);
 				if (parts.Length < 2)
 					return null;
