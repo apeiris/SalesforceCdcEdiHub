@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -218,6 +219,16 @@ public class XmlMapProcessor {
 		XElement replicatedRoot = ReplicateXElement(source.Root);
 		return new XDocument(replicatedRoot);
 	}
+
+	static Dictionary<string,string> GetRegex(string input){
+	string[]matchKeys= { "Target","Method","Root","Element","Attributes" };
+		
+		const string pattern = "<%\\s*(?<Target>\\w+)=(?<Method>\\w+)\\(rootName:(?<Root>\\w+),elements:(?<Element>\\w+),attributes:\\[(?<Attributes>[^\\]]+)\\]\\)\\s*%>";
+		Match match = Regex.Match(input, pattern);
+		Dictionary<string, string> matches = matchKeys.ToDictionary(k => k, k => match.Groups[k].Value);
+		
+		return matches;
+	}
 	public static XDocument GetElementAsDocument(XDocument doc, string elementName) {
 		if (doc == null) throw new ArgumentNullException(nameof(doc));
 		if (string.IsNullOrWhiteSpace(elementName)) throw new ArgumentException("Element name cannot be null or empty.", nameof(elementName));
@@ -233,6 +244,7 @@ public class XmlMapProcessor {
 		XDocument originalDoc = XDocument.Load(xmlMapPath);
 		XDocument replicaDoc = GetElementAsDocument(originalDoc, "po");// ignore the root <pdfMap>, it is not relavent  
 		string value = ""; // work vars
+		Dictionary<string, string> regExDict = new(); 
 		foreach (XElement xe in replicaDoc.Descendants()) {
 			Log.Info($"Element Name={xe.Name}  XPath={xe.GetXPath()}");
 			foreach (var attr in xe.Attributes()) {
@@ -241,7 +253,10 @@ public class XmlMapProcessor {
 				if (aDict.Count ==0) continue;
 				Dictionary<string,string>prms = new Dictionary<string,string>();
 				foreach(KeyValuePair<string,string> kv in aDict) {
-					Log.Debug($"kv k={kv.Key} v={kv.Value}");
+					if (kv.Key.Contains("<%")) {
+						regExDict = GetRegex(kv.Key + kv.Value);
+					} else regExDict.Clear();
+						Log.Debug($"kv k={kv.Key} v={kv.Value}");
 					switch (kv.Key.ToLower()) {
 						case "scrape":
 							 Log.Debug($"v={kv.Value}");

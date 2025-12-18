@@ -20,11 +20,9 @@
 				<contact map="scrape:x=299,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
 			</seller>
 		</parties>
-		<po1loop name="scrape:x=40,scanBelowY=501,width=515,line2LineGap=30">
-			
-			<line>
-				
-			</line>
+		<po1loop>
+			<loop name="PO1" fsm="scrape:x=47,scanBelowY=513,width=500,line2LineGap=20|&lt;% xml:XElement=ConvertTo(rootName:po,elements:line,attributes:[Item,Code,qty,unitPrice,Total]) %&gt;" />
+		
 		</po1loop>
 	</po>
 	<!-- ♻ Central script library -->
