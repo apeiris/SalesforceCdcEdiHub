@@ -220,21 +220,22 @@ public class XmlMapProcessor {
 		return new XDocument(replicatedRoot);
 	}
 
-	static Dictionary<string,string> GetRegex(string input){
-	string[]matchKeys= { "Target","Method","Root","Element","Attributes" };
-		
-		const string pattern = "<%\\s*(?<Target>\\w+)=(?<Method>\\w+)\\(rootName:(?<Root>\\w+),elements:(?<Element>\\w+),attributes:\\[(?<Attributes>[^\\]]+)\\]\\)\\s*%>";
-		Match match = Regex.Match(input, pattern);
-		Dictionary<string, string> matches = matchKeys.ToDictionary(k => k, k => match.Groups[k].Value);
-		
-		return matches;
-	}
+	
 	public static XDocument GetElementAsDocument(XDocument doc, string elementName) {
 		if (doc == null) throw new ArgumentNullException(nameof(doc));
 		if (string.IsNullOrWhiteSpace(elementName)) throw new ArgumentException("Element name cannot be null or empty.", nameof(elementName));
-		var element = doc.Root?.Element(elementName);	// Find the first element with the given name
-		if (element == null)			return null; 
+		var element = doc.Root?.Element(elementName);   // Find the first element with the given name
+		if (element == null) return null;
 		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), new XElement(element));// Create a new XDocument containing a deep copy of the element
+	}
+	private (bool success,Dictionary<string, string> matches) GetRegex(string input) {
+		string[] matchKeys = { "cast", "method", "params" };
+
+		const string pattern = "(?<cast>\\(\\w+\\))?(?<method>\\w+)\\((?<params>[^()]*)\\)";
+		Match match = Regex.Match(input, pattern);
+		Dictionary<string, string> matches = matchKeys.ToDictionary(k => k, k => match.Groups[k].Value);
+	if(match.Success) matches.Add("capture", match.Value);
+		return (match.Success,matches);
 	}
 	public async Task<XElement> ProcessPdfAndMap(string pdfPath, string xmlMapPath) {
 		using var reader = new PdfReader(pdfPath);
@@ -244,7 +245,32 @@ public class XmlMapProcessor {
 		XDocument originalDoc = XDocument.Load(xmlMapPath);
 		XDocument replicaDoc = GetElementAsDocument(originalDoc, "po");// ignore the root <pdfMap>, it is not relavent  
 		string value = ""; // work vars
-		Dictionary<string, string> regExDict = new(); 
+		Dictionary<string, string> regExDict = new();
+		foreach (XElement xe in replicaDoc.Descendants()) {
+			foreach (var attr in xe.Attributes()) {
+				var (hasMatch, dict) = GetRegex(attr.Value);
+				if (!hasMatch) continue;
+				switch (dict["method"]) {
+					case "ScrapePDF":
+					Dictionary<string,string>	prms = dict["params"].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+										   .Select(pair => pair.Split(':', 2)) // Split into exactly 2 parts
+										   .Where(parts => parts.Length == 2)          // Ensure we have a key and a value
+										   .ToDictionary(parts => parts[0].Trim(), parts => parts[1].Trim());
+						var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
+						var parser = new PdfCanvasProcessor(strategy);
+						parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
+						value = strategy.GetResultantText();
+						Rectangle bounds = strategy.GetCollectedTextBounds();
+						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
+						xe.SetAttributeValue(attr.Name, value);
+
+						break;
+				}
+			}
+		}
+
+
+		/*
 		foreach (XElement xe in replicaDoc.Descendants()) {
 			Log.Info($"Element Name={xe.Name}  XPath={xe.GetXPath()}");
 			foreach (var attr in xe.Attributes()) {
@@ -253,8 +279,8 @@ public class XmlMapProcessor {
 				if (aDict.Count ==0) continue;
 				Dictionary<string,string>prms = new Dictionary<string,string>();
 				foreach(KeyValuePair<string,string> kv in aDict) {
-					if (kv.Key.Contains("<%")) {
-						regExDict = GetRegex(kv.Key + kv.Value);
+					if (kv.Key.Contains("<%")|kv.Key.Contains("&lt;%")) {
+						regExDict = GetRegex(attr.Value);
 					} else regExDict.Clear();
 						Log.Debug($"kv k={kv.Key} v={kv.Value}");
 					switch (kv.Key.ToLower()) {
@@ -299,7 +325,7 @@ public class XmlMapProcessor {
 					}
 				}
 			}
-		}
+		}*/
 		foreach (var area in collectedAreas) {
 			Render.DrawBorder(pdfDoc, area.Bounds);
 			Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
@@ -321,7 +347,7 @@ public static class XElementExtensions {
 		}
 	}
 	public static Dictionary<string, string> AttributesToFsmDictionary(this XAttribute attr) {
-		if (attr == null || string.IsNullOrWhiteSpace(attr.Value)) 	return new Dictionary<string, string>();// null dictionary
+		if (attr == null || string.IsNullOrWhiteSpace(attr.Value)) return new Dictionary<string, string>();// null dictionary
 		return attr.Value
 			.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
 			.Select(segment => {
