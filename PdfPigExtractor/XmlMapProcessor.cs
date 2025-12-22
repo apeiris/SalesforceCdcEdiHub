@@ -17,10 +17,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
+using NLog;
 using Org.BouncyCastle.Crypto;
 namespace PDF;
-
 public class XmlMapProcessor {
+	public string AssemblyName => this.GetType().Assembly.GetName().Name!;
+	public string Namespace => this.GetType().Namespace!;
 	class Parameter {
 		public string Name { get; set; }
 		public string Value { get; set; }
@@ -35,12 +37,11 @@ public class XmlMapProcessor {
 		public XDocument XmlContent;
 	}
 	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
-	public record ExtractedArea(
-	string Name,
-	string Text,
-	Rectangle Bounds
-);
-
+	//	public record ExtractedArea(
+	//	string Name,
+	//	string Text,
+	//	Rectangle Bounds
+	//);
 	private XElement doRowScript(XElement row, Dictionary<string, object> globals) {
 		var markerNode = row.Element("marker");
 		if (markerNode != null)
@@ -51,15 +52,13 @@ public class XmlMapProcessor {
 			globals["input"] = attr;
 		}
 		var script = row.Element("script")!.Value.Replace("\t", "").Replace("\n", "").Replace("\r", "");
-		var result = ScriptRunner.Run(script, globals);
-
-
-		foreach (var col in row.Element("columns")!.Elements()) {// 🔹 Map returned anonymous object to XML <columns>
-			string colName = col.Name.LocalName;
-			var prop = result?.GetType().GetProperty(colName);
-			row.Add(new XElement(colName, prop?.GetValue(result)?.ToString() ?? ""));
-		}
-		return row;
+		//var result = ScriptRunner.Run(script, globals,pd);
+		//foreach (var col in row.Element("columns")!.Elements()) {// 🔹 Map returned anonymous object to XML <columns>
+		//	string colName = col.Name.LocalName;
+		//	var prop = result?.GetType().GetProperty(colName);
+		//	row.Add(new XElement(colName, prop?.GetValue(result)?.ToString() ?? ""));
+		//	}
+		return null;
 	}
 	private bool isTrue(XElement element, string attributeName) {
 		return element.Attribute(attributeName) != null ? bool.Parse(element.Attribute(attributeName)!.Value) : false;
@@ -73,43 +72,6 @@ public class XmlMapProcessor {
 
 		// 4. Combine all the formatted strings using the specified delimiter.
 		return string.Join(delimiter, attributeStrings);
-	}
-
-	private async Task<XElement> ProcessRowSet(XElement areaElement, string text) {
-		XElement rowSet = areaElement.Element("rowSet")!;
-		XElement output = new XElement(areaElement.Attribute("name")?.Value!);
-		if (rowSet != null)
-			foreach (var row in rowSet.Elements("row")) {
-				string op = (string)row.Attribute("operation")!;
-				string rowName = (string)row.Attribute("name")!;
-				XElement xmlRow = new XElement(rowName);
-				switch (op.ToLower()) {
-					case "copy":
-						int idx = int.Parse(row.Attribute("index")!.Value);
-						var lines = text.Split('\n');
-						xmlRow.Value = lines.Length > idx ? lines[idx].Trim() : "";
-						break;
-
-					case "script":// 🔹 Build globals (text, marker, input, etc.)
-						Dictionary<string, object> globals = new() { ["text"] = text };
-						if (isTrue(row, "repeat")) {
-							string[] inDataRows = text.Split("\r\n\r\n");
-							foreach (string x in inDataRows) {
-
-								xmlRow = doRowScript(row, new Dictionary<string, object> { ["text"] = x });
-							}
-							Log.Debug($"Repeat row in ={xmlRow.Name}");
-							//Debugger.Break();
-						} else
-							xmlRow = doRowScript(row, new Dictionary<string, object> { ["text"] = text });
-						break;
-
-					default:
-						throw new InvalidOperationException($"Unknown row operation: '{op}'");
-				}
-				output.Add(xmlRow);
-			}
-		return output;
 	}
 	static XElement ReplicateXElementWithPdf(XElement src, PdfDocument pdfDoc) {
 		var newElement = new XElement(src.Name);
@@ -172,7 +134,6 @@ public class XmlMapProcessor {
 		}
 		return newElement;
 	}
-
 	static XElement ReplicateXElement(XElement source) {
 		// Create new element with same name
 		var newElement = new XElement(source.Name);
@@ -213,14 +174,11 @@ public class XmlMapProcessor {
 
 		return newElement;
 	}
-
 	static XDocument ReplicateXDocument(XDocument source) {
 		if (source.Root is null) throw new InvalidOperationException("Source document has no root element.");
 		XElement replicatedRoot = ReplicateXElement(source.Root);
 		return new XDocument(replicatedRoot);
 	}
-
-	
 	public static XDocument GetElementAsDocument(XDocument doc, string elementName) {
 		if (doc == null) throw new ArgumentNullException(nameof(doc));
 		if (string.IsNullOrWhiteSpace(elementName)) throw new ArgumentException("Element name cannot be null or empty.", nameof(elementName));
@@ -228,14 +186,41 @@ public class XmlMapProcessor {
 		if (element == null) return null;
 		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), new XElement(element));// Create a new XDocument containing a deep copy of the element
 	}
-	private (bool success,Dictionary<string, string> matches) GetRegex(string input) {
+	private (bool success, Dictionary<string, Object> matches) getRegex(string input) {
 		string[] matchKeys = { "cast", "method", "params" };
 
 		const string pattern = "(?<cast>\\(\\w+\\))?(?<method>\\w+)\\((?<params>[^()]*)\\)";
 		Match match = Regex.Match(input, pattern);
-		Dictionary<string, string> matches = matchKeys.ToDictionary(k => k, k => match.Groups[k].Value);
-	if(match.Success) matches.Add("capture", match.Value);
-		return (match.Success,matches);
+		Dictionary<string, Object> matches = matchKeys.ToDictionary(k => k, k => (Object)match.Groups[k].Value);
+		if (match.Success) matches.Add("capture", match.Value);
+		return (match.Success, matches);
+	}
+
+	private static int nestingDepth(string input) {
+		int maxDepth = 0;
+		int currentDepth = 0;
+		foreach (char c in input) {
+			if (c == '(') {
+				currentDepth++;
+				if (currentDepth > maxDepth) maxDepth = currentDepth;
+			} else if (c == ')') {
+				currentDepth--;
+			}
+		}
+		return maxDepth; // If this is > 1, you have nested methods/casts
+	}
+	private bool hasExpression(string input) {
+		/// <% ... Code Render Block
+		/// <%= ...Inplace Expression Render Block
+		/// <%# ... Data Binding Expression Block
+		/// <%-- ... Comment Block	
+		return input.Contains("<%");
+	}
+	private bool isInplaceExpression(string input) {
+		return input.Contains("<%=");
+	}
+	private bool isDataBindingExpression(string input) {
+		return input.Contains("<%#");
 	}
 	public async Task<XElement> ProcessPdfAndMap(string pdfPath, string xmlMapPath) {
 		using var reader = new PdfReader(pdfPath);
@@ -246,99 +231,47 @@ public class XmlMapProcessor {
 		XDocument replicaDoc = GetElementAsDocument(originalDoc, "po");// ignore the root <pdfMap>, it is not relavent  
 		string value = ""; // work vars
 		Dictionary<string, string> regExDict = new();
+		string expression = "";
+		Dictionary<string, object> t = new();
+		string code = "string.Join(\", \", Help)";// return method list
+		var rt = ScriptRunner.Run(code,t,pdfDoc);
+		Dictionary<string, Dictionary<string, string>> nestedMehods = new();
 		foreach (XElement xe in replicaDoc.Descendants()) {
 			foreach (var attr in xe.Attributes()) {
-				var (hasMatch, dict) = GetRegex(attr.Value);
-				if (!hasMatch) continue;
-				switch (dict["method"]) {
-					case "ScrapePDF":
-					Dictionary<string,string>	prms = dict["params"].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-										   .Select(pair => pair.Split(':', 2)) // Split into exactly 2 parts
-										   .Where(parts => parts.Length == 2)          // Ensure we have a key and a value
-										   .ToDictionary(parts => parts[0].Trim(), parts => parts[1].Trim());
-						var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
-						var parser = new PdfCanvasProcessor(strategy);
-						parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
-						value = strategy.GetResultantText();
-						Rectangle bounds = strategy.GetCollectedTextBounds();
-						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
-						xe.SetAttributeValue(attr.Name, value);
+				expression = attr.Value;
+				if (!hasExpression(attr.Value)) continue;
+				// expression = <%(XElement)ToXElement((string)ScrapePDF(x:40,scanBelowY:501,width:515,line2LineGap:30),rootName:'po',elements:'line',attributes:'Item,Code,qty,unitPrice,Total')%>" />
+				Log.Debug($"Executing :getRegEx on {attr.Value} ");
+				var (hasMatch, dict) = getRegex(attr.Value);
+				string k = "capture";
+				//Log.Warn($"Capture=== {dict[k]}");
+				var result = (ExtractedArea)ScriptRunner.Run(dict["capture"].ToString()!, dict, pdfDoc);
 
-						break;
-				}
-			}
-		}
-
-
-		/*
-		foreach (XElement xe in replicaDoc.Descendants()) {
-			Log.Info($"Element Name={xe.Name}  XPath={xe.GetXPath()}");
-			foreach (var attr in xe.Attributes()) {
-				Log.Info(attr.GetXPath());
-				var aDict = attr.AttributesToFsmDictionary();
-				if (aDict.Count ==0) continue;
-				Dictionary<string,string>prms = new Dictionary<string,string>();
-				foreach(KeyValuePair<string,string> kv in aDict) {
-					if (kv.Key.Contains("<%")|kv.Key.Contains("&lt;%")) {
-						regExDict = GetRegex(attr.Value);
-					} else regExDict.Clear();
-						Log.Debug($"kv k={kv.Key} v={kv.Value}");
-					switch (kv.Key.ToLower()) {
-						case "scrape":
-							 Log.Debug($"v={kv.Value}");
-							prms = kv.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-										   .Select(pair => pair.Split('=', 2)) // Split into exactly 2 parts
-										   .Where(parts => parts.Length == 2)          // Ensure we have a key and a value
-										   .ToDictionary(parts => parts[0].Trim(),parts => parts[1].Trim());
-							var strategy = new StopOnLargeGapStrategy(float.Parse(prms["x"]), float.Parse(prms["scanBelowY"]), float.Parse(prms["width"]), float.Parse(prms["line2LineGap"]));
-							var parser = new PdfCanvasProcessor(strategy);
-							parser.ProcessPageContent(pdfDoc.GetPage(1)); // Safe because no drawing yet
-							value = strategy.GetResultantText().Replace("\r", "").Replace("\n", "");
-							Rectangle bounds = strategy.GetCollectedTextBounds();
-							collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value, bounds));
-							Log.Debug($"{attr.Name}={value}");
-							xe.SetAttributeValue(attr.Name, value);
-							break;
-						case "script":
-							// the first op scrape is already done and value has the desired input
-							//  revise this  to use Regex
-							Log.Debug($"{attr.Name}=value={value} ");
-							string method = aDict["script"];
-							string script = originalDoc.XPathSelectElement($"/pdfMap/scriptlib/script[@name='{aDict["script"]}']")!.Value;
-							var data = new Dictionary<string, object> { ["value"] = value };
-							var results =(List<string>)ScriptRunner.Run(script, data);
-							if(aDict.Keys.Contains("map")) {
-								string xpath = aDict["xpath"];
-								string[] atts = aDict["map"].Split(',', StringSplitOptions.RemoveEmptyEntries);
-								int i = 0;
-								xe.Attribute("map")?.Remove();// remove the map attribute after use
-								foreach (string att in atts) {
-									if (results.Count-1 < i) break;
-									var xx = results[i];
-									var attValue = results;
-									xe.SetAttributeValue(att, results[i]);
-									Log.Debug($"Mapped {att}={attValue.First()}");
-									i++;
-								}
-							}
-							break;
+				Log.Debug($"setting attr = {attr.Name} value = {result}");
+				try {
+					if (result != null) {
+						string cleanText = result.Value.Trim(['\t', '\r', '\n']);
+						xe.SetAttributeValue(attr.Name, cleanText);
+						var bounds = result.Bounds;
+						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value.ToString(), bounds));
 					}
+				}catch(Exception ex) {
+					Log.Error(ex);
 				}
+				}
+
+			foreach (var area in collectedAreas) {
+				Render.DrawBorder(pdfDoc, area.Bounds);
+				Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
 			}
-		}*/
-		foreach (var area in collectedAreas) {
-			Render.DrawBorder(pdfDoc, area.Bounds);
-			Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
+			Log.Debug(replicaDoc.ToString());
+
+			await Task.CompletedTask;
 		}
-		Log.Debug(replicaDoc.ToString());
-		return (XElement)replicaDoc.Root!;
-		await Task.CompletedTask;
+		return replicaDoc.Root!;
 	}
 }
 public static class XElementExtensions {
-	///
-	///Extension method Bulk updates or creates attributes on an XElement from a Dictionary.	
-	///
 	public static void SetAttributes(this XElement e, Dictionary<string, string> dict) {
 		if (e == null || dict == null) return;
 

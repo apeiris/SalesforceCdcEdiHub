@@ -69,7 +69,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 			    string lineEnd = lastBaselineY != baselineY ? "\r\n" : "";
 				
 				TextChunk tc =	new TextChunk(
-												text: tri.GetText() ,
+												text: tri.GetText()+'\t' ,
 												startPoint: baselineStart,
 												baselineY: baselineY,
 												bounds: bounds,
@@ -82,38 +82,7 @@ public class StopOnLargeGapStrategy : ITextExtractionStrategy {
 		}
 	}
 
-	//public string GetResultantText() {
-	//	if (chunks.Count == 0) return "";
-
-	//	// Sort top→bottom, then left→right
-	//	chunks.Sort((a, b) => {
-	//		int yCmp = b.BaselineY.CompareTo(a.BaselineY);
-	//		if (yCmp != 0) return yCmp;
-	//		return a.StartPoint.Get(Vector.I1).CompareTo(b.StartPoint.Get(Vector.I1));
-	//	});
-
-	//	StringBuilder sb = new StringBuilder();
-	//	const float tolerance = 18.0f;
-	//	float lastY = -9999f;
-
-	//	foreach (var chunk in chunks) {
-	//		float curY = chunk.BaselineY;
-
-	//		if (Math.Abs(curY - lastY) > tolerance && lastY > -9990)
-	//			sb.AppendLine();
-
-	//		sb.AppendLine(chunk.Text);
-	//		if (lastY != curY) {
-	//			sb.AppendLine();
-			
-	//			sb.AppendLine();
-	//		}
-
-	//		lastY = curY;
-	//	}
-	//	return sb.ToString();
-	//}
-
+	
 
 	// NEW METHOD – 100% safe, no graphics state needed
 

@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -7,11 +6,6 @@
 	  <NoWarn>IDE0130;IDE0028;IDE0290;IDE0300;IDE0305;IDE0306;IDE1006</NoWarn>
   </PropertyGroup>
 	<ItemGroup>
-		<!--
-		<PackageReference Include="iText7" Version="8.0.0" />
-		<PackageReference Include="itext7.bouncy-castle-adapter" Version="7.2.6" />
-		<PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.0" />	
-	-->
 		<PackageReference Include="itext7" Version="9.3.0" />
 		<PackageReference Include="itext7.bouncy-castle-fips-adapter" Version="9.3.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
