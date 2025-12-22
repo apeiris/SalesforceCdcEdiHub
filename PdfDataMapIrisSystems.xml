@@ -4,10 +4,10 @@
         rootName="po"
         pdfSource="c:\\temp\\PO4.pdf">
 
-	<po ponumber="scrape:x=505,scanBelowY=792,width=50,line2LineGap=60"
-	    date    ="scrape:x=169,scanBelowY=760,width=48,line2LineGap=10"
-	    status  ="scrape:x=169,scanBelowY=742,width=50,line2LineGap=10"
-	    x12Model="850-4010">
+	<po ponumber = "&lt;% ScrpePDF:x=505,scanBelowY=792,width=50,line2LineGap=60 %&gt;"
+	    date	 = "&lt;%ScrapePDF(scrape:x=169,scanBelowY=760,width=48,line2LineGap=10 %&gt;"
+	    status	 = "&lt;%ScrapePDF(scrape:x=169,scanBelowY=742,width=50,line2LineGap=10 %&gt;"
+	    x12Model = "850-4010" >
 
 		<parties>
 			<delivery date="scrape:x=428,scanBelowY=752,width=100,line2LineGap=10"  />
