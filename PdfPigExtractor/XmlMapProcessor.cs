@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using iText.Kernel.Geom;
@@ -20,6 +21,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using NLog;
 using Org.BouncyCastle.Crypto;
 namespace PDF;
+
 public class XmlMapProcessor {
 	public string AssemblyName => this.GetType().Assembly.GetName().Name!;
 	public string Namespace => this.GetType().Namespace!;
@@ -227,45 +229,44 @@ public class XmlMapProcessor {
 		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
 		using var pdfDoc = new PdfDocument(reader, writer);
 		List<ExtractedArea> collectedAreas = new(); // Store results before drawing
-		XDocument originalDoc = XDocument.Load(xmlMapPath);
+		XDocument originalDoc = XDocument.Load(xmlMapPath,LoadOptions.SetLineInfo);
 		XDocument replicaDoc = GetElementAsDocument(originalDoc, "po");// ignore the root <pdfMap>, it is not relavent  
 		string value = ""; // work vars
 		Dictionary<string, string> regExDict = new();
 		string expression = "";
 		Dictionary<string, object> t = new();
 		string code = "string.Join(\", \", Help)";// return method list
-		var rt = ScriptRunner.Run(code,t,pdfDoc);
+		var rt = ScriptRunner.Run(code, t, pdfDoc);
 		Dictionary<string, Dictionary<string, string>> nestedMehods = new();
 		foreach (XElement xe in replicaDoc.Descendants()) {
 			foreach (var attr in xe.Attributes()) {
-				expression = attr.Value;
+				
+					Log.Debug($"***********************{attr.LineNumber()}:{attr.Name}:{attr.Value}:");
+				
+				expression = attr.Value.Replace("<%", "").Replace("%>", "");
 				if (!hasExpression(attr.Value)) continue;
-				// expression = <%(XElement)ToXElement((string)ScrapePDF(x:40,scanBelowY:501,width:515,line2LineGap:30),rootName:'po',elements:'line',attributes:'Item,Code,qty,unitPrice,Total')%>" />
-				Log.Debug($"Executing :getRegEx on {attr.Value} ");
-				var (hasMatch, dict) = getRegex(attr.Value);
-				string k = "capture";
-				//Log.Warn($"Capture=== {dict[k]}");
-				var result = (ExtractedArea)ScriptRunner.Run(dict["capture"].ToString()!, dict, pdfDoc);
+				while (nestingDepth(expression) > 0) {
+					Log.Debug($"Nesting depth={nestingDepth(expression)} for expression={expression} ");
+					var (hasMatch, dict) = getRegex(expression);
+					if (!hasMatch) break;
+					string k = "capture";
 
-				Log.Debug($"setting attr = {attr.Name} value = {result}");
-				try {
-					if (result != null) {
-						string cleanText = result.Value.Trim(['\t', '\r', '\n']);
-						xe.SetAttributeValue(attr.Name, cleanText);
-						var bounds = result.Bounds;
-						collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), value.ToString(), bounds));
+					var rx = (ExtractedArea)ScriptRunner.Run(dict["capture"].ToString()!, dict, pdfDoc);
+					if (rx != null) {
+						expression = expression.Replace(dict["capture"].ToString()!, rx.Value!);
+						Log.Warn($"Replacing expression={dict[k]} with value={rx.Value}");
 					}
-				}catch(Exception ex) {
-					Log.Error(ex);
+					collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), rx.Value.ToString(), rx.Bounds));
+					xe.SetAttributeValue(attr.Name, expression);
+					expression = "";
 				}
-				}
-
+				Log.Warn($"Executing :getRegEx on {attr.Value} ");
+			}
 			foreach (var area in collectedAreas) {
 				Render.DrawBorder(pdfDoc, area.Bounds);
 				Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
 			}
 			Log.Debug(replicaDoc.ToString());
-
 			await Task.CompletedTask;
 		}
 		return replicaDoc.Root!;
@@ -278,6 +279,10 @@ public static class XElementExtensions {
 		foreach (KeyValuePair<string, string> kv in dict) {
 			e.SetAttributeValue(kv.Key, kv.Value);
 		}
+	}
+	public static int LineNumber(this XObject obj) {
+		var lineInfo = (IXmlLineInfo)obj;
+		return lineInfo.HasLineInfo() ? int.Parse(lineInfo.LineNumber.ToString()) : 0;
 	}
 	public static Dictionary<string, string> AttributesToFsmDictionary(this XAttribute attr) {
 		if (attr == null || string.IsNullOrWhiteSpace(attr.Value)) return new Dictionary<string, string>();// null dictionary

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CSharp.RuntimeBinder;
@@ -41,6 +42,9 @@ public static class ScriptRunner {
 	}
 	public static object Run(string code, Dictionary<string, object> globals, iText.Kernel.Pdf.PdfDocument pdfDoc) {
 		Log.Debug("Running Roslyn Script with code:\n" + code);
+		foreach(var kv in globals) {
+			Debug.WriteLine($"{kv.Key}:{kv.Value.ToString()}");
+		}
 		if (globals.TryGetValue("value", out var v)) globals["value"] = v?.ToString() ?? "";        // 🔥 normalize input to string so Split() always works
 		var globalsInstance = new Globals(globals, pdfDoc);
 		try {
