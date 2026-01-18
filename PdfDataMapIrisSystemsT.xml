@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pdfMap client="IrisSystems"
+        document="PurchaseOrder"
+        rootName="po"
+        pdfSource="c:\\temp\\PO4.pdf">
+
+	<po>
+	<!--
+	ponumber = "&lt;% ScrpePDF:x=505,scanBelowY=792,width=50,line2LineGap=60 %&gt;"
+		date	 = "&lt;%ScrapePDF(scrape:x=169,scanBelowY=760,width=48,line2LineGap=10 %&gt;"
+		status	 = "&lt;%ScrapePDF(scrape:x=169,scanBelowY=742,width=50,line2LineGap=10 %&gt;"
+		x12Model = "850-4010" >
+  	<parties> -->
+		<!--	<delivery date="scrape:x=428,scanBelowY=752,width=100,line2LineGap=10"  /> -->
+		<!--	<buyer name="scrape:x=47,scanBelowY=653,width=50,line2LineGap=10"> -->
+		<address map="&lt;% SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}) %&gt;" />
+		<!--	<contact map="scrape:x=47,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" /> -->
+		<!--	</buyer> -->
+		<!--
+		<seller name="scrape:x=299,scanBelowY=653,width=50,line2LineGap=10">
+				<address map="scrape:x=299,scanBelowY=635,width=50,line2LineGap=10 | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map" />
+				<contact map="scrape:x=299,scanBelowY=615,width=50,line2LineGap=10 | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
+			</seller>
+		</parties>
+		<po1loop>
+
+			<loop name="PO1" fsm="&lt;% ScrapePDF(x:40,scanBelowY:501,width:515,line2LineGap:30),test(rootName:'po',elements:'line',attributes:'Item,Code,qty,unitPrice,Total'); %&gt;" />	
+		</po1loop> -->
+	</po>
+	<!-- ♻ Central script library -->
+	<scriptlib>
+		<script name="SplitAddress">
+			<![CDATA[
+		return value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+		            .Select(x => x.Trim())
+		            .ToList();
+	]]>
+		</script>
+		<script name="SplitContact">
+			<![CDATA[
+		return value.Split('|', StringSplitOptions.RemoveEmptyEntries)
+		            .Select(x => x.Trim())
+		            .ToList();
+	]]>
+		</script>
+	</scriptlib>
+
+
+</pdfMap>

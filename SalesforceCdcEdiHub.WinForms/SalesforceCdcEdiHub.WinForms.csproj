@@ -93,6 +93,9 @@
 		<None Update="PdfDataMapIrisSystems.xml">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="PdfDataMapIrisSystemsT.xml">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>SettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>

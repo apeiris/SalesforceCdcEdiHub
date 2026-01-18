@@ -1552,12 +1552,12 @@ public partial class MainForm : Form {
 		
 		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
 
-		string xmlMapPath = AppDomain.CurrentDomain.BaseDirectory + "PdfDataMapIrisSystems.xml";
+		string xmlMapPath = AppDomain.CurrentDomain.BaseDirectory + "PdfDataMapIrisSystemsT.xml";
 		List<string> hdr = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
 		//XDocument xd = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf", hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
 		string pdfPath = "C:\\temp\\PO4.pdf";
-		XElement xe = await pdfMapper.ProcessPdfAndMap(pdfPath,xmlMapPath );
+		XElement xe = await pdfMapper.ProcessPdfAndMapAsync(pdfPath,xmlMapPath );
 		DisplayXmlInWebView(xe,pdfPath);
 		SelectTab(tabControl1,grpSwitchToTab);
 		Cursor.Current = Cursors.Default;

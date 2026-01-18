@@ -1,0 +1,6 @@
+2026-01-11 09:25:09.5644|Debug|xxxxxxx :shouldParse(True):attr <% SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {"street", "city", "postcode", "country"}) %> |
+2026-01-11 09:25:09.6164|Debug|** before ****************0:map:<% SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {"street", "city", "postcode", "country"}) %>:|
+2026-01-11 09:25:09.6553|Debug|** after ** [0:map: SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {"street", "city", "postcode", "country"}) : Nesting Depth:2|
+2026-01-11 09:25:09.6899|Debug|Nesting depth=2 for expression= SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {"street", "city", "postcode", "country"})  |
+2026-01-11 09:25:20.2884|Warn|Replacing expression=ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10) with value=77 Bay Street, Toronto, ON M5J 2L9, Canada	
+|

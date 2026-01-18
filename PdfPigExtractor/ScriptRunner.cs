@@ -1,109 +1,127 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CSharp.RuntimeBinder;
 using NLog;
-using static PDF.XmlMapProcessor;
 
 namespace PDF;
 
-
-
 public static class ScriptRunner {
-	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
-	private static readonly ScriptOptions options = ScriptOptions.Default
-	.AddReferences(
-		typeof(object).Assembly,                     // mscorlib/System.Runtime
-		typeof(System.Linq.Enumerable).Assembly,     // System.Linq
-		typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly, // Microsoft.CSharp runtime binder
-		typeof(iText.Kernel.Pdf.PdfDocument).Assembly,
-		typeof(StopOnLargeGapStrategy).Assembly,
-		typeof(ExtractedArea).Assembly,
-		AppDomain.CurrentDomain.GetAssemblies()
-			.First(a => a.GetName().Name == "Microsoft.CSharp") // Explicitly add Microsoft.CSharp.dll
-	)
-	.AddImports(
-		"System",
-		"System.Linq",
-		"System.Collections.Generic",
-		"iText.Kernel.Pdf",
-		"iText.Kernel.Geom",
-		"PDF"
-	);
-	public static List<string> GetAvailableMethods() {
-		return typeof(Globals)
-			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-			.Where(m => !m.IsSpecialName) // Exclude property accessors like get_value
-			.Select(m => {
-				var parameters = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
-				return $"{m.ReturnType.Name} {m.Name}({parameters})";
-			}).ToList();
-	}
-	public static object Run(string code, Dictionary<string, object> globals, iText.Kernel.Pdf.PdfDocument pdfDoc) {
-		Log.Debug("Running Roslyn Script with code:\n" + code);
-		foreach(var kv in globals) {
-			Debug.WriteLine($"{kv.Key}:{kv.Value.ToString()}");
-		}
-		if (globals.TryGetValue("value", out var v)) globals["value"] = v?.ToString() ?? "";        // 🔥 normalize input to string so Split() always works
-		var globalsInstance = new Globals(globals, pdfDoc);
+	private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
+	private static readonly ScriptOptions Options =
+		ScriptOptions.Default
+			.AddReferences(
+				typeof(object).Assembly,
+				typeof(Enumerable).Assembly,
+				typeof(iText.Kernel.Pdf.PdfDocument).Assembly,
+				typeof(ExtractedArea).Assembly,
+				typeof(StopOnLargeGapStrategy).Assembly,
+				typeof(XElement).Assembly
+			)
+			.AddImports(
+				"System",
+				"System.Linq",
+				"System.Collections.Generic",
+				"System.Xml.Linq",
+				"iText.Kernel.Pdf",
+				"iText.Kernel.Geom",
+				"PDF"
+			);
+
+	/// <summary>
+	/// Execute a Roslyn C# script with access to Globals and PDF document.
+	/// </summary>
+	/// <param name="code">C# script code</param>
+	/// <param name="globalsDict">Dictionary of global variables</param>
+	/// <param name="pdfDoc">PDF document context</param>
+	/// <returns>Result of script execution (XElement, ExtractedArea, string, etc.)</returns>
+	public static async Task<object?> RunAsync(
+		string code,
+		Dictionary<string, object> globalsDict,
+		iText.Kernel.Pdf.PdfDocument pdfDoc) {
+		Log.Debug("Running Roslyn Script:\n" + code);
+
+		var globalsInstance = new Globals(globalsDict, pdfDoc);
+
 		try {
-			var result = CSharpScript.EvaluateAsync<object>(code, options, globalsInstance, typeof(Globals)).Result;
-			return result;
+			return await CSharpScript.EvaluateAsync<object>(
+				code,
+				Options,
+				globalsInstance,
+				typeof(Globals)
+			);
+		} catch (CompilationErrorException ex) {
+			var diagnostics = string.Join(Environment.NewLine, ex.Diagnostics);
+			Log.Error($"Script compilation failed:\n{diagnostics}");
+			throw;
 		} catch (Exception ex) {
-			Log.Error($"Script Execution Error: {ex.InnerException?.Message ?? ex.Message}");
-			return null;
+			Log.Error(ex, "Script execution failed");
+			throw;
 		}
 	}
 }
-public class Globals {
-	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
-	private readonly Dictionary<string, object> _data;
-	private readonly iText.Kernel.Pdf.PdfDocument _pdfDoc;
-	public string[] Help => typeof(Globals)
-		.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-		.Where(m => !m.IsSpecialName)
-		.Select(m => m.Name)
-		.ToArray();
 
-	public Dictionary<string, object> data {
-		get {
-			Log.Debug("Roslyn Script: Accessing 'data' global object.");
-			return _data;
-		}
-	}
-	public string value => _data.TryGetValue("value", out var v) ? v?.ToString() ?? "" : "";    // 🔥 MUST BE string, not object
-	public Globals(Dictionary<string, object> vars, iText.Kernel.Pdf.PdfDocument pdfDoc) {
-		Log.Error("****Rolyn Globals*****[X]");
-		_data = vars;
+public sealed class Globals {
+	private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+	private readonly iText.Kernel.Pdf.PdfDocument _pdfDoc;
+	private readonly Dictionary<string, object> _globals;
+
+	public Globals(Dictionary<string, object> globals, iText.Kernel.Pdf.PdfDocument pdfDoc) {
+		_globals = globals ?? new Dictionary<string, object>();
 		_pdfDoc = pdfDoc;
-		Log.Debug($"Roslyn Script: Environment initialized with keys: {string.Join(", ", vars.Keys)}");
-		if (vars.ContainsKey("value")) {
-			Log.Debug($"Roslyn Script: Input 'value' content: {vars["value"]}");
-		}
+		Log.Debug($"Roslyn Globals initialized with keys: {string.Join(", ", _globals.Keys)}");
 	}
+
+	// ---------- HELP / DISCOVERY ----------
+	public string[] Help =>
+		GetType()
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(m => !m.IsSpecialName)
+			.Select(m => {
+				var args = string.Join(", ",
+					m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+				return $"{m.ReturnType.Name} {m.Name}({args})";
+			})
+			.ToArray();
+
+	// ---------- PDF SCRAPING ----------
 	public ExtractedArea ScrapePDF(float x, float scanBelowY, float width, float line2LineGap) {
-		// 1. Initialize your custom strategy
 		var strategy = new StopOnLargeGapStrategy(x, scanBelowY, width, line2LineGap);
 		var parser = new iText.Kernel.Pdf.Canvas.Parser.PdfCanvasProcessor(strategy);
+
 		try {
-			// 2. Process the first page (as per your original logic)
 			parser.ProcessPageContent(_pdfDoc.GetPage(1));
 		} catch (Exception ex) {
-
-			Log.Warn($"Font Error during PDF text extraction: {ex.Message}");
-			// We don't return null here; we return whatever the strategy managed 
-			// to collect BEFORE the crash happened.
+			Log.Warn($"PDF extraction warning: {ex.Message}");
 		}
-		// 3. Clean up text
-		string resultText = strategy.GetResultantText();
-		iText.Kernel.Geom.Rectangle bounds = strategy.GetCollectedTextBounds();
 
-		// 4. Return the combined result
-		return new ExtractedArea("ScriptResult", resultText, bounds);
+		return new ExtractedArea(
+			"ScrapePDF",
+			strategy.GetResultantText(),
+			strategy.GetCollectedTextBounds()
+		);
 	}
 
-	
-	public int test() { return 01; }
+	// ---------- ADDRESS SPLITTING ----------
+	public XElement SplitAddress(ExtractedArea area, IEnumerable<string> columns) {
+		if (area == null) throw new ArgumentNullException(nameof(area));
 
+		var parts = area.Value
+			.Split(',', StringSplitOptions.RemoveEmptyEntries)
+			.Select(p => p.Trim());
+
+		return new XElement("address",
+			parts.Zip(columns, (value, column) =>
+				new XAttribute(column, value))
+		);
+	}
+
+	// ---------- Globals accessor ----------
+	public object? Get(string key) => _globals.TryGetValue(key, out var val) ? val : null;
+
+	public void Set(string key, object value) => _globals[key] = value;
+
+	// ---------- TEST ----------
+	public int Test() => 1;
 }

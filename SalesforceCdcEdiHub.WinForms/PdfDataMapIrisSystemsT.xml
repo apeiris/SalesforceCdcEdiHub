@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<pdfMap client="IrisSystems"
-        document="PurchaseOrder"
-        rootName="po"
-        pdfSource="c:\\temp\\PO4.pdf">
-
+<pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po"    pdfSource="c:\\temp\\PO4.pdf">
 	<po>
-		<address map="&lt;% SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}) %&gt;" />
+			<address map="&lt;%  SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}) %&gt;" />
 	</po>
 	<!-- ♻ Central script library -->
 	<scriptlib>
@@ -24,6 +20,4 @@
 	]]>
 		</script>
 	</scriptlib>
-
-
 </pdfMap>

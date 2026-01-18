@@ -1,25 +1,10 @@
 ﻿#define DEBUG_BREAK
-using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using System.Xml.XPath;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.XMP.Impl;
-using iText.Layout;
-using iText.Layout.Splitting;
-using iText.StyledXmlParser.Jsoup.Nodes;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Scripting;
-using NLog;
-using Org.BouncyCastle.Crypto;
 namespace PDF;
 
 public class XmlMapProcessor {
@@ -29,51 +14,55 @@ public class XmlMapProcessor {
 		public string Name { get; set; }
 		public string Value { get; set; }
 	}
-	public class ExtractBelowGlobals {
-		public float lineHeight;
-		public float belowY;
-		public iText.Kernel.Pdf.PdfPage Page;
-		// Outputs
-		public List<List<string>> ResultRows;
-		public iText.Kernel.Geom.Rectangle BoundingBox;
-		public XDocument XmlContent;
-	}
 	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
-	//	public record ExtractedArea(
-	//	string Name,
-	//	string Text,
-	//	Rectangle Bounds
-	//);
-	private XElement doRowScript(XElement row, Dictionary<string, object> globals) {
-		var markerNode = row.Element("marker");
-		if (markerNode != null)
-			globals["marker"] = markerNode.Attribute("value")?.Value!;
-		var inputNode = row.Element("input");
-		if (inputNode != null) {
-			string attr = (string)inputNode.Attribute("dataAttribute")!;
-			globals["input"] = attr;
-		}
-		var script = row.Element("script")!.Value.Replace("\t", "").Replace("\n", "").Replace("\r", "");
-		//var result = ScriptRunner.Run(script, globals,pd);
-		//foreach (var col in row.Element("columns")!.Elements()) {// 🔹 Map returned anonymous object to XML <columns>
-		//	string colName = col.Name.LocalName;
-		//	var prop = result?.GetType().GetProperty(colName);
-		//	row.Add(new XElement(colName, prop?.GetValue(result)?.ToString() ?? ""));
-		//	}
-		return null;
-	}
-	private bool isTrue(XElement element, string attributeName) {
-		return element.Attribute(attributeName) != null ? bool.Parse(element.Attribute(attributeName)!.Value) : false;
-	}
-	private bool hasElement(XElement e, string name) {
-		return e.Element(name) != null;
-	}
-	private static string getAttributesAsDelimited(XElement el, string delimiter = ",") {
-		var attributeStrings = el.Attributes()
-		.Select(attr => $"{attr.Name.LocalName}={attr.Value}");
+	private static bool IsScriptExpression(string value) => value.Contains("<%");
+	private static string ExtractScript(string value)	=> value.Replace("<%", "").Replace("%>", "")	.Trim();
+	public async Task<XElement> ProcessPdfAndMapAsync(string pdfPath, string xmlMapPath) {
+		using var reader = new PdfReader(pdfPath);
+		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
+		using var pdfDoc = new PdfDocument(reader, writer);
+		var originalDoc = XDocument.Load(xmlMapPath, LoadOptions.SetLineInfo);
+		var replicaDoc = GetElementAsDocument(originalDoc, "po");
+		var scriptGlobals = new Dictionary<string, object>();
+		foreach (var element in replicaDoc.Descendants()) {
+			foreach (var attr in element.Attributes().ToList()) {
+				if (!IsScriptExpression(attr.Value))
+					continue;
+				string script = ExtractScript(attr.Value);
+				Log.Debug($"Executing script at {attr.GetXPath()} => {script}");
+				object? result = await ScriptRunner.RunAsync(
+					script,
+					scriptGlobals,
+					pdfDoc
+				);
 
-		// 4. Combine all the formatted strings using the specified delimiter.
-		return string.Join(delimiter, attributeStrings);
+				switch (result) {
+					case XElement xe:
+						element.Add(xe);
+						attr.Remove();
+						break;
+
+					case ExtractedArea area:
+						attr.Value = area.Value ?? string.Empty;
+						Render.DrawBorder(pdfDoc, area.Bounds);
+						break;
+
+					case string s:
+						attr.Value = s;
+						break;
+
+					case null:
+						Log.Warn($"Script returned null: {script}");
+						attr.Value = string.Empty;
+						break;
+
+					default:
+						attr.Value = result.ToString() ?? string.Empty;
+						break;
+				}
+			}
+		}
+		return replicaDoc.Root!;
 	}
 	static XElement ReplicateXElementWithPdf(XElement src, PdfDocument pdfDoc) {
 		var newElement = new XElement(src.Name);
@@ -108,7 +97,6 @@ public class XmlMapProcessor {
 			newElement.SetAttributeValue(attr.Name, value);
 		}
 		foreach (var node in src.Nodes()) {
-
 			switch (node) {
 				case XElement childElement:
 					newElement.Add(ReplicateXElementWithPdf(childElement, pdfDoc));
@@ -116,11 +104,9 @@ public class XmlMapProcessor {
 				case XText text:
 					newElement.Add(new XText(text.Value));
 					break;
-
 				case XComment comment:
 					newElement.Add(new XComment(comment.Value));
 					break;
-
 				//case XCData cdata:
 				//	newElement.Add(new XCData(cdata.Value));
 				//	break;
@@ -128,25 +114,18 @@ public class XmlMapProcessor {
 				case XProcessingInstruction pi:
 					newElement.Add(new XProcessingInstruction(pi.Target, pi.Data));
 					break;
-
-				default:
-					// Ignore others if needed
+				default:// Ignore others if needed
 					break;
 			}
 		}
 		return newElement;
 	}
 	static XElement ReplicateXElement(XElement source) {
-		// Create new element with same name
-		var newElement = new XElement(source.Name);
-
-		// Copy all attributes exactly as they are
-		foreach (var attr in source.Attributes()) {
+		var newElement = new XElement(source.Name); // Create new element with same name
+		foreach (var attr in source.Attributes()) {// Copy all attributes exactly as they are
 			newElement.SetAttributeValue(attr.Name, attr.Value);
 		}
-
-		// Recursively replicate child nodes (elements, text, comments, etc.)
-		foreach (var node in source.Nodes()) {
+		foreach (var node in source.Nodes()) {  // Recursively replicate child nodes (elements, text, comments, etc.)
 			switch (node) {
 				case XElement childElement:
 					newElement.Add(ReplicateXElement(childElement));
@@ -159,27 +138,18 @@ public class XmlMapProcessor {
 				case XComment comment:
 					newElement.Add(new XComment(comment.Value));
 					break;
-
 				//case XCData cdata:
 				//	newElement.Add(new XCData(cdata.Value));
 				//	break;
-
 				case XProcessingInstruction pi:
 					newElement.Add(new XProcessingInstruction(pi.Target, pi.Data));
 					break;
-
 				default:
 					// Ignore others if needed
 					break;
 			}
 		}
-
 		return newElement;
-	}
-	static XDocument ReplicateXDocument(XDocument source) {
-		if (source.Root is null) throw new InvalidOperationException("Source document has no root element.");
-		XElement replicatedRoot = ReplicateXElement(source.Root);
-		return new XDocument(replicatedRoot);
 	}
 	public static XDocument GetElementAsDocument(XDocument doc, string elementName) {
 		if (doc == null) throw new ArgumentNullException(nameof(doc));
@@ -187,89 +157,6 @@ public class XmlMapProcessor {
 		var element = doc.Root?.Element(elementName);   // Find the first element with the given name
 		if (element == null) return null;
 		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), new XElement(element));// Create a new XDocument containing a deep copy of the element
-	}
-	private (bool success, Dictionary<string, Object> matches) getRegex(string input) {
-		string[] matchKeys = { "cast", "method", "params" };
-
-		const string pattern = "(?<cast>\\(\\w+\\))?(?<method>\\w+)\\((?<params>[^()]*)\\)";
-		Match match = Regex.Match(input, pattern);
-		Dictionary<string, Object> matches = matchKeys.ToDictionary(k => k, k => (Object)match.Groups[k].Value);
-		if (match.Success) matches.Add("capture", match.Value);
-		return (match.Success, matches);
-	}
-
-	private static int nestingDepth(string input) {
-		int maxDepth = 0;
-		int currentDepth = 0;
-		foreach (char c in input) {
-			if (c == '(') {
-				currentDepth++;
-				if (currentDepth > maxDepth) maxDepth = currentDepth;
-			} else if (c == ')') {
-				currentDepth--;
-			}
-		}
-		return maxDepth; // If this is > 1, you have nested methods/casts
-	}
-	private bool hasExpression(string input) {
-		/// <% ... Code Render Block
-		/// <%= ...Inplace Expression Render Block
-		/// <%# ... Data Binding Expression Block
-		/// <%-- ... Comment Block	
-		return input.Contains("<%");
-	}
-	private bool isInplaceExpression(string input) {
-		return input.Contains("<%=");
-	}
-	private bool isDataBindingExpression(string input) {
-		return input.Contains("<%#");
-	}
-	public async Task<XElement> ProcessPdfAndMap(string pdfPath, string xmlMapPath) {
-		using var reader = new PdfReader(pdfPath);
-		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
-		using var pdfDoc = new PdfDocument(reader, writer);
-		List<ExtractedArea> collectedAreas = new(); // Store results before drawing
-		XDocument originalDoc = XDocument.Load(xmlMapPath,LoadOptions.SetLineInfo);
-		XDocument replicaDoc = GetElementAsDocument(originalDoc, "po");// ignore the root <pdfMap>, it is not relavent  
-		string value = ""; // work vars
-		Dictionary<string, string> regExDict = new();
-		string expression = "";
-		Dictionary<string, object> t = new();
-		string code = "string.Join(\", \", Help)";// return method list
-		var rt = ScriptRunner.Run(code, t, pdfDoc);
-		Dictionary<string, Dictionary<string, string>> nestedMehods = new();
-		foreach (XElement xe in replicaDoc.Descendants()) {
-			foreach (var attr in xe.Attributes()) {
-				
-					Log.Debug($"***********************{attr.LineNumber()}:{attr.Name}:{attr.Value}:");
-				
-				expression = attr.Value.Replace("<%", "").Replace("%>", "");
-				if (!hasExpression(attr.Value)) continue;
-				while (nestingDepth(expression) > 0) {
-					Log.Debug($"Nesting depth={nestingDepth(expression)} for expression={expression} ");
-					var (hasMatch, dict) = getRegex(expression);
-					if (!hasMatch) break;
-					string k = "capture";
-
-					var rx = (ExtractedArea)ScriptRunner.Run(dict["capture"].ToString()!, dict, pdfDoc);
-					if (rx != null) {
-						expression = expression.Replace(dict["capture"].ToString()!, rx.Value!);
-						Log.Warn($"Replacing expression={dict[k]} with value={rx.Value}");
-					}
-					collectedAreas.Add(new ExtractedArea(attr.Name.ToString(), rx.Value.ToString(), rx.Bounds));
-					xe.SetAttributeValue(attr.Name, expression);
-					expression = "";
-				}
-				Log.Warn($"Executing :getRegEx on {attr.Value} ");
-			}
-			foreach (var area in collectedAreas) {
-				Render.DrawBorder(pdfDoc, area.Bounds);
-				Render.DrawCornerLabel(pdfDoc, area.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
-			}
-			Log.Debug(replicaDoc.ToString());
-			await Task.CompletedTask;
-		}
-		return replicaDoc.Root!;
 	}
 }
 public static class XElementExtensions {

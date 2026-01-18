@@ -3,13 +3,14 @@
         document="PurchaseOrder"
         rootName="po"
         pdfSource="c:\\temp\\PO4.pdf">
-	<address map ="&lt;%SplitAddress(ScrapePDF(x:299,scanBelowY:635,width:50,line2LineGap:10),new string[] {&quot;street&quot;,&quot;city,&quot;postcode&quot;,&quot;country&quot;}) %&gt;"  />
+	
 
 	<po ponumber="&lt;% ScrapePDF(x:505,scanBelowY:792,width:50,line2LineGap:60) %&gt;"
 	    date	="&lt;%ScrapePDF(x:169,scanBelowY:760,width:48,line2LineGap:10) %&gt;"
 	    status	="&lt;%ScrapePDF(x:169,scanBelowY:742,width:50,line2LineGap:10) %&gt;"
 	    x12Model="850-4010">
-	
+		<address map ="&lt;% SplitAddress(ScrapePDF(x:299,scanBelowY:635,width:50,line2LineGap:10),new string[] {&quot;street&quot;,&quot;city,&quot;postcode&quot;,&quot;country&quot;})) %&gt;"  />
+
 
 		<parties>
 			<delivery date="&lt;%ScrapePDF(x:428,scanBelowY:752,width:100,line2LineGap:10) %&gt;"/>

@@ -1,0 +1,4 @@
+2026-01-11 09:25:05.7650|Debug|Running Roslyn Script with code:
+string.Join(", ", Help)|
+2026-01-11 09:25:09.7254|Debug|Running Roslyn Script with code:
+ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10)|
