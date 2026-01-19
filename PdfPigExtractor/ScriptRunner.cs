@@ -2,7 +2,9 @@
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
 using NLog;
+using NLog.Layouts;
 
 namespace PDF;
 
@@ -104,22 +106,48 @@ public sealed class Globals {
 	}
 
 	// ---------- ADDRESS SPLITTING ----------
-	public XElement SplitAddress(ExtractedArea area, IEnumerable<string> columns) {
-		if (area == null) throw new ArgumentNullException(nameof(area));
+	//public XElement Split(ExtractedArea area, IEnumerable<string> columns,char delimiter=',') {
+	//	if (area == null) throw new ArgumentNullException(nameof(area));
+	//	var parts = area.Value
+	//		.Split(delimiter, StringSplitOptions.RemoveEmptyEntries)
+	//		.Select(p => p.Trim());
+	//	XElement x = (XElement)_globals["__currentElement"];
+	//	return new XElement(x.Name.LocalName,
+	//				parts.Zip(columns, (value, column) =>
+	//					new XAttribute(column, value))
+	//			);
+	//}
+	public XElement Split(
+	ExtractedArea area,
+	IEnumerable<string> columns,
+	char delimiter = ',') {
+		if (area == null)
+			throw new ArgumentNullException(nameof(area));
+
+		if (!_globals.TryGetValue("__currentElement", out var elObj) ||
+			elObj is not XElement element) {
+			throw new InvalidOperationException(
+				"Split requires __currentElement to be set.");
+		}
 
 		var parts = area.Value
-			.Split(',', StringSplitOptions.RemoveEmptyEntries)
-			.Select(p => p.Trim());
+			.Split(delimiter, StringSplitOptions.RemoveEmptyEntries)
+			.Select(p => p.Trim())
+			.ToList();
 
-		return new XElement("address",
-			parts.Zip(columns, (value, column) =>
-				new XAttribute(column, value))
-		);
+		// Remove any existing attributes that match target columns
+		foreach (var col in columns)
+			element.Attribute(col)?.Remove();
+
+		// Apply attributes directly to the current element
+		foreach (var (value, column) in parts.Zip(columns)) {
+			element.SetAttributeValue(column, value);
+		}
+
+		return element;
 	}
 
-	// ---------- Globals accessor ----------
 	public object? Get(string key) => _globals.TryGetValue(key, out var val) ? val : null;
-
 	public void Set(string key, object value) => _globals[key] = value;
 
 	// ---------- TEST ----------

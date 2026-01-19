@@ -22,46 +22,47 @@ public class XmlMapProcessor {
 		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
 		using var pdfDoc = new PdfDocument(reader, writer);
 		var originalDoc = XDocument.Load(xmlMapPath, LoadOptions.SetLineInfo);
-		var replicaDoc = GetElementAsDocument(originalDoc, "po");
+		XDocument replicaDoc = new XDocument(originalDoc);
 		var scriptGlobals = new Dictionary<string, object>();
 		foreach (var element in replicaDoc.Descendants()) {
 			foreach (var attr in element.Attributes().ToList()) {
-				if (!IsScriptExpression(attr.Value))
-					continue;
+				if (!IsScriptExpression(attr.Value))	continue;
+				scriptGlobals["__currentElement"] = element;
 				string script = ExtractScript(attr.Value);
+
 				Log.Debug($"Executing script at {attr.GetXPath()} => {script}");
 				object? result = await ScriptRunner.RunAsync(
 					script,
 					scriptGlobals,
 					pdfDoc
 				);
-
 				switch (result) {
 					case XElement xe:
-						element.Add(xe);
-						attr.Remove();
+						if (ReferenceEquals(xe, element)) {
+							attr.Remove(); // mapping consumed
+						} else {
+							attr.Remove();
+							element.ReplaceWith(xe);
+						}
 						break;
-
 					case ExtractedArea area:
 						attr.Value = area.Value ?? string.Empty;
 						Render.DrawBorder(pdfDoc, area.Bounds);
 						break;
-
 					case string s:
 						attr.Value = s;
 						break;
-
 					case null:
 						Log.Warn($"Script returned null: {script}");
 						attr.Value = string.Empty;
 						break;
-
 					default:
 						attr.Value = result.ToString() ?? string.Empty;
 						break;
 				}
 			}
 		}
+		XmlNormalization.Normalize(replicaDoc);
 		return replicaDoc.Root!;
 	}
 	static XElement ReplicateXElementWithPdf(XElement src, PdfDocument pdfDoc) {
@@ -157,6 +158,27 @@ public class XmlMapProcessor {
 		var element = doc.Root?.Element(elementName);   // Find the first element with the given name
 		if (element == null) return null;
 		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), new XElement(element));// Create a new XDocument containing a deep copy of the element
+	}
+}
+internal static class XmlNormalization {
+	public static void Normalize(XDocument doc) {
+		foreach (var attr in doc.Descendants().Attributes())
+			attr.Value = NormalizeValue(attr.Value);
+
+		foreach (var el in doc.Descendants())
+			if (!el.HasElements)
+				el.Value = NormalizeValue(el.Value);
+	}
+
+	private static string NormalizeValue(string? value) {
+		if (string.IsNullOrWhiteSpace(value))
+			return value ?? string.Empty;
+
+		return new string(
+			value
+				.Where(c => !char.IsControl(c) || c == '\n' || c == '\r')
+				.ToArray()
+		).Trim();
 	}
 }
 public static class XElementExtensions {

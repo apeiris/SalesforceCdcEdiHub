@@ -1,8 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po"    pdfSource="c:\\temp\\PO4.pdf">
 	<po>
-			<address map="&lt;%  SplitAddress(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}) %&gt;" />
+		<parties>
+			<buyer  name="&lt;%ScrapePDF(x:47,scanBelowY:653,width:50,line2LineGap:10) %&gt;">
+				<delivery date="&lt;%  ScrapePDF(x:428,scanBelowY:752,width:100,line2LineGap:10) %&gt;" />
+
+				<address map="&lt;%  Split(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;">
+				<contact map="&lt;% Split(ScrapePDF(x:47,scanBelowY:615,width:50,line2LineGap:10),new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;"/>
+
+				</address>
+			</buyer>
+		</parties>
 	</po>
+	<!--
+	<parties>
+		<delivery date="&lt;%ScrapePDF(x:428,scanBelowY:752,width:100,line2LineGap:10) %&gt;"/>
+		<buyer	  name="&lt;%ScrapePDF(x:47,scanBelowY:653,width:50,line2LineGap:10) %&gt;">
+			<address map="&lt;%ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10)  | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map &gt;"/>
+			<contact map="&lt;%ScrapePDF(x:47,scanBelowY:615,width:50,line2LineGap:10) | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map &gt;"/>
+		</buyer>
+		<seller  name ="&lt;%ScrapePDF(x:299,scanBelowY:653,width:50,line2LineGap:10) %&gt; " >
+			<address map ="&lt;%ScrapePDF(x:299,scanBelowY:635,width:50,line2LineGap:10) %&gt; | script:SplitAddress | map:street,city,postcode,country | xpath:/po/parties/buyer/address/@map" />
+			<contact map ="&lt;%ScrapePDF(x:299,scanBelowY:615,width:50,line2LineGap:10) %&gt; | script:SplitContact | map:tel,email | xpath:/po/parties/buyer/contact/@map" />
+		</seller>
+	</parties>
+	-->
 	<!-- ♻ Central script library -->
 	<scriptlib>
 		<script name="SplitAddress">
