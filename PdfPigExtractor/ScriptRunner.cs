@@ -147,6 +147,46 @@ public sealed class Globals {
 		return element;
 	}
 
+	public XElement SplitLinesToColumns(
+	ExtractedArea area,
+	IEnumerable<string> columns,
+	char columnDelimiter = '\t') {
+		if (area == null)
+			throw new ArgumentNullException(nameof(area));
+
+		if (!_globals.TryGetValue("__currentElement", out var elObj) ||
+			elObj is not XElement element)
+			throw new InvalidOperationException(
+				"SplitLinesToColumns requires __currentElement to be set.");
+
+		var lines = area.Value?
+			.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(l => l.Trim())
+			.Where(l => l.Length > 0)
+			.ToList() ?? new List<string>();
+
+		element.RemoveNodes(); // clear existing children
+
+		foreach (var line in lines) {
+			var parts = line
+				.Split(columnDelimiter, StringSplitOptions.None)
+				.Select(p => p.Trim())
+				.ToList();
+
+			var loop = new XElement("line");
+
+			foreach (var (column, index) in columns.Select((c, i) => (c, i))) {
+				string value = index < parts.Count ? parts[index] : string.Empty;
+				loop.SetAttributeValue(column, value);
+			}
+
+			element.Add(loop);
+		}
+
+		return element;
+	}
+
+
 	public object? Get(string key) => _globals.TryGetValue(key, out var val) ? val : null;
 	public void Set(string key, object value) => _globals[key] = value;
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po"    pdfSource="c:\\temp\\PO4.pdf">
-	<po>
+	<po  number="&lt;%ScrapePDF(x:480,scanBelowY:852,width:50,line2LineGap:10) %&gt;" date="&lt;%ScrapePDF(x:150,scanBelowY:752,width:50,line2LineGap:10) %&gt;">
+	
 		<parties>
 			<buyer  name="&lt;%ScrapePDF(x:47,scanBelowY:653,width:50,line2LineGap:10) %&gt;">
 				<delivery date="&lt;%  ScrapePDF(x:428,scanBelowY:752,width:100,line2LineGap:10) %&gt;" />
@@ -13,5 +14,17 @@
 				</seller>
 			</buyer>
 		</parties>
+		<po1loop map="&lt;%  SplitLinesToColumns(
+        ScrapePDF(x:40,scanBelowY:501,width:515,line2LineGap:30),
+        new string[]{ 
+            &quot;description&quot;,
+            &quot;partnumber&quot;,
+            &quot;qty&quot;,
+            &quot;unitPrice&quot;,
+            &quot;lineTotal&quot;
+        }
+    )
+%&gt;" />
+
 	</po>
 </pdfMap>

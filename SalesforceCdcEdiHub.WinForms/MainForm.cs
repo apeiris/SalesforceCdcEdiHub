@@ -1506,11 +1506,11 @@ public partial class MainForm : Form {
             <head>
                 <style>
                     body {{ font-family: monospace; background-color: #f5f5f5; padding: 20px; }}
-                    pre {{ background-color: white; padding: 10px; border: 1px solid #ccc; overflow: auto; }}
+                    pre {{ padding: 10px; border: 1px solid #ccc; overflow: auto; }}
                 </style>
             </head>
             <body>
-                <h2>Extracted  Purchase Order XML (PDF) {fromPdfFile}</h2>
+                <h2>Extracted  Purchase Order XML from PDF {fromPdfFile}</h2>
                 <pre>{escapedXml}</pre>
             </body>
             </html>";
