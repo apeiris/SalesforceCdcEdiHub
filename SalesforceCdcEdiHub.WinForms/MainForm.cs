@@ -4,23 +4,28 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using DocumentFormat.OpenXml;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf.Filespec;
+using iText.Layout.Properties;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Newtonsoft.Json;
 using NLog;
 using NLog.Windows.Forms;
+using PDF;
 //using iText.Layout;
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
 using SalesforceCdcEdiHub.MondayCom;
+using SalesforceCdcEdiHub.WinForms.Properties;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
@@ -29,11 +34,6 @@ using LogLevel = NLog.LogLevel;
 using Properties = SalesforceCdcEdiHub.WinForms.Properties;
 using Rectangle = iText.Kernel.Geom.Rectangle;
 using ToolTip = System.Windows.Forms.ToolTip;
-using PDF;
-using iText.Kernel.Pdf.Filespec;
-using iText.Layout.Properties;
-using DocumentFormat.OpenXml;
-using System.Threading.Tasks;
 
 
 namespace WinForms;
@@ -1548,11 +1548,11 @@ public partial class MainForm : Form {
 
 	private async void btnExtractXml_Click(object sender, EventArgs e) {
 		Cursor.Current = Cursors.WaitCursor;
-		
-		
-		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
 
-		string xmlMapPath = AppDomain.CurrentDomain.BaseDirectory + "PdfDataMapIrisSystemsT.xml";
+
+		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
+		//D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\SalesforceCdcEdiHub.WinForms\bin\Debug\net9.0-windows\PdfDataMapIrisSystemsT.xml
+		string xmlMapPath = AppDomain.CurrentDomain.BaseDirectory +@"Resources\PdfToXmlMaps\IrisSystems\PdfDataMapIrisSystems.xml";
 		List<string> hdr = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
 		XmlMapProcessor pdfMapper = new();
 		//XDocument xd = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf", hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");

@@ -14,6 +14,8 @@
 	  <None Remove="nlog-internal.log" />
 	  <None Remove="NLog.config" />
 	  <None Remove="Properties\Resources\PdfDataMapIrisSystems.xml" />
+	  <None Remove="Resources\PdfDataMapIrisSystems.xml" />
+	  <None Remove="Resources\PdfToXmlMaps\IrisSystems\PdfDataMapIrisSystems.xml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,6 +26,12 @@
 
 	<ItemGroup>
 	  <EmbeddedResource Include="Properties\Resources\PdfDataMapIrisSystems.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Resources\PdfDataMapIrisSystems.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Resources\PdfToXmlMaps\IrisSystems\PdfDataMapIrisSystems.xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </EmbeddedResource>
 	</ItemGroup>
