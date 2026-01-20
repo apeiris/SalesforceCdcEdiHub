@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po"    pdfSource="c:\\temp\\PO4.pdf">
-	<po  number="&lt;%ScrapePDF(x:480,scanBelowY:852,width:50,line2LineGap:10) %&gt;" date="&lt;%ScrapePDF(x:150,scanBelowY:752,width:50,line2LineGap:10) %&gt;">
+	<po  number="&lt;%ScrapePDF(x:505,scanBelowY:793,width:50,line2LineGap:10) %&gt;" date="&lt;%ScrapePDF(x:168,scanBelowY:753,width:50,line2LineGap:10) %&gt;">
 	
 		<parties>
-			<buyer  name="&lt;%ScrapePDF(x:47,scanBelowY:653,width:50,line2LineGap:10) %&gt;">
-				<delivery date="&lt;%  ScrapePDF(x:428,scanBelowY:752,width:100,line2LineGap:10) %&gt;" />
-				<address map="&lt;%  Split(ScrapePDF(x:47,scanBelowY:635,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;">
-					<contact map="&lt;% Split(ScrapePDF(x:47,scanBelowY:615,width:50,line2LineGap:10),new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;"/>
+			<buyer  name="&lt;%ScrapePDF(x:46,scanBelowY:652,width:50,line2LineGap:10) %&gt;">
+				<delivery date="&lt;%  ScrapePDF(x:427,scanBelowY:753,width:100,line2LineGap:10) %&gt;" />
+				<address map="&lt;%  Split(ScrapePDF(x:46,scanBelowY:639,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;">
+					<contact map="&lt;% Split(ScrapePDF(x:46,scanBelowY:615,width:50,line2LineGap:10),new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;"/>
 				</address>
 				<seller  name ="&lt;%ScrapePDF(x:299,scanBelowY:653,width:50,line2LineGap:10) %&gt; " >
 					<address map ="&lt;% Split(ScrapePDF(x:299,scanBelowY:635,width:50,line2LineGap:10),new string[]{&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;})    %&gt;" />

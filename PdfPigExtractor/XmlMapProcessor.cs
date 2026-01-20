@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
+using iText.StyledXmlParser.Jsoup.Nodes;
 using Microsoft.CodeAnalysis;
 namespace PDF;
 
@@ -18,24 +19,28 @@ public class XmlMapProcessor {
 	private static bool IsScriptExpression(string value) => value.Contains("<%");
 	private static string ExtractScript(string value)	=> value.Replace("<%", "").Replace("%>", "")	.Trim();
 	public async Task<XElement> ProcessPdfAndMapAsync(string pdfPath, string xmlMapPath) {
+		var scriptGlobals = new Dictionary<string, object>();
+		var extractedAreas = new List<ExtractedArea>();
+  	scriptGlobals["__extractedAreas"] = extractedAreas;
+
 		using var reader = new PdfReader(pdfPath);
 		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
 		using var pdfDoc = new PdfDocument(reader, writer);
 		var originalDoc = XDocument.Load(xmlMapPath, LoadOptions.SetLineInfo);
 		XDocument replicaDoc = new XDocument(originalDoc);
-		var scriptGlobals = new Dictionary<string, object>();
+		
 		foreach (var element in replicaDoc.Descendants()) {
 			foreach (var attr in element.Attributes().ToList()) {
 				if (!IsScriptExpression(attr.Value))	continue;
 				scriptGlobals["__currentElement"] = element;
 				string script = ExtractScript(attr.Value);
-
 				Log.Debug($"Executing script at {attr.GetXPath()} => {script}");
 				object? result = await ScriptRunner.RunAsync(
 					script,
 					scriptGlobals,
 					pdfDoc
 				);
+				
 				switch (result) {
 					case XElement xe:
 						if (ReferenceEquals(xe, element)) {
@@ -47,7 +52,12 @@ public class XmlMapProcessor {
 						break;
 					case ExtractedArea area:
 						attr.Value = area.Value ?? string.Empty;
-						Render.DrawBorder(pdfDoc, area.Bounds);
+						extractedAreas.Add(new ExtractedArea(
+						name: $"{element.Name.LocalName}.{attr.Name.LocalName}",
+						value: area.Value,
+						bounds: area.Bounds
+					));
+
 						break;
 					case string s:
 						attr.Value = s;
@@ -62,6 +72,11 @@ public class XmlMapProcessor {
 				}
 			}
 		}
+		foreach(ExtractedArea a in extractedAreas) {
+			Render.DrawBorder(pdfDoc, a.Bounds);
+			Render.DrawCornerLabel(pdfDoc, a.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
+		}
+
 		XmlNormalization.Normalize(replicaDoc);
 		return replicaDoc.Root!;
 	}

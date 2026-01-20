@@ -105,18 +105,6 @@ public sealed class Globals {
 		);
 	}
 
-	// ---------- ADDRESS SPLITTING ----------
-	//public XElement Split(ExtractedArea area, IEnumerable<string> columns,char delimiter=',') {
-	//	if (area == null) throw new ArgumentNullException(nameof(area));
-	//	var parts = area.Value
-	//		.Split(delimiter, StringSplitOptions.RemoveEmptyEntries)
-	//		.Select(p => p.Trim());
-	//	XElement x = (XElement)_globals["__currentElement"];
-	//	return new XElement(x.Name.LocalName,
-	//				parts.Zip(columns, (value, column) =>
-	//					new XAttribute(column, value))
-	//			);
-	//}
 	public XElement Split(
 	ExtractedArea area,
 	IEnumerable<string> columns,
