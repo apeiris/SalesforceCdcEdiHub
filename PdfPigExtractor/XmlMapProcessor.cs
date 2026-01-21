@@ -21,8 +21,7 @@ public class XmlMapProcessor {
 	public async Task<XElement> ProcessPdfAndMapAsync(string pdfPath, string xmlMapPath) {
 		var scriptGlobals = new Dictionary<string, object>();
 		var extractedAreas = new List<ExtractedArea>();
-  	scriptGlobals["__extractedAreas"] = extractedAreas;
-
+    	scriptGlobals["__extractedAreas"] = extractedAreas;
 		using var reader = new PdfReader(pdfPath);
 		using var writer = new PdfWriter("C:\\temp\\pdfOut.pdf");
 		using var pdfDoc = new PdfDocument(reader, writer);
@@ -40,7 +39,6 @@ public class XmlMapProcessor {
 					scriptGlobals,
 					pdfDoc
 				);
-				
 				switch (result) {
 					case XElement xe:
 						if (ReferenceEquals(xe, element)) {
@@ -52,12 +50,6 @@ public class XmlMapProcessor {
 						break;
 					case ExtractedArea area:
 						attr.Value = area.Value ?? string.Empty;
-						extractedAreas.Add(new ExtractedArea(
-						name: $"{element.Name.LocalName}.{attr.Name.LocalName}",
-						value: area.Value,
-						bounds: area.Bounds
-					));
-
 						break;
 					case string s:
 						attr.Value = s;
@@ -72,7 +64,7 @@ public class XmlMapProcessor {
 				}
 			}
 		}
-		foreach(ExtractedArea a in extractedAreas) {
+		foreach(ExtractedArea a in (List<ExtractedArea>)scriptGlobals["__extractedAreas"]) {
 			Render.DrawBorder(pdfDoc, a.Bounds);
 			Render.DrawCornerLabel(pdfDoc, a.Bounds, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT_NODECIMAL);
 		}

@@ -88,8 +88,34 @@ public sealed class Globals {
 			.ToArray();
 
 	// ---------- PDF SCRAPING ----------
-	public ExtractedArea ScrapePDF(float x, float scanBelowY, float width, float line2LineGap) {
-		var strategy = new StopOnLargeGapStrategy(x, scanBelowY, width, line2LineGap);
+	//public ExtractedArea ScrapePDF(float x, float scanBelowY, float width, float line2LineGap) {
+	//	var strategy = new StopOnLargeGapStrategy(x, scanBelowY, width, line2LineGap);
+	//	var parser = new iText.Kernel.Pdf.Canvas.Parser.PdfCanvasProcessor(strategy);
+
+	//	try {
+	//		parser.ProcessPageContent(_pdfDoc.GetPage(1));
+	//	} catch (Exception ex) {
+	//		Log.Warn($"PDF extraction warning: {ex.Message}");
+	//	}
+
+	//	return new ExtractedArea(
+	//		"ScrapePDF",
+	//		strategy.GetResultantText(),
+	//		strategy.GetCollectedTextBounds()
+	//	);
+	//}
+
+	public ExtractedArea ScrapePDF(
+	float x,
+	float scanBelowY,
+	float width,
+	float line2LineGap) {
+		var strategy = new StopOnLargeGapStrategy(
+			x,
+			scanBelowY,
+			width,
+			line2LineGap);
+
 		var parser = new iText.Kernel.Pdf.Canvas.Parser.PdfCanvasProcessor(strategy);
 
 		try {
@@ -98,13 +124,22 @@ public sealed class Globals {
 			Log.Warn($"PDF extraction warning: {ex.Message}");
 		}
 
-		return new ExtractedArea(
+		var area = new ExtractedArea(
 			"ScrapePDF",
 			strategy.GetResultantText(),
 			strategy.GetCollectedTextBounds()
 		);
+
+		// 🔥 NEW: auto-register extracted areas
+		if (_globals.TryGetValue("__extractedAreas", out var listObj) &&
+			listObj is List<ExtractedArea> list) {
+			list.Add(area);
+		}
+
+		return area;
 	}
 
+	//-----------------------------------------------
 	public XElement Split(
 	ExtractedArea area,
 	IEnumerable<string> columns,

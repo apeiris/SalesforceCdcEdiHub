@@ -5,17 +5,17 @@
 		<parties>
 			<buyer  name="&lt;%ScrapePDF(x:46,scanBelowY:652,width:50,line2LineGap:10) %&gt;">
 				<delivery date="&lt;%  ScrapePDF(x:427,scanBelowY:753,width:100,line2LineGap:10) %&gt;" />
-				<address map="&lt;%  Split(ScrapePDF(x:46,scanBelowY:639,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;">
+				<address map="&lt;%  Split(ScrapePDF(x:46,scanBelowY:634,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;">
 					<contact map="&lt;% Split(ScrapePDF(x:46,scanBelowY:615,width:50,line2LineGap:10),new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;"/>
 				</address>
 				<seller  name ="&lt;%ScrapePDF(x:299,scanBelowY:653,width:50,line2LineGap:10) %&gt; " >
-					<address map ="&lt;% Split(ScrapePDF(x:299,scanBelowY:635,width:50,line2LineGap:10),new string[]{&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;})    %&gt;" />
-					<contact map ="&lt;% Split(ScrapePDF(x:299,scanBelowY:615,width:50,line2LineGap:10), new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;" />
+					<address map ="&lt;% Split(ScrapePDF(x:298,scanBelowY:634,width:50,line2LineGap:10),new string[]{&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;})    %&gt;" />
+					<contact map ="&lt;% Split(ScrapePDF(x:298,scanBelowY:615,width:50,line2LineGap:10), new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;" />
 				</seller>
 			</buyer>
 		</parties>
 		<po1loop map="&lt;%  SplitLinesToColumns(
-        ScrapePDF(x:40,scanBelowY:501,width:515,line2LineGap:30),
+        ScrapePDF(x:39,scanBelowY:502,width:515,line2LineGap:30),
         new string[]{ 
             &quot;description&quot;,
             &quot;partnumber&quot;,
