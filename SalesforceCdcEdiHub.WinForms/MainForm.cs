@@ -1,31 +1,25 @@
 ﻿using System.Data;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using DocumentFormat.OpenXml;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Filespec;
-using iText.Layout.Properties;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Windows.Forms;
 using PDF;
-//using iText.Layout;
 using SalesforceCdcEdiHub;
 using SalesforceCdcEdiHub.Common;
 using SalesforceCdcEdiHub.MondayCom;
-using SalesforceCdcEdiHub.WinForms.Properties;
 using Button = System.Windows.Forms.Button;
 using Color = System.Drawing.Color;
 using Control = System.Windows.Forms.Control;
@@ -1397,14 +1391,8 @@ public partial class MainForm : Form {
 		}
 
 	}
-	static async Task GetJsonDocumentAsync(string url) {
-		using HttpClient client = new HttpClient();
-		HttpResponseMessage response = await client.GetAsync(url);
-		response.EnsureSuccessStatusCode();
-		string responseBody = await response.Content.ReadAsStringAsync();
-		JsonDocument jsonDoc = JsonDocument.Parse(responseBody);
-	}
-	DataSet dsOpenAs2 = new();
+	
+
 	private async void btnGetPartnerList_Click(object sender, EventArgs e) {
 		try {
 			var x = await Axios.GetXDocumentAsync("http://localhost:8080/api/partnership/view/MyCompany-to-PartnerA", "userID", "pWd");
@@ -1550,15 +1538,19 @@ public partial class MainForm : Form {
 		Cursor.Current = Cursors.WaitCursor;
 
 
-		//XDocument doc = PDF.PdfExtractor.ExtractPdfContentAsXml("C:\\Users\\tony\\Downloads\\PO 3.pdf", );
-		//D:\REPOS\apeiris\Salesforce\SalesforceCdcEdiHub\SalesforceCdcEdiHub.WinForms\bin\Debug\net9.0-windows\PdfDataMapIrisSystemsT.xml
 		string xmlMapPath = AppDomain.CurrentDomain.BaseDirectory +@"Resources\PdfToXmlMaps\IrisSystems\PdfDataMapIrisSystems.xml";
-		List<string> hdr = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
+		XDocument xd = XDocument.Load(xmlMapPath);
+		string pdfSource = xd.XPathSelectElement("//pdfMap")?.Attribute("pdfSource")?.Value!;
+		if (pdfSource == null) { _logger.LogCritical($"Can not proceed , the mapdocument({xmlMapPath}) dos not define pdfSource as attribute of pdfMap");
+			return;
+		}
+
+		_logger.LogInformation($"The source pdf is:{pdfSource}");
+
 		XmlMapProcessor pdfMapper = new();
-		//XDocument xd = await pdfMapper.ProcessPdfAndMap("C:\\temp\\PO4.pdf", hdr, "D:\\REPOS\\apeiris\\Salesforce\\SalesforceCdcEdiHub\\PdfDataMapIrisSystems.xml");
-		string pdfPath = "C:\\temp\\PO4.pdf";
-		XElement xe = await pdfMapper.ProcessPdfAndMapAsync(pdfPath,xmlMapPath );
-		DisplayXmlInWebView(xe,pdfPath);
+		XElement xe = await pdfMapper.ProcessPdfAndMapAsync(pdfSource,xmlMapPath );
+
+		DisplayXmlInWebView(xe,pdfSource);
 		SelectTab(tabControl1,grpSwitchToTab);
 		Cursor.Current = Cursors.Default;
 	}

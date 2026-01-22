@@ -2,12 +2,8 @@
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.Hosting;
 using NLog;
-using NLog.Layouts;
-
 namespace PDF;
-
 public static class ScriptRunner {
 	private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
@@ -43,9 +39,7 @@ public static class ScriptRunner {
 		Dictionary<string, object> globalsDict,
 		iText.Kernel.Pdf.PdfDocument pdfDoc) {
 		Log.Debug("Running Roslyn Script:\n" + code);
-
 		var globalsInstance = new Globals(globalsDict, pdfDoc);
-
 		try {
 			return await CSharpScript.EvaluateAsync<object>(
 				code,
@@ -63,48 +57,20 @@ public static class ScriptRunner {
 		}
 	}
 }
-
 public sealed class Globals {
 	private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 	private readonly iText.Kernel.Pdf.PdfDocument _pdfDoc;
 	private readonly Dictionary<string, object> _globals;
-
 	public Globals(Dictionary<string, object> globals, iText.Kernel.Pdf.PdfDocument pdfDoc) {
 		_globals = globals ?? new Dictionary<string, object>();
 		_pdfDoc = pdfDoc;
 		Log.Debug($"Roslyn Globals initialized with keys: {string.Join(", ", _globals.Keys)}");
 	}
-
-	// ---------- HELP / DISCOVERY ----------
-	public string[] Help =>
-		GetType()
-			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-			.Where(m => !m.IsSpecialName)
-			.Select(m => {
-				var args = string.Join(", ",
-					m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+	public string[] Help =>// ---------- HELP / DISCOVERY ----------
+		GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName)
+			.Select(m => {	var args = string.Join(", ",		m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
 				return $"{m.ReturnType.Name} {m.Name}({args})";
-			})
-			.ToArray();
-
-	// ---------- PDF SCRAPING ----------
-	//public ExtractedArea ScrapePDF(float x, float scanBelowY, float width, float line2LineGap) {
-	//	var strategy = new StopOnLargeGapStrategy(x, scanBelowY, width, line2LineGap);
-	//	var parser = new iText.Kernel.Pdf.Canvas.Parser.PdfCanvasProcessor(strategy);
-
-	//	try {
-	//		parser.ProcessPageContent(_pdfDoc.GetPage(1));
-	//	} catch (Exception ex) {
-	//		Log.Warn($"PDF extraction warning: {ex.Message}");
-	//	}
-
-	//	return new ExtractedArea(
-	//		"ScrapePDF",
-	//		strategy.GetResultantText(),
-	//		strategy.GetCollectedTextBounds()
-	//	);
-	//}
-
+			})	.ToArray();
 	public ExtractedArea ScrapePDF(
 	float x,
 	float scanBelowY,
@@ -115,30 +81,18 @@ public sealed class Globals {
 			scanBelowY,
 			width,
 			line2LineGap);
-
 		var parser = new iText.Kernel.Pdf.Canvas.Parser.PdfCanvasProcessor(strategy);
-
 		try {
 			parser.ProcessPageContent(_pdfDoc.GetPage(1));
 		} catch (Exception ex) {
 			Log.Warn($"PDF extraction warning: {ex.Message}");
 		}
-
-		var area = new ExtractedArea(
-			"ScrapePDF",
-			strategy.GetResultantText(),
-			strategy.GetCollectedTextBounds()
-		);
-
-		// 🔥 NEW: auto-register extracted areas
-		if (_globals.TryGetValue("__extractedAreas", out var listObj) &&
-			listObj is List<ExtractedArea> list) {
+		var area = new ExtractedArea("ScrapePDF",	strategy.GetResultantText(),strategy.GetCollectedTextBounds()	);
+		if (_globals.TryGetValue("__extractedAreas", out var listObj) &&	listObj is List<ExtractedArea> list) { // 🔥 NEW: auto-register extractedAreas	
 			list.Add(area);
 		}
-
 		return area;
 	}
-
 	//-----------------------------------------------
 	public XElement Split(
 	ExtractedArea area,

@@ -1,30 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <pdfMap client="IrisSystems" document="PurchaseOrder" rootName="po"    pdfSource="c:\\temp\\PO4.pdf">
 	<po  number="&lt;%ScrapePDF(x:505,scanBelowY:793,width:50,line2LineGap:10) %&gt;" date="&lt;%ScrapePDF(x:168,scanBelowY:753,width:50,line2LineGap:10) %&gt;">
-	
 		<parties>
 			<buyer  name="&lt;%ScrapePDF(x:46,scanBelowY:652,width:50,line2LineGap:10) %&gt;">
 				<delivery date="&lt;%  ScrapePDF(x:427,scanBelowY:753,width:100,line2LineGap:10) %&gt;" />
-				<address map="&lt;%  Split(ScrapePDF(x:46,scanBelowY:634,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;">
-					<contact map="&lt;% Split(ScrapePDF(x:46,scanBelowY:615,width:50,line2LineGap:10),new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;"/>
-				</address>
-				<seller  name ="&lt;%ScrapePDF(x:299,scanBelowY:653,width:50,line2LineGap:10) %&gt; " >
-					<address map ="&lt;% Split(ScrapePDF(x:298,scanBelowY:634,width:50,line2LineGap:10),new string[]{&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;})    %&gt;" />
-					<contact map ="&lt;% Split(ScrapePDF(x:298,scanBelowY:615,width:50,line2LineGap:10), new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;" />
-				</seller>
+				<address map="&lt;%  Split(ScrapePDF(x:46,scanBelowY:634,width:50,line2LineGap:10), new string[] {&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;}	) %&gt;"/>
+				<contact map="&lt;% Split(ScrapePDF(x:46,scanBelowY:615,width:50,line2LineGap:10),new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;"/>
 			</buyer>
+			<seller  name ="&lt;%ScrapePDF(x:299,scanBelowY:653,width:50,line2LineGap:10) %&gt; " >
+				<address map ="&lt;% Split(ScrapePDF(x:298,scanBelowY:634,width:50,line2LineGap:10),new string[]{&quot;street&quot;, &quot;city&quot;, &quot;postcode&quot;, &quot;country&quot;})    %&gt;" />
+				<contact map ="&lt;% Split(ScrapePDF(x:298,scanBelowY:615,width:50,line2LineGap:10), new string[]{&quot;telephone&quot;,&quot;email&quot;},delimiter:'|') %&gt;" />
+			</seller>
 		</parties>
-		<po1loop map="&lt;%  SplitLinesToColumns(
-        ScrapePDF(x:39,scanBelowY:502,width:515,line2LineGap:30),
-        new string[]{ 
-            &quot;description&quot;,
-            &quot;partnumber&quot;,
-            &quot;qty&quot;,
-            &quot;unitPrice&quot;,
-            &quot;lineTotal&quot;
-        }
-    )
-%&gt;" />
-
+		<po1loop map="&lt;%  SplitLinesToColumns(ScrapePDF(x:39,scanBelowY:502,width:515,line2LineGap:30),new string[]{ &quot;description&quot;,&quot;partnumber&quot;,&quot;qty&quot;,&quot;unitPrice&quot;,&quot;lineTotal&quot;}) %&gt;" />
 	</po>
 </pdfMap>

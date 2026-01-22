@@ -1,11 +1,15 @@
 ﻿using System.Net.Http.Headers;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using NLog;
 //using Newtonsoft.Json; 
 public static class Axios {
+	private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
 	private static readonly HttpClient client = new HttpClient();
 	public static async Task<T> GetAsync<T>(string url, string username = null, string password = null) {
 		AddAuthHeader(username, password);
@@ -17,22 +21,33 @@ public static class Axios {
 
 
 	public static async Task<XmlDocument> GetXmlDocumentAsync(string url, string username = null, string password = null) {
+		string json = string.Empty;
 		AddAuthHeader(username, password);
-		var response = await client.GetAsync(url);
-		response.EnsureSuccessStatusCode();
+		try {
+			var response = await client.GetAsync(url);
+			response.EnsureSuccessStatusCode();
+			json = await response.Content.ReadAsStringAsync();
+		} catch (Exception ex) {
 
-		string json = await response.Content.ReadAsStringAsync();
+			Logger.Error(ex);
+		}
 
-	
+
+
 		XmlDocument xmlDoc = JsonConvert.DeserializeXmlNode(json, "Root");
 		return xmlDoc;
 	}
 	public static async Task<XDocument> GetXDocumentAsync(string url, string username = null, string password = null) {
 		XmlDocument xmlDoc = await GetXmlDocumentAsync(url, username, password);
-
-		using (var nodeReader = new XmlNodeReader(xmlDoc)) {
-			XDocument xDoc = XDocument.Load(nodeReader);
-			return xDoc;
+		try {
+			using (var nodeReader = new XmlNodeReader(xmlDoc)) {
+				XDocument xDoc = XDocument.Load(nodeReader);
+				return xDoc;
+			}
+		}
+		catch(Exception ex) {
+			Logger.Error(ex);
+			return null;
 		}
 	}
 
