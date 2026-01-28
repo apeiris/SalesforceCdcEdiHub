@@ -123,38 +123,6 @@ public class XmlMapProcessor {
 		}
 		return newElement;
 	}
-	static XElement ReplicateXElement(XElement source) {
-		var newElement = new XElement(source.Name); // Create new element with same name
-		foreach (var attr in source.Attributes()) {// Copy all attributes exactly as they are
-			newElement.SetAttributeValue(attr.Name, attr.Value);
-		}
-		foreach (var node in source.Nodes()) {  // Recursively replicate child nodes (elements, text, comments, etc.)
-			switch (node) {
-				case XElement childElement:
-					newElement.Add(ReplicateXElement(childElement));
-					break;
-				case XText text:
-					newElement.Add(new XText(text.Value));
-					break;
-				case XComment comment:
-					newElement.Add(new XComment(comment.Value));
-					break;
-				case XProcessingInstruction pi:
-					newElement.Add(new XProcessingInstruction(pi.Target, pi.Data));
-					break;
-				default:// Ignore others 
-					break;
-			}
-		}
-		return newElement;
-	}
-	public static XDocument GetElementAsDocument(XDocument doc, string elementName) {
-		if (doc == null) throw new ArgumentNullException(nameof(doc));
-		if (string.IsNullOrWhiteSpace(elementName)) throw new ArgumentException("Element name cannot be null or empty.", nameof(elementName));
-		var element = doc.Root?.Element(elementName);   // Find the first element with the given name
-		if (element == null) return null;
-		return new XDocument(new XDeclaration("1.0", "utf-8", "yes"), new XElement(element));// Create a new XDocument containing a deep copy of the element
-	}
 }
 internal static class XmlNormalization {
 	public static void Normalize(XDocument doc) {
@@ -175,57 +143,20 @@ internal static class XmlNormalization {
 	}
 }
 public static class XElementExtensions {
-	public static void SetAttributes(this XElement e, Dictionary<string, string> dict) {
-		if (e == null || dict == null) return;
 
-		foreach (KeyValuePair<string, string> kv in dict) {
-			e.SetAttributeValue(kv.Key, kv.Value);
-		}
-	}
-	public static int LineNumber(this XObject obj) {
-		var lineInfo = (IXmlLineInfo)obj;
-		return lineInfo.HasLineInfo() ? int.Parse(lineInfo.LineNumber.ToString()) : 0;
-	}
-	public static Dictionary<string, string> AttributesToFsmDictionary(this XAttribute attr) {
-		if (attr == null || string.IsNullOrWhiteSpace(attr.Value)) return new Dictionary<string, string>();// null dictionary
-		return attr.Value
-			.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-			.Select(segment => {
-				char sep = segment.Contains(':') ? ':' : segment.Contains('=') ? '=' : '\0';
-				if (sep == '\0') return null;
-				var parts = segment.Split(sep, 2);
-				if (parts.Length < 2)
-					return null;
-				return new {
-					Key = parts[0].Trim(),
-					Value = parts[1].Trim()
-				};
-			})
-			.Where(x => x != null) // remove nulls
-			.ToDictionary(x => x.Key, x => x.Value);
-	}
 	public static string GetXPath(this XNode node) {
 		if (node == null) return string.Empty;
-		// XNodes include elements, text, and comments. 
-		// We handle XElement specifically to get tag names.
 		if (node is XElement element) {
-			// Build the path by checking indices among siblings
 			string path = element.AncestorsAndSelf().Reverse().Select(e => {
-				// Count siblings with the same name that appear before this node
 				var siblings = e.ElementsBeforeSelf(e.Name).Count() + 1;
 				return $"{e.Name.LocalName}[{siblings}]";
 			}).Aggregate((current, next) => $"{current}/{next}");
-
 			return $"/{path}";
 		}
-
-		// If it's a Text node or Comment, return parent path with specific identifier
 		return node.Parent != null ? $"{node.Parent.GetXPath()}/{node.NodeType.ToString().ToLower()}()" : "/";
 	}
 	public static string GetXPath(this XAttribute attribute) {
 		if (attribute == null) return string.Empty;
-
-		// Get the parent element's path and append the attribute identifier (@)
 		return $"{attribute.Parent.GetXPath()}/@{attribute.Name.LocalName}";
 	}
 }
