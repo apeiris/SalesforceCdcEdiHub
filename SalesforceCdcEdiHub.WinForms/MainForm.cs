@@ -1548,7 +1548,7 @@ public partial class MainForm : Form {
 		_logger.LogInformation($"The source pdf is:{pdfSource}");
 
 		XmlMapProcessor pdfMapper = new();
-		XElement xe = await pdfMapper.ProcessPdfAndMapAsync(pdfSource,xmlMapPath );
+		XElement xe = await pdfMapper.ProcessPdfAndMapAsync(xmlMapPath );
 
 		DisplayXmlInWebView(xe,pdfSource);
 		SelectTab(tabControl1,grpSwitchToTab);
@@ -1570,35 +1570,35 @@ public partial class MainForm : Form {
 	}
 
 	private void btnN2ExtractPoLinesAsXml_Click(object sender, EventArgs e) {
-		string src = "C:\\temp\\GeneratedPO.pdf";
-		using PdfWriter writer = new PdfWriter(@"C:\temp\GeneratedPOx.pdf");
-		using (PdfDocument pdfdoc = new PdfDocument(new PdfReader(src), writer)) {
-			List<List<string>> tableOut;
-			Rectangle boundingRect;
-			XDocument xD;
+		//string src = "C:\\temp\\GeneratedPO.pdf";
+		//using PdfWriter writer = new PdfWriter(@"C:\temp\GeneratedPOx.pdf");
+		//using (PdfDocument pdfdoc = new PdfDocument(new PdfReader(src), writer)) {
+		//	List<List<string>> tableOut;
+		//	Rectangle boundingRect;
+		//	XDocument xD;
 
-			List<string> Header = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
-			ExtractTableBelowY(pdfdoc, Header, out boundingRect, out tableOut, out xD);
+		//	List<string> Header = ["Item", "Code", "Qty", "UnitPrice", "LineTotal"];
+		////	ExtractTableBelowY(pdfdoc, Header, out boundingRect, out tableOut, out xD);
 
 
-			DisplayXmlInWebView(xD.Root,src);
-			Render.DrawBorder(pdfdoc, boundingRect);
-			Render.DrawCornerLabel(pdfdoc, boundingRect, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
-			DataSet ds = new(); ds.ReadXml(xD.CreateReader(), XmlReadMode.InferTypedSchema);
-			//dgvMondayComPoItems.DataSource = ds.Tables[0];
-		}
+		//	//DisplayXmlInWebView(xD.Root,src);
+		//	//Render.DrawBorder(pdfdoc, boundingRect);
+		//	Render.DrawCornerLabel(pdfdoc, boundingRect, LabelLocation.BOTTOM_LEFT_and_TOP_RIGHT);
+		////	DataSet ds = new(); ds.ReadXml(xD.CreateReader(), XmlReadMode.InferTypedSchema);
+		//	//dgvMondayComPoItems.DataSource = ds.Tables[0];
+		//}
 	}
 
-	private static void ExtractTableBelowY(PdfDocument pdfdoc, List<string> TableHeader, out Rectangle BoundingBox, out List<List<string>> tableLines, out XDocument xdContent) {
-		PDF.ExtractPdfTableBelowY ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
-		PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), ContentBelowY);
-		tableLines = ContentBelowY.GetTableRows();
-		tableLines[0] = TableHeader; // override header
-		BoundingBox = ContentBelowY.GetTableBoundingBox();
-		xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "OrderItems");
+	//private static void ExtractTableBelowY(PdfDocument pdfdoc, List<string> TableHeader, out Rectangle BoundingBox, out List<List<string>> tableLines, out XDocument xdContent) {
+		//PDF.ExtractPdfTableBelowY ContentBelowY = new(heightThreshold: 20f, scanBelowY: 513.0f);
+		//PdfTextExtractor.GetTextFromPage(pdfdoc.GetPage(1), ContentBelowY);
+	//	tableLines = ContentBelowY.GetTableRows();
+		//tableLines[0] = TableHeader; // override header
+	//	BoundingBox = ContentBelowY.GetTableBoundingBox();
+	//	xdContent = PDF.ExtractPdfTableBelowY.ConvertToXDocument(tableLines, "OrderItems");
 	
 //	 ($"Bounding box: Left={BoundingBox.GetLeft()}, Bottom={BoundingBox.GetBottom()}, Right={BoundingBox.GetRight()}, Top={BoundingBox.GetTop()}, Width={BoundingBox.GetWidth()}, Height={BoundingBox.GetHeight()}");
-	}
+//	}
 
 	private void btnClearLog_Click_1(object sender, EventArgs e) {
 		rtxLog.Clear();

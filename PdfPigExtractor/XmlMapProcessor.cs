@@ -1,6 +1,6 @@
 ﻿#define DEBUG_BREAK
-using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
@@ -17,7 +17,12 @@ public class XmlMapProcessor {
 	private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
 	private static bool IsScriptExpression(string value) => value.Contains("<%");
 	private static string ExtractScript(string value) => value.Replace("<%", "").Replace("%>", "").Trim();
-	public async Task<XElement> ProcessPdfAndMapAsync(string pdfPath, string xmlMapPath) {
+	public async Task<XElement> ProcessPdfAndMapAsync(string xmlMapPath) {
+		string pdfPath = "";
+		XDocument xd = XDocument.Load(xmlMapPath);
+		 pdfPath = xd.XPathSelectElement("//pdfMap")?.Attribute("pdfSource")?.Value!;
+		
+
 		var scriptGlobals = new Dictionary<string, object>();
 		var extractedAreas = new List<ExtractedArea>();
 		scriptGlobals["__extractedAreas"] = extractedAreas;

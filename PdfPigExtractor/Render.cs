@@ -4,7 +4,6 @@ using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NLog;
 using Rectangle = iText.Kernel.Geom.Rectangle;
 namespace PDF;

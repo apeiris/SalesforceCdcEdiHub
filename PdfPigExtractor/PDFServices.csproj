@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-	  
-	  
-	  
+	  <PackageId>SpatialPdfParser</PackageId>
+	  <Version>1.0.0</Version>
+	  <Authors>Anthony Peiris</Authors>
+	  <Company>Iris Systems,Canada</Company>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <NoWarn>IDE0130;IDE0028;IDE0290;IDE0300;IDE0305;IDE0306;IDE1006</NoWarn>
@@ -13,6 +14,11 @@
 		<PackageReference Include="itext7.bouncy-castle-fips-adapter" Version="9.3.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
 		<PackageReference Include="NLog" Version="6.0.4" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="PdfDataMapIrisSystems.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>
 
